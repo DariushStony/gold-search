@@ -48,7 +48,7 @@ const G = { g_toman: 27_017_000, source: "union" as const, quoted_at: "2026-10-2
 test("demo server: parse, search and product detail follow the API contract", async () => {
   const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
   buildSnapshot({ rawDir: rawFixture(), outPath: out });
-  const server = createApp(out, { goldPrice: async () => G }).listen(0);
+  const server = createApp(out, { goldPrice: async () => G, eventsFile: join(mkdtempSync(join(tmpdir(), "events-")), "events.jsonl") }).listen(0);
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
   const post = (path: string, body: unknown) => fetch(base + path, { method: "POST", body: JSON.stringify(body) });
   try {
@@ -66,6 +66,22 @@ test("demo server: parse, search and product detail follow the API contract", as
     assert.equal(detail.offers.length, 3);
     assert.equal((await post("/parse", { text: "x".repeat(301) })).status, 422);
     assert.equal((await post("/search", { chips: [], snapshot_id: "old" })).status, 410);
+  } finally {
+    server.close();
+  }
+});
+
+test("API §2: the 30/min cap covers only parse, search, products and excluded; events have their own 120/min", async () => {
+  const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
+  buildSnapshot({ rawDir: rawFixture(), outPath: out });
+  const server = createApp(out, { goldPrice: async () => G, eventsFile: join(mkdtempSync(join(tmpdir(), "events-")), "events.jsonl") }).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
+  const post = (path: string, body: unknown) => fetch(base + path, { method: "POST", body: JSON.stringify(body) });
+  try {
+    for (let i = 0; i < 40; i++) assert.equal((await post("/events", { event_id: `e${i}`, name: "chip_edited", props: {} })).status, 202);
+    for (let i = 0; i < 30; i++) assert.equal((await post("/parse", { text: "انگشتر" })).status, 200, `parse ${i + 1}`);
+    assert.equal((await post("/parse", { text: "انگشتر" })).status, 429);
+    assert.equal((await post("/events", { event_id: "late", name: "chip_edited", props: {} })).status, 202);
   } finally {
     server.close();
   }

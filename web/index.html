@@ -181,7 +181,11 @@ const $ = id => document.getElementById(id);
 const session = (() => { try { return sessionStorage.getItem("sid") || (sessionStorage.setItem("sid", crypto.randomUUID()), sessionStorage.getItem("sid")); } catch { return crypto.randomUUID(); } })();
 
 let st = { text: "", chips: [], answers: {}, last: null };
-const post = (path, body) => fetch(API + path, { method: "POST", body: JSON.stringify(body) }).then(r => r.ok ? r.json() : Promise.reject(r.status));
+const post = (path, body) => fetch(API + path, { method: "POST", body: JSON.stringify(body) }).then(r => r.ok ? r.json() : Promise.reject(r.status), () => Promise.reject("offline"));
+// Content guide §5: what happened and what to do, never the server's detail.
+const ERR = { 429: "درخواست‌ها زیاد شد. چند ثانیه صبر کنید و دوباره امتحان کنید.", 422: "این جمله خیلی بلند است. آن را به کمتر از ۳۰۰ نویسه برسانید.",
+  offline: "اتصال اینترنت برقرار نیست. اتصال را بررسی کنید و دوباره امتحان کنید." };
+const showError = code => { $("results").innerHTML = `<div class="empty">${ERR[code] ?? "مشکلی پیش آمد. دوباره امتحان کنید."}</div>`; $("count").textContent = ""; };
 const track = (name, props) => post("/events", { event_id: crypto.randomUUID(), name, at: new Date().toISOString(), session_id: session,
   snapshot_id: st.last?.snapshot.id ?? null, query_id: st.last?.query_id ?? null, props }).catch(() => {});
 
@@ -210,7 +214,8 @@ let timer = null;
 async function parse() {
   const text = $("q").value.trim();
   if (!text) { st.chips = []; renderChips(); return; }
-  const p = await post("/parse", { text, answers: st.answers });
+  let p;
+  try { p = await post("/parse", { text, answers: st.answers }); } catch (code) { return showError(code); }
   st.text = text; st.chips = p.chips; renderChips();
   $("ask").hidden = !p.ask;
   $("ask").innerHTML = p.ask ? `منظورتان هزار تومان است یا میلیون؟ <button data-unit="thousand">هزار تومان</button><button data-unit="million">میلیون تومان</button>` : "";
@@ -221,7 +226,7 @@ async function parse() {
 async function run() {
   $("results").innerHTML = `<p class="loading">در حال جست‌وجو…</p>`;
   let r;
-  try { r = await post("/search", { chips: st.chips }); } catch { $("results").innerHTML = `<div class="empty">مشکلی پیش آمد. دوباره امتحان کنید.</div>`; return; }
+  try { r = await post("/search", { chips: st.chips }); } catch (code) { return showError(code); }
   st.last = r;
   $("suggest").hidden = !r.suggest_intent;
   $("suggest").innerHTML = r.suggest_intent ? `برای چی می‌خری؟ <button data-intent="gift">هدیه</button><button data-intent="beauty">زیبایی</button><button data-intent="savings">پس‌انداز</button>` : "";

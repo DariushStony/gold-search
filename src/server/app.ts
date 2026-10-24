@@ -66,13 +66,13 @@ function cardJson(c: Card, p: ProductRecord, gLive: Reference | null) {
 
 const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]! : null);
 
-export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promise<Reference | null> } = {}) {
+export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promise<Reference | null>; eventsFile?: string } = {}) {
   const snap = loadSnapshot(snapshotPath);
   const livePrice = deps.goldPrice ?? goldPrice;
   const byId = new Map(snap.products.map((p) => [p.id, p]));
   const page = () => readFileSync(join(ROOT, "web/index.html"), "utf8");
   const hits = new Map<string, number[]>();
-  const eventsFile = join(ROOT, "data/events/events.jsonl");
+  const eventsFile = deps.eventsFile ?? join(ROOT, "data/events/events.jsonl");
 
   const send = (res: ServerResponse, status: number, body: unknown, type = "application/json; charset=utf-8") => {
     res.writeHead(status, { "Content-Type": type, "X-Robots-Tag": "noindex", "Cache-Control": "no-store" });
@@ -85,8 +85,9 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
     req.on("data", (d) => { raw += d; if (raw.length > 100_000) req.destroy(); });
     req.on("end", () => { try { resolve(JSON.parse(raw || "{}")); } catch { resolve(null); } });
   });
-  const limited = (req: IncomingMessage, perMin: number) => { // API §2: per IP, in memory only
-    const ip = req.socket.remoteAddress ?? "?";
+  // API §2: per IP, in memory only, with one budget for the search calls and another for status and events.
+  const limited = (req: IncomingMessage, bucket: "search" | "light", perMin: number) => {
+    const ip = `${bucket}:${req.socket.remoteAddress ?? "?"}`;
     const now = Date.now();
     const recent = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
     recent.push(now);
@@ -104,7 +105,7 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
     const url = new URL(req.url ?? "/", "http://local");
     try {
       if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) return send(res, 200, page(), "text/html; charset=utf-8");
-      if (url.pathname.startsWith("/api/") && limited(req, url.pathname === "/api/v1/status" || url.pathname === "/api/v1/events" ? 120 : 30)) {
+      if (url.pathname.startsWith("/api/") && (url.pathname === "/api/v1/status" || url.pathname === "/api/v1/events" ? limited(req, "light", 120) : limited(req, "search", 30))) {
         return problem(res, 429, "rate-limited", "too many requests");
       }
       if (req.method === "GET" && url.pathname === "/api/v1/status") {
