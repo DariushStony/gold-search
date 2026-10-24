@@ -14,6 +14,7 @@ export type Chip = {
   level: "product" | "offer";
   value: string | number | boolean;
   origin: "text" | "user";
+  llm?: true; // read by the LLM, not the rules (BR-55); the page marks it
 };
 export type Intent = "gift" | "beauty" | "savings";
 export type ParsedQuery = {

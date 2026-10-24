@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.5 |
+| Version | 0.6 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-24 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -50,6 +50,7 @@ type Chip = {
   level: "product" | "offer";                                   // fixed per kind: table below
   value: string | number | boolean;
   origin: "text" | "user";                                      // BR-56: from the sentence, or added, edited or answered by the user
+  llm?: true;                                                   // CR-05: read from the sentence by the LLM (BR-55), not the rules
   span?: [number, number];                                      // where in the text; absent for origin "user" unless answered
 };
 ```
@@ -383,3 +384,4 @@ Notes on the example:
 | 0.3 | 2026-10-23 | Freeze readiness: naming, field mapping to the data model, retry safety and caching per operation; explicit auth statement; user text per error; deprecation rule; event names; one example per operation (§8) |
 | 0.4 | 2026-10-23 | Freeze review fixes: product detail is `POST /products/{id}` with chips (offer filters and score match the card); `GET /status` replaces `/gold-price` and `/healthz` and carries the snapshot state for the archive banner; methodology is a static page, not an endpoint; role and level fixed per chip kind; `origin` is text or user; budget question blocks only in the client (no 422); `partial_reason` only for non-gold parts; `parts`, `no_breakdown_reason`, `weight_conflict`, `sample`, `weight_unknown_bucket`; savings rows with `source_url` and `url`; `relax` names the chip and the results it would bring back; event `snapshot_id` nullable and `string[]` props; error example on `/parse`; `gold-price-unavailable` dropped (null instead) |
 | 0.5 | 2026-10-24 | CR-04: `unparsed` on the `/parse` response |
+| 0.6 | 2026-10-24 | CR-05: optional `llm` flag on chips the LLM added |

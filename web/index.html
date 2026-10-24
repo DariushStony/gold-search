@@ -200,7 +200,7 @@ function chipValue(c) {
 }
 function renderChips() {
   $("chips").innerHTML = st.chips.map((c, i) => `<span class="chip ${c.role === "sort" ? "sort" : c.role === "info" ? "info" : ""}">${KIND[c.kind]}${chipValue(c) ? ": " + esc(chipValue(c)) : ""}
-    <small>${c.origin === "user" ? "انتخاب شما" : "از جمله‌ی شما"}</small><button aria-label="حذف ${KIND[c.kind]}" data-rm="${i}">×</button></span>`).join("");
+    <small>${c.origin === "user" ? "انتخاب شما" : c.llm ? "از جمله‌ی شما، با AI" : "از جمله‌ی شما"}</small><button aria-label="حذف ${KIND[c.kind]}" data-rm="${i}">×</button></span>`).join("");
 }
 
 async function status() {

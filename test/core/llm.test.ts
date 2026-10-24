@@ -59,3 +59,19 @@ test("BR-74: the request travels as data, with what the rules already read", () 
   assert.equal(user.not_understood, rules.unparsed);
   assert.ok(user.already_understood.some((c: { kind: string }) => c.kind === "item_type"));
 });
+
+test("chips the LLM added are marked, so the page can show they came from AI", () => {
+  const rules = parseQuery(TEXT);
+  const { result } = mergeLlm(TEXT, rules, { chips: [{ kind: "budget_target", value: 1_500_000 }], unparsed: null })!;
+  assert.equal(result.chips.find((c) => c.kind === "budget_target")!.llm, true);
+  assert.equal(result.chips.find((c) => c.kind === "item_type")!.llm, undefined);
+});
+
+test("BR-55: making-charge words map to the BR-59 numbers even with a typo", () => {
+  const t = "ببین من دنبال ۵ تومن برای نامزدم هستم بدو اجرت باشه";
+  const rules = parseQuery(t);
+  const { result } = mergeLlm(t, rules, { chips: [{ kind: "ojrat_max", value: 2 }], unparsed: null })!;
+  assert.ok(result.chips.some((c) => c.kind === "ojrat_max" && c.value === 2));
+  assert.doesNotMatch(parseQuery("ببین یه النگو حدود یک و نیم میلیون").unparsed ?? "", /ببین/);
+});
+

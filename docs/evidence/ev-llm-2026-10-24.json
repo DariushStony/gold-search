@@ -411,5 +411,30 @@
   "completion_tokens": "21 to 39",
   "source": "usage field of single test calls on 2026-10-24"
  },
- "decision": "gpt-4.1-mini: more hard sentences read and no loss on the tune split; nano lost 4.4 points on the tune split by adding chips the sentences did not ask for"
+ "decision": "gpt-4.1-mini: more hard sentences read and no loss on the tune split; nano lost 4.4 points on the tune split by adding chips the sentences did not ask for",
+ "prompt_v2": {
+  "why": "the owner's own test sentences («جشن بله برون»، «بدو اجرت»، «خانمم») got no chip from the AI; the prompt gained a short glossary of everyday phrasings and a typo note",
+  "caveat": "the glossary was written after seeing the hard set and covers some of its phrasings, so the hard set is now a tuning set, not a held-out measure",
+  "hard_set_gpt-4.1-mini": {
+   "runs": [
+    "10/12",
+    "10/12"
+   ],
+   "misses": [
+    "H03 «هفت تومنه»",
+    "H12 «بودجم دو و نیم تومنه» read as budget_target, not budget_max"
+   ],
+   "latency_ms": {
+    "median": 695,
+    "max": 1144
+   }
+  },
+  "tune_split_gpt-4.1-mini": {
+   "exact_match": "98.6"
+  },
+  "owner_sentences": [
+   "«ببین من دنبال ۵ تومن برای خرید برای نامزدم تو جشن بله برون هستم بدو اجرت باشه» gains occasion=نامزدی and ojrat_max=2 from the AI",
+   "«یه گوشواره واسه خانمم تا دو و نیم میلیون، اجرتش هم کم باشه» gains recipient=همسر, budget_max=2500000 and ojrat_max=10 from the AI"
+  ]
+ }
 }

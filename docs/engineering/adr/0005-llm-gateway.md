@@ -71,3 +71,5 @@ Run once on AvalAI with a level-1, phone-verified account ([evidence](../../evid
 - **Repeatability:** temperature 0 still varied once (H09 «بله برون»: نامزدی, then عروسی), so answers are cached by normalised text (NFR-05).
 - **Cost:** one call is about 900 prompt and 20 to 40 output tokens. At 2,000 calls a month: 2,000 × (900 × $0.40 + 40 × $1.60) / 1M ≈ $0.85, about 227,000 toman at 267,850 toman a unit. [estimate] Only requests with unread words call the model; that was 41 of 69 tune sentences.
 - **Not yet measured:** the EV-QRY test split, which stays closed until after the interview (D-33, D-34).
+- **Prompt v2 (same day):** the owner's own sentences («جشن بله برون»، «بدو اجرت»، «خانمم») got no chip, so the prompt gained a short glossary of everyday phrasings and a typo note. Hard set: 10/12 in two runs; tune split still 98.6%. The glossary was written after seeing the hard set, so the hard set is now a tuning set, not a held-out measure.
+- **Visible in the demo:** a chip the LLM added carries `llm: true` and shows «با AI» (CR-05).
