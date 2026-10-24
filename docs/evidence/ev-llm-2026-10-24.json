@@ -1,0 +1,415 @@
+{
+ "date": "2026-10-24",
+ "gateway": "AvalAI (https://api.avalai.ir/v1), strict json_schema, temperature 0, account level 1",
+ "question": "Does rules + LLM read more of a request than rules alone, without losing accuracy (ADR-0005 confirmation, BR-55)?",
+ "hard_set": {
+  "file": "docs/evidence/ev-qry-hard-2026-10-24.csv",
+  "n": 12,
+  "labels": "builder-labelled proxy (D-14), one key fact per sentence that the rules miss",
+  "rules_only": "0/12",
+  "gpt-4.1-nano": {
+   "runs": [
+    "5/12",
+    "5/12"
+   ],
+   "second_run": {
+    "rules_plus_llm": "5/12",
+    "latency_ms": {
+     "median": 1314,
+     "max": 1912
+    },
+    "numbers_not_in_targets": [
+     "H06 weight_min=0.5",
+     "H06 weight_max=0.5"
+    ],
+    "rows": [
+     {
+      "id": "H01",
+      "text": "یه النگو حدود یک و نیم میلیون",
+      "targets": [
+       "budget_target=1500000"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=النگو",
+       "budget_target=1500000"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H02",
+      "text": "سینه ریز طلا برای عروسی",
+      "targets": [
+       "item_type=گردنبند"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "occasion=عروسی",
+       "intent=gift",
+       "item_type=گردنبند"
+      ],
+      "unparsed": "سینه ریز"
+     },
+     {
+      "id": "H03",
+      "text": "هفت تومنه دارم، طلا بخرم",
+      "targets": [
+       "budget_max=7000000"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "intent=gift"
+      ],
+      "unparsed": "دارم"
+     },
+     {
+      "id": "H04",
+      "text": "دستبند میخوام اجرتش کم باشه",
+      "targets": [
+       "ojrat_max=10"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=دستبند"
+      ],
+      "unparsed": "اجرتش کم"
+     },
+     {
+      "id": "H05",
+      "text": "یه گوشواره واسه خانمم تا دو و نیم میلیون",
+      "targets": [
+       "budget_max=2500000"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=گوشواره",
+       "audience=women",
+       "budget_max=2500000"
+      ],
+      "unparsed": "دو و نیم میلیون"
+     },
+     {
+      "id": "H06",
+      "text": "زنجیر طلای ۱۸ عیار نیم گرمی",
+      "targets": [
+       "weight_target=0.5"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "karat=18",
+       "item_type=زنجیر",
+       "weight_min=0.5",
+       "weight_max=0.5"
+      ],
+      "unparsed": "نیم گرمی"
+     },
+     {
+      "id": "H07",
+      "text": "یه انگشتر طلا سفید",
+      "targets": [
+       "style=طلای سفید"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=انگشتر",
+       "style=طلای سفید"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H08",
+      "text": "یه پابند ظریف برای تابستون",
+      "targets": [
+       "style=تابستانی"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=پابند",
+       "weight_pref=light"
+      ],
+      "unparsed": "تابستون"
+     },
+     {
+      "id": "H09",
+      "text": "یه سرویس طلا برای مراسم بله برون",
+      "targets": [
+       "occasion=نامزدی"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=سرویس",
+       "intent=gift",
+       "occasion=عروسی"
+      ],
+      "unparsed": "مراسم بله برون"
+     },
+     {
+      "id": "H10",
+      "text": "میخوام یه چیز طلا بخرم که ارزشش بمونه",
+      "targets": [
+       "intent=savings"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "intent=savings"
+      ],
+      "unparsed": "ارزشش بمونه"
+     },
+     {
+      "id": "H11",
+      "text": "النگو یک و نیم گرمی",
+      "targets": [
+       "weight_target=1.5"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=النگو"
+      ],
+      "unparsed": "نیم گرمی"
+     },
+     {
+      "id": "H12",
+      "text": "پلاک طلا، بودجم دو و نیم تومنه",
+      "targets": [
+       "budget_max=2500000"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=پلاک"
+      ],
+      "unparsed": "بودجم دو و نیم تومنه"
+     }
+    ]
+   }
+  },
+  "gpt-4.1-mini": {
+   "runs": [
+    "8/12",
+    "7/12"
+   ],
+   "second_run": {
+    "rules_plus_llm": "7/12",
+    "latency_ms": {
+     "median": 740,
+     "max": 1499
+    },
+    "numbers_not_in_targets": [
+     "H12 budget_target=2500000"
+    ],
+    "rows": [
+     {
+      "id": "H01",
+      "text": "یه النگو حدود یک و نیم میلیون",
+      "targets": [
+       "budget_target=1500000"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=النگو",
+       "budget_target=1500000"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H02",
+      "text": "سینه ریز طلا برای عروسی",
+      "targets": [
+       "item_type=گردنبند"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "occasion=عروسی",
+       "intent=gift",
+       "item_type=گردنبند"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H03",
+      "text": "هفت تومنه دارم، طلا بخرم",
+      "targets": [
+       "budget_max=7000000"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [],
+      "unparsed": null
+     },
+     {
+      "id": "H04",
+      "text": "دستبند میخوام اجرتش کم باشه",
+      "targets": [
+       "ojrat_max=10"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=دستبند"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H05",
+      "text": "یه گوشواره واسه خانمم تا دو و نیم میلیون",
+      "targets": [
+       "budget_max=2500000"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=گوشواره",
+       "audience=women",
+       "budget_max=2500000"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H06",
+      "text": "زنجیر طلای ۱۸ عیار نیم گرمی",
+      "targets": [
+       "weight_target=0.5"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "karat=18",
+       "item_type=زنجیر",
+       "weight_target=0.5"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H07",
+      "text": "یه انگشتر طلا سفید",
+      "targets": [
+       "style=طلای سفید"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=انگشتر",
+       "style=طلای سفید"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H08",
+      "text": "یه پابند ظریف برای تابستون",
+      "targets": [
+       "style=تابستانی"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=پابند",
+       "weight_pref=light",
+       "style=تابستانی"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H09",
+      "text": "یه سرویس طلا برای مراسم بله برون",
+      "targets": [
+       "occasion=نامزدی"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=سرویس",
+       "occasion=عروسی"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H10",
+      "text": "میخوام یه چیز طلا بخرم که ارزشش بمونه",
+      "targets": [
+       "intent=savings"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [],
+      "unparsed": "ارزشش بمونه"
+     },
+     {
+      "id": "H11",
+      "text": "النگو یک و نیم گرمی",
+      "targets": [
+       "weight_target=1.5"
+      ],
+      "rules": false,
+      "llm": true,
+      "chips": [
+       "item_type=النگو",
+       "weight_target=1.5"
+      ],
+      "unparsed": null
+     },
+     {
+      "id": "H12",
+      "text": "پلاک طلا، بودجم دو و نیم تومنه",
+      "targets": [
+       "budget_max=2500000"
+      ],
+      "rules": false,
+      "llm": false,
+      "chips": [
+       "item_type=پلاک",
+       "budget_target=2500000"
+      ],
+      "unparsed": null
+     }
+    ]
+   },
+   "note": "H09 «بله برون» read as نامزدی in run 1 and عروسی in run 2: temperature 0 is not fully repeatable, so answers are cached by text (NFR-05)"
+  }
+ },
+ "tune_split": {
+  "file": "EV-QRY tune split (69 sentences), eval/ev-qry.ts",
+  "rules_only": {
+   "exact_match": "98.6",
+   "misses": [
+    "R018 item_type: want «ست دستبند و انگشتر» got «انگشتر؛دستبند» | سلام دوستان چه نوع دستبند طلایی الانه مده؟ میخوام ست دستبند و انگشتر بگیرم"
+   ]
+  },
+  "gpt-4.1-nano": {
+   "exact_match": "94.2",
+   "misses": [
+    "Q054 style: want «» got «طلای سفید» | دستبند طلای سنگین کم اجرت برای حفظ ارزش پول",
+    "R006 item_type: want «» got «انگشتر؛پلاک؛گردنبند» | برای نوزاد پسر طلا چی میخرن؟ | برای شب هفته؟",
+    "R018 item_type: want «ست دستبند و انگشتر» got «انگشتر؛دستبند» | سلام دوستان چه نوع دستبند طلایی الانه مده؟ میخوام ست دستبند و انگشتر بگیرم",
+    "R029 no_stones: want «» got «true» | کمی پول دارم میخام پس انداز کنم. طلا بدون اجرت بگیرم بهتره یا سکه گرمی؟؟"
+   ]
+  },
+  "gpt-4.1-mini": {
+   "exact_match": "98.6",
+   "misses": [
+    "R018 item_type: want «ست دستبند و انگشتر» got «انگشتر؛دستبند» | سلام دوستان چه نوع دستبند طلایی الانه مده؟ میخوام ست دستبند و انگشتر بگیرم"
+   ]
+  }
+ },
+ "not_used": {
+  "claude-haiku-5-5": "through AvalAI it ignored the json_schema (returned fenced JSON in another shape) and took 4.0 s on one sentence"
+ },
+ "usage_one_call": {
+  "prompt_tokens": 895,
+  "completion_tokens": "21 to 39",
+  "source": "usage field of single test calls on 2026-10-24"
+ },
+ "decision": "gpt-4.1-mini: more hard sentences read and no loss on the tune split; nano lost 4.4 points on the tune split by adding chips the sentences did not ask for"
+}

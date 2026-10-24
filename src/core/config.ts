@@ -55,7 +55,7 @@ export const config = {
     maxAgeDays: 7, // BR-14; not applied in archive mode (BR-16)
   },
   // ADR-0005: AvalAI, OpenAI-compatible; the key comes from AVALAI_API_KEY in the git-ignored .env.
-  llm: { baseUrl: "https://api.avalai.ir/v1", model: "gpt-4.1-nano", timeoutMs: 4000, cacheSize: 5000 },
+  llm: { baseUrl: "https://api.avalai.ir/v1", model: "gpt-4.1-mini", timeoutMs: 4000, cacheSize: 5000 },
   parse: {
     tomanAmbiguousFrom: 300, // BR-52: «سیصد تومن» may be thousand or million; below this «تومن» means million (design choice)
     minBudgetToman: 500_000, // BR-52: smaller budgets are asked about
