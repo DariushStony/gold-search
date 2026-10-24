@@ -6,7 +6,8 @@ import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { join, dirname } from "node:path";
 import { loadSnapshot, type Snapshot } from "./snapshot.ts";
-import { parseQuery, type Chip } from "../core/parse.ts";
+import { type Chip } from "../core/parse.ts";
+import { avalai, parser, type Llm } from "./llm.ts";
 import { search, excludedFor, type Card, type ProductRecord } from "../core/rank.ts";
 import { eligibleOffers, isStale } from "../core/offers.ts";
 import { priceBreakdown, vatRateFor } from "../core/price.ts";
@@ -66,13 +67,14 @@ function cardJson(c: Card, p: ProductRecord, gLive: Reference | null) {
 
 const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]! : null);
 
-export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promise<Reference | null>; eventsFile?: string } = {}) {
+export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promise<Reference | null>; eventsFile?: string; llm?: Llm | null } = {}) {
   const snap = loadSnapshot(snapshotPath);
   const livePrice = deps.goldPrice ?? goldPrice;
   const byId = new Map(snap.products.map((p) => [p.id, p]));
   const page = () => readFileSync(join(ROOT, "web/index.html"), "utf8");
   const hits = new Map<string, number[]>();
   const eventsFile = deps.eventsFile ?? join(ROOT, "data/events/events.jsonl");
+  const parse = parser(deps.llm ?? null);
 
   const send = (res: ServerResponse, status: number, body: unknown, type = "application/json; charset=utf-8") => {
     res.writeHead(status, { "Content-Type": type, "X-Robots-Tag": "noindex", "Cache-Control": "no-store" });
@@ -118,7 +120,7 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
 
       if (url.pathname === "/api/v1/parse") {
         if (typeof body.text !== "string" || body.text.length > 300) return problem(res, 422, "invalid-request", "text: max 300 characters");
-        return send(res, 200, parseQuery(body.text, body.answers ?? {}));
+        return send(res, 200, await parse(body.text, body.answers ?? {}));
       }
       if (url.pathname === "/api/v1/events") {
         mkdirSync(dirname(eventsFile), { recursive: true });
@@ -173,5 +175,7 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
 if (import.meta.main) {
   const path = process.argv[2] ?? join(ROOT, "data/snapshots/latest.sqlite");
   const port = Number(process.argv[3] ?? 4321);
-  createApp(path).listen(port, () => console.log(`demo: http://localhost:${port}`));
+  const key = process.env.AVALAI_API_KEY;
+  const model = process.env.AVALAI_MODEL || config.llm.model;
+  createApp(path, { llm: key ? avalai(key, model) : null }).listen(port, () => console.log(`demo: http://localhost:${port} (AI sentence reading: ${key ? model : "off, no AVALAI_API_KEY"})`));
 }

@@ -86,3 +86,34 @@ test("API §2: the 30/min cap covers only parse, search, products and excluded; 
     server.close();
   }
 });
+
+test("BR-55, BR-73, NFR-05: /parse asks the LLM only about unread words, falls back to rules, and caches", async () => {
+  const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
+  buildSnapshot({ rawDir: rawFixture(), outPath: out });
+  let calls = 0;
+  let fail = false;
+  const llm = async () => {
+    calls++;
+    if (fail) throw new Error("timeout");
+    return { chips: [{ kind: "budget_target", value: 1_500_000 }], unparsed: null };
+  };
+  const server = createApp(out, { goldPrice: async () => G, eventsFile: join(mkdtempSync(join(tmpdir(), "events-")), "events.jsonl"), llm }).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
+  const parse = async (text: string) => (await fetch(base + "/parse", { method: "POST", body: JSON.stringify({ text }) })).json();
+  try {
+    const read = await parse("النگو طلا برای پس انداز");
+    assert.equal(read.llm_used, false);
+    assert.equal(calls, 0);
+    const half = await parse("یه النگو حدود یک و نیم میلیون");
+    assert.equal(half.llm_used, true);
+    assert.ok(half.chips.some((c: any) => c.kind === "budget_target" && c.value === 1_500_000));
+    await parse("یه النگو حدود یک و نیم میلیون");
+    assert.equal(calls, 1);
+    fail = true;
+    const down = await parse("یه دستبند حدود یک و نیم میلیون");
+    assert.equal(down.llm_used, false);
+    assert.ok(down.unparsed);
+  } finally {
+    server.close();
+  }
+});

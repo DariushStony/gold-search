@@ -30,7 +30,7 @@ export type Answers = { budget_unit?: "thousand" | "million" };
 const cfg = config.parse;
 
 // API contract §3: role and level are fixed per kind.
-const ROLE: Record<ChipKind, [Chip["role"], Chip["level"]]> = {
+export const ROLE: Record<ChipKind, [Chip["role"], Chip["level"]]> = {
   intent: ["filter_and_sort", "product"], item_type: ["filter", "product"], form: ["filter", "product"], karat: ["filter", "product"],
   audience: ["filter", "product"], condition: ["filter", "product"], no_stones: ["filter", "product"],
   budget_min: ["filter", "product"], budget_max: ["filter", "product"], budget_target: ["filter_and_sort", "product"],
@@ -45,7 +45,7 @@ const FA = "\\u0600-\\u06FFa-z";
 const word = (w: string) => new RegExp(`(?<![${FA}])${w.replace(/ /g, "\\s")}(?:ی|م|مه|ها|ای|ان|یی|ش|شو)?(?![${FA}])`);
 const has = (t: string, w: string) => word(w).test(t);
 
-const NUMBER_WORDS: Record<string, number> = {
+export const NUMBER_WORDS: Record<string, number> = {
   یک: 1, دو: 2, سه: 3, چهار: 4, پنج: 5, شش: 6, شیش: 6, هفت: 7, هشت: 8, نه: 9, ده: 10, یازده: 11, دوازده: 12, سیزده: 13, چهارده: 14,
   پانزده: 15, پونزده: 15, شانزده: 16, هفده: 17, هجده: 18, نوزده: 19, بیست: 20, سی: 30, چهل: 40, پنجاه: 50, شصت: 60, هفتاد: 70,
   هشتاد: 80, نود: 90, صد: 100, یکصد: 100, دویست: 200, سیصد: 300, چهارصد: 400, پانصد: 500, پونصد: 500, ششصد: 600, هفتصد: 700,

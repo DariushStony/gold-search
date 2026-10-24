@@ -9,7 +9,7 @@
     "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test",
-    "demo": "node src/server/app.ts",
+    "demo": "node --env-file-if-exists=.env src/server/app.ts",
     "snapshot": "node src/pipeline/build-snapshot.ts"
   },
   "devDependencies": {

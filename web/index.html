@@ -218,7 +218,7 @@ async function parse() {
   if (!text) { st.chips = []; renderChips(); $("unread").hidden = true; return; }
   let p;
   try { p = await post("/parse", { text, answers: st.answers }); } catch (code) { return showError(code); }
-  st.text = text; st.chips = p.chips; renderChips();
+  st.text = text; st.chips = p.chips; st.llm = p.llm_used; renderChips();
   // CR-04: say which part of the sentence no rule read, so a missing chip is not a mystery.
   const u = (p.unparsed ?? "").replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]), cut = u.lastIndexOf(" ", 70);
   $("unread").hidden = !u;
@@ -253,7 +253,7 @@ async function run() {
     <p class="fine">این مقایسه‌ی هزینه است، نه توصیه‌ی سرمایه‌گذاری</p></section>` : "";
   const section = (title, list) => list.length ? `<div class="section-title">${title}</div>` + list.slice(0, 10).map(c => card(c, -1)).join("") : "";
   $("sections").innerHTML = section("وزنشان اعلام نشده", r.weight_unknown_bucket) + section("اجرت قابل محاسبه نیست", r.ojrat_unknown) + section("نیاز به بررسی", r.review) + section("آگهی", r.sponsored);
-  track("query_submitted", { text: st.text, intent: r.intent, chip_kinds: st.chips.map(c => c.kind), mode: r.mode, llm_used: false,
+  track("query_submitted", { text: st.text, intent: r.intent, chip_kinds: st.chips.map(c => c.kind), mode: r.mode, llm_used: !!st.llm,
     results_real: r.results.length, results_mixed: 0, results_review: r.review.length, excluded_count: r.excluded_count, archive_mode: r.snapshot.archive_mode });
 }
 

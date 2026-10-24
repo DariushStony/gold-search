@@ -1,7 +1,9 @@
 // EV-QRY: query understanding (BR-50–BR-5A). A query counts only if every chip
-// matches its label. Run: node eval/ev-qry.ts [--split=test --release] [--show]
+// matches its label. Run: node eval/ev-qry.ts [--split=test --release] [--show] [--llm[=model]] (with --env-file=.env)
 import { parseQuery } from "../src/core/parse.ts";
-import { ROOT, readCsv, wilson, splitFromArgs, pct } from "./lib.ts";
+import { ROOT, readCsv, wilson, splitFromArgs, pct, throttled } from "./lib.ts";
+import { avalai, parser } from "../src/server/llm.ts";
+import { config } from "../src/core/config.ts";
 
 const COLS = ["intent", "item_type", "form", "budget_min", "budget_max", "budget_target", "weight_min", "weight_max", "weight_target",
   "weight_pref", "karat", "audience", "recipient", "condition", "ojrat_max", "ojrat_sort", "no_stones", "style", "shop", "torob_pay",
@@ -25,13 +27,20 @@ const all = [...readCsv(`${ROOT}docs/evidence/ev-qry-authored-2026-10-23.csv`), 
 const test = testIds(all.map((r) => r.id!));
 const rows = all.filter((r) => (split === "test") === test.has(r.id!));
 
+// ADR-0005 confirmation: the same sentences through rules + LLM; the LLM stays only if exact-match does not drop.
+const llmArg = process.argv.find((a) => a.startsWith("--llm"));
+const key = process.env.AVALAI_API_KEY;
+if (llmArg && !key) throw new Error("--llm needs AVALAI_API_KEY (run with --env-file=.env)");
+const model = llmArg?.split("=")[1] ?? config.llm.model;
+const parse = llmArg ? parser(throttled(avalai(key!, model))) : async (t: string) => parseQuery(t);
+
 const norm = (v: string) => v.split("؛").map((x) => x.trim().toLowerCase()).filter(Boolean).sort().join("؛");
 let exact = 0;
 const byIntent = new Map<string, [number, number]>();
 const colErrors = new Map<string, number>();
 const misses: string[] = [];
 for (const r of rows) {
-  const p = parseQuery(r.text!);
+  const p = await parse(r.text!);
   const got: Record<string, string> = Object.fromEntries(COLS.map((c) => [c, ""]));
   for (const c of p.chips) got[c.kind] = norm([got[c.kind], String(c.value)].filter(Boolean).join("؛"));
   got.intent = p.intent;
@@ -47,7 +56,7 @@ for (const r of rows) {
 }
 const [lo, hi] = wilson(exact, rows.length);
 console.log(JSON.stringify({
-  split, n: rows.length, exact_match: pct((100 * exact) / rows.length), ci95: [pct(lo), pct(hi)], target: "≥ 90",
+  split, llm: llmArg ? model : null, n: rows.length, exact_match: pct((100 * exact) / rows.length), ci95: [pct(lo), pct(hi)], target: "≥ 90",
   by_intent: Object.fromEntries([...byIntent].map(([k, [h, n]]) => [k, `${h}/${n}`])),
   errors_by_chip: Object.fromEntries([...colErrors].sort((a, b) => b[1] - a[1])),
 }, null, 1));

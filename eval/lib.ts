@@ -45,3 +45,14 @@ export function splitFromArgs(): "tune" | "test" {
 }
 
 export const pct = (x: number) => x.toFixed(1);
+
+// AvalAI level 1 allows 25 requests a minute on the small models; keep evals under it.
+export function throttled<A extends unknown[], R>(fn: (...a: A) => Promise<R>, gapMs = 2600) {
+  let next = 0;
+  return async (...a: A): Promise<R> => {
+    const wait = next - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    next = Date.now() + gapMs;
+    return fn(...a);
+  };
+}
