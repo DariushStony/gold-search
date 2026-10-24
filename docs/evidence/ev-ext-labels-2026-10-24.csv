@@ -1,0 +1,301 @@
+row,split,random_key,weight_g,karat,ojrat_pct,weight_note,evidence,source,owner_verdict,owner_note,score_weight
+1,tune,a1f5668e-349b-4b51-8479-18ec43e3385b,,,,,no weight/karat; title: طرح طلا رنگ ثابت (not gold),ai,,,yes
+2,tune,06cc6def-ee93-4854-a6fc-1d9cf2584eb2,,,,,"no weight; spec نوع آبکاری=طلا ۱۸ عیار is plating, not item karat",ai,,,yes
+3,tune,4db02796-d4ba-4827-911a-442b27cb13a3,,,,,nothing stated; shop title: آبکاری طلا۱۸عیار (plating),ai,,,yes
+4,tune,e9f7cee8-a161-47fa-9626-f494be298c41,0.09,18,,,spec weight=90 mg; title: طلا 18 عیار,ai,,,yes
+5,tune,ffe670ec-e9a6-46f6-87c4-da0cb3fee045,,18,,,spec جنس=طلای 18 عیار (750); no weight,ai,,,yes
+6,tune,bfa7dcb0-b15a-4827-96bc-08959479ce32,,18,,,title: طلای 18 عیار; no weight,ai,,,yes
+7,tune,3e24d3c6-fe09-4ee7-b9f7-57fcf22b9527,,,,,nothing stated (steel),ai,,,yes
+8,tune,bb4b0a50-0d50-40a8-a570-04d72106a77f,,,,,nothing stated,ai,,,yes
+9,tune,20dabcf0-56fe-42bd-b4e7-c3d55938929a,1.7,18,0,,spec وزن=1.7; title: ۱۸ عیار ... بدون اجرت,ai,,,yes
+10,tune,36cc45b5-bf99-43ce-a166-5d50ad95df7a,3,18,,,title: کم اجرت 3 گرمی 18 عیار,ai,,,yes
+11,tune,1c9e9600-92ad-41dc-b48d-fe86ee3db3f5,,,,,spec وزن lists 16 variant weights 1.520..2.120 -> blank,ai,,,yes
+12,tune,96300a1d-1cfb-4441-80dd-e313c47a4d7b,3.31,18,,,spec وزن=3.310; title: ۱۸ عیار,ai,,,yes
+13,tune,6164485d-8c62-4b7d-bfa6-f6e5b620e62e,0.96,18,,,title: 960 سوتی طلا 18 عیار,ai,,,yes
+14,tune,4e94de1e-a97a-474b-9fa0-1d00deee92be,0.67,,,,title: پلاک طلا ۰.۶۷ گرم (not gold item; no karat),ai,,,yes
+15,tune,4bfe5689-1a2b-4e64-b774-43b0d875f6b5,,24,,,spec جنس تصویر=ورق طلا 24 عیار (gold-leaf part); no weight,ai,,,yes
+16,tune,095848c5-85d2-4a9c-9dcd-6ed2f9cdca31,,18,,,spec عیار=18; no weight,ai,,,yes
+17,tune,76b11532-0721-40ed-b62d-6c690e16eecc,,,,,nothing stated,ai,,,yes
+18,tune,ce5544a9-d630-4680-a5c8-30f28f86966d,3.78,,11,,spec وزن=3.78; spec اجرت=11.00,ai,,,yes
+19,tune,fb3d6ab2-f3d0-416d-8e41-9edb7d93bb95,6.65,18,,,spec وزن=6.650; title: ۱۸ عیار,ai,,,yes
+20,tune,f5ebb1af-d048-4bfe-ae17-45ee5cc8501e,4.26,18,,,spec وزن طلا 18 عیار=4.260 گرم,ai,,,yes
+21,tune,ccf786e8-c214-44d5-8b0a-d54ad1219d17,,,,,nothing stated,ai,,,yes
+22,tune,c73bd178-eaee-4fa0-b5f2-d366a0ae2cb4,,,,,spec وزن lists 9 variant weights 0.88..0.98 -> blank,ai,,,yes
+23,tune,061da965-2cfb-4679-954b-33fd5882fae5,,,,,nothing stated,ai,,,yes
+24,tune,68191477-bca5-4ffc-b7d8-c27a1ed75012,,18,,,title: 18 عیار; spec وزن=1.110/1.180/1.28 variants + bucket کمتر از 2 گرم -> blank; اجرت فیلتر 16 تا 25 درصد is a range,ai,,,yes
+25,tune,a30a50ef-fb61-4761-bdf7-07148b0e606f,,,,,nothing stated,ai,,,yes
+26,tune,9c68ff82-1d80-4645-ba2f-a00975f6fe67,,18,17,,spec عیار=18; spec اجرت(درصد)=17%; no weight,ai,,,yes
+27,tune,63ba25ea-4185-41d1-a254-b7958938da24,,,,,nothing stated,ai,,,yes
+28,tune,9803c619-7605-4944-b5b4-2406d57fbb75,,,,,۲ میل is width; shop title آبکاری طلا ۱۸عیار is plating,ai,,,yes
+29,tune,52dd7a05-3088-4461-9d8c-86aab2b2d81b,1,18,,,title: طلای آب شده ۱۸ عیار 1 گرمی,ai,,,yes
+30,tune,a4d736a7-4825-4a21-a4dd-15ce7c0fec53,,,,,nothing stated (طلا روس),ai,,,yes
+31,tune,e5fc582b-5262-4897-8718-60766cf65a04,,18,,,title: 18 عیار; only bucket وزن فیلتر=بین 3 تا 5 گرم; اجرت فیلتر range,ai,,,yes
+32,tune,1d702007-e586-4b3e-ada8-c94dabee5b11,100,18,,unit?,"title: ۱۸ عیار وزن ۱۰۰ گرم (pendant at 4.8M toman, ~0.1-0.2 g)",ai,,,yes
+33,tune,d674f25f-47d4-4b41-97c6-ff02e384c048,,,,,nothing stated,ai,,,yes
+34,tune,876d5b78-097c-4e2a-8695-20cc626559c6,3.5,,6,,"spec وزن=3.50; spec اجرت=6.00 (طلا روس item, not gold)",ai,,,yes
+35,tune,dba0647f-6d78-4cef-bd0b-f98b0ed3c23d,,,,,spec جنس=برنج با آبکاری طلا; nothing stated,ai,,,yes
+36,tune,65115faa-e3c0-44c6-ba1e-e89bed73c884,,,,,spec وزن=1/1.5/2 گرم variants -> blank,ai,,,yes
+37,tune,d2020c8b-f28f-47ec-8e8a-24f463b1303f,,,,,nothing stated (آبکاری طلا),ai,,,yes
+38,tune,ba574f56-0f7d-4cef-ad8a-7ad6858c80cd,,,,,nothing stated,ai,,,yes
+39,tune,d2870086-dfdf-40ed-b877-547fcfe182f6,,,,,۴ میل is width; nothing stated,ai,,,yes
+40,tune,ee52e645-8615-406c-94d5-931c8b9629b1,,,,,nothing stated (طول=41 is length),ai,,,yes
+41,tune,91511738-1386-4753-b1d9-187dd50ee5ea,,18,,,spec عیار=18; spec وزن=0.09/0.11/0.12/0.13 variants -> blank,ai,,,yes
+42,tune,157bd54b-f556-4455-a8d2-1076b4190411,,18,,,spec عیار=18; no weight,ai,,,yes
+43,tune,8063c20a-14cb-4e38-a2c0-4dce15603040,5,,,,spec وزن=5; اجرت ساخت=اجرت پایین (no number),ai,,,yes
+44,tune,418e7556-5724-4b84-83d9-d3cf01fa3b9e,,18,22,,spec عیار=18; spec اجرت(درصد)=22%,ai,,,yes
+45,tune,c4ce6cef-b9dc-4da6-aac6-190c168c2eff,,,,,nothing stated (طرح طلا),ai,,,yes
+46,tune,423be10c-76ab-454f-8194-755597ad96f4,74.41,,9,,spec وزن=74.41; spec اجرت=9.00,ai,,,yes
+47,tune,d8e74d35-e3ac-42b4-92f6-741176f1d70a,,,,,title: روکش طلا(18-24عیار) is plating,ai,,,yes
+48,tune,8b4f1a68-717a-4cad-8697-64096e8ba15b,,,,,nothing stated,ai,,,yes
+49,tune,5cb75062-dcfb-44e1-a0ee-c441f4c8e0e4,2.29,18,,conflict,spec وزن=۲/۲۹۰ گرم vs title وزن ۲۹۰ گرم; title ۱۸ عیار,ai,,,yes
+50,tune,ccdbd16f-f33d-49c9-b733-8c9e49348134,,18,35,,spec وزن (گرم)=0/510..0/540 variants -> blank; spec عیار=18; spec اجرت(درصد)=35%,ai,,,yes
+51,tune,54f9f355-bd8a-49d9-a8a1-2090540a664e,,,,,nothing stated (طلا روس; ۳ میل is width),ai,,,yes
+52,tune,6f003084-382c-45bb-be99-a56def17b452,,,,,nothing stated (مشابه طلا),ai,,,yes
+53,tune,75cc7d2f-9031-486b-93cf-95b282cb8914,4.7,,15,,spec وزن=4.70; spec اجرت=15.00,ai,,,yes
+54,tune,bfbcfd22-066c-4283-a07f-34001ca113f7,,18,,,"title: 18 عیار; only buckets وزن فیلتر=کمتر از 2 گرم, اجرت فیلتر=کمتر از 16 درصد",ai,,,yes
+55,tune,79e7518a-067f-4a3e-9917-cc84f98e73d2,5,18,,,spec وزن طلای آب شده (گرم)=5.00; spec عیار (طلا)=18; title 750 عیار ۵ گرم,ai,,,yes
+56,tune,e6473d7c-21fc-439c-90d1-056ad47aa3e4,,,,,nothing stated (کپی طلا; ۲ میل is width),ai,,,yes
+57,tune,827301e1-9b02-4e70-ae4a-fffe1349d215,50,18,,,spec وزن=50.000 گرم; spec عیار=750.000 در هزار,ai,,,yes
+58,tune,e3b72727-bfae-46ff-aacf-ca8cae9ac8e9,58.66,18,,,spec وزن=58.660 گرم; spec عیار=750,ai,,,yes
+59,tune,6ba71783-331c-4f3b-8e17-f183b463b29b,,,,,spec جنس=پایه مس با آبکاری طلا; nothing stated,ai,,,yes
+60,tune,8606f14e-60ef-45e0-ae2d-a71dbdf01cff,,24,,,title: ۲۴ عیار; spec ورق طلای ۲۴ عیار ... استیل ۳۱۶=۵ میکرون (24k gold sheet on steel),ai,,,yes
+61,tune,3ceaaa9d-86f4-48e3-9711-710e2daa8bae,,,,,nothing stated,ai,,,yes
+62,tune,b13dffe6-bc6a-4032-9e58-5decb9e96ea9,100,18,,,title: طلای آب شده ۱۸ عیار 100 گرمی,ai,,,yes
+63,tune,26fbbd8f-c3bd-44af-9ef9-0ce463a231a3,,18,,,title: طلا ۱۸ عیار; no weight,ai,,,yes
+64,tune,f39f20da-7272-4a07-87a4-0ba79cfabb93,35,18,,,spec وزن=35 گرم; spec عیار=18,ai,,,yes
+65,tune,41660380-d3dd-4a7e-a0cc-5a5cd6aef3fa,4.1,,14,,spec وزن النگو=۴.۱۰۰; spec اجرت ساخت=۱۴,ai,,,yes
+66,tune,cb52a4bf-75e9-4908-a303-a5e0e8455398,,,,,nothing stated,ai,,,yes
+67,tune,39f62539-f361-4828-86b3-ab0a9fecf874,0.8,18,,,spec وزن=800 سوت; title 18 عیار,ai,,,yes
+68,tune,a2f7e90c-6f91-4903-948b-9613ee256295,,,,,"nothing stated (آبکاری طلا, steel)",ai,,,yes
+69,tune,40fdfbbf-e811-4500-abb7-52d93190e4bb,,,,,nothing stated (برنج با آبکاری طلا),ai,,,yes
+70,tune,79b5bdd5-9724-4cb4-8c5e-8169dc33cb27,,,,,"spec وزن=1.080, 1.090 variants -> blank",ai,,,yes
+71,tune,f0d9a661-5bf7-48fa-899d-ab87a97934b9,,,,,nothing stated (طرح طلا),ai,,,yes
+72,tune,f7c8bb31-66bd-4fbc-ad94-65cb5981017e,0.27,18,,,title: 18عیار ... 0.270گرم,ai,,,yes
+73,tune,14d3380a-af3b-4ec5-ac9a-9aaeb30585df,,,,,"spec بازه وزن=طلا 1 گرمی, طلا 2 گرمی and اجرت=9 درصد / کم اجرت are variant options -> blank",ai,,,yes
+74,tune,5e94d559-3371-4b02-9d06-58a441313b78,2,,,conflict,title: زنجیر طلا ۲ گرم vs spec bucket وزن فیلتر=کمتر از 2 گرم; اجرت فیلتر range only,ai,,,yes
+75,tune,702e498b-ef92-41c4-8ff8-6752a3a69f9f,,18,,,title: شمش طلا ۱۸ عیار; no weight,ai,,,yes
+76,tune,c954a7bc-cb84-48f0-a46b-181e68aed7ee,,,,,nothing stated (طلا روس),ai,,,yes
+77,tune,865edc42-a5c0-4ab7-8a27-497f06b3ecd1,0.13,18,,,spec وزن=130 سوت; spec عیار طلا=18 عیار,ai,,,yes
+78,tune,2db0f19b-7e46-4080-bf6d-db98e20d17c1,3.95,,,,"spec وزن=۳.۹۵گرم (silver 925 item, gold plated; ۹۲۵ is silver not gold karat)",ai,,,yes
+79,tune,a248ce02-e0c8-48a4-8195-be588f94ab80,1.16,18,18,,spec وزن خالص طلا=۱.۱۶۰ گرم; spec عیار طلا=18; spec اجرت ساخت=18,ai,,,yes
+80,tune,3cb683a9-75e1-4621-8395-f1ef9ac09cce,,18,,,spec عیار=18; no weight,ai,,,yes
+81,tune,8f85adb2-ec24-4a57-bfad-fd55a3fa90b4,,,,,nothing stated,ai,,,yes
+82,tune,ecabfdb1-18b3-4865-8dd9-7897464ae2dc,5,18,,,title: 5 گرمی 750 عیار,ai,,,yes
+83,tune,11c5027c-811e-4b4c-9647-dca1fa5b2749,2,18,,,title: 750 عیار 2 گرمی; spec عیار=18,ai,,,yes
+84,tune,8bbc44ba-abce-4673-bd54-c7a9f6825549,9,18,,,spec وزن طلای آب شده (گرم)=9.00; spec عیار (طلا)=18,ai,,,yes
+85,tune,223b680e-3eec-4d24-a5f8-c50d63a03448,,,,,nothing stated,ai,,,yes
+86,tune,81541e3b-4042-42c5-b869-730a75c99a4c,,,,,nothing stated,ai,,,yes
+87,tune,f90f2ebf-d2cd-40e6-98fd-8b24a807a9ee,,18,17,,spec وزن (گرم) lists 24 variant weights -> blank; spec عیار=18; spec اجرت(درصد)=17%,ai,,,yes
+88,tune,69840c09-abb9-419a-8bf8-11318e76d72e,,,,,nothing stated (طلا روس),ai,,,yes
+89,tune,fc53256e-be0b-4f7d-8c41-06d519fff5a8,0.58,18,,,spec وزن=۰/۵۸۰ گرم; title ۱۸ عیار,ai,,,yes
+90,tune,bcd7f867-2cc3-4345-912f-746b56f421a2,,,,,nothing stated (طرح طلا),ai,,,yes
+91,tune,a67b09e3-afe9-45ff-bb86-3a6999f9542f,,,,,spec جزئیات=آبکاری طلا 18 عیار is plating,ai,,,yes
+92,tune,434c8bd0-79ab-445b-ab60-803a555f643a,,18,,,title: طلا 18 عیار; no weight,ai,,,yes
+93,tune,bff33fe6-b014-4da2-b97f-728e9c38abb9,,,,,spec وزن=1/1.2/1.5/2 گرم variants -> blank,ai,,,yes
+94,tune,63ba9db0-8e0c-4ccb-a840-59f8948c39f3,,18,,,title: پاپیون ۱۸ عیار; no weight,ai,,,yes
+95,tune,11069a78-5f61-42b6-a539-28e556e48baa,,,,,"title سبک‌وزن only, no number",ai,,,yes
+96,tune,b88c73fa-ffaf-415b-85a1-3120d88c0a59,1.24,18,,conflict,spec وزن (گرم)=1.24 (وزن کل=0); spec عیار (طلا)=18; one shop title ends «طرح گل رز 0.55»,ai,,,yes
+97,tune,572c8d4b-85b2-43dd-903c-21ba90bd93d3,10,18,,,title: طلای آب‌شده ۱۰ گرم عیار ۱۸,ai,,,yes
+98,tune,0836de33-bbb6-419c-a392-d2ea496ae4d7,,18,,,title ۱۸ عیار; spec وزن lists 10 variants (300 سوت..3 گرم) -> blank,ai,,,yes
+99,tune,d8c44d27-8f6b-445f-b912-dd94f834ad5c,,,,,nothing stated (طلاروس),ai,,,yes
+100,tune,d87aeed9-ee2a-4063-965d-80eb6fce86d8,,,,,nothing stated (طلا روس),ai,,,yes
+101,tune,0bca4fcc-413d-43a3-959b-3e2dca815af2,,,,,nothing stated (طرح طلا),ai,,,yes
+102,tune,1ce401d3-afe2-476b-a66b-6d49e0c5340f,250,18,,unit?,title: ۱۸ عیار ... وزن ۲۵۰ گرم (necklace at 17.4M toman),ai,,,yes
+103,tune,5e61013a-3a9a-4e63-a136-d0864374f5c3,5,18,,,spec وزن=5.000 گرم; spec عیار=750.000 در هزار,ai,,,yes
+104,tune,82811a1f-f45b-46b2-b45e-c1153746e4a7,,,,,nothing stated (نقره آبکاری طلا),ai,,,yes
+105,tune,ddda0afc-fd94-4aff-9798-1eac2430a865,,18,,,spec عیار طلا=18; no weight,ai,,,yes
+106,tune,d1d86ff4-6b05-488f-b15d-9f2a5884cf89,,18,,,title ۱۸ عیار; spec وزن=450، 750،790 و 940 سوت variants -> blank,ai,,,yes
+107,tune,a06c6f3b-d845-4336-a6fb-81907ee92557,,18,,,title: طلا ۱۸ عیار; no weight,ai,,,yes
+108,tune,822cf317-99da-4113-86ad-4fe1694dcf53,,18,,,spec میزان عیار=18 عیار; no weight,ai,,,yes
+109,tune,b8d68ada-3b1f-411c-9e89-0256a644aab9,,18,,,spec عیار زنجیر=18; no weight,ai,,,yes
+110,tune,6d8ad6bf-18c7-4d61-82ea-b24bfd98105f,,,,,nothing stated (۴ میل is width),ai,,,yes
+111,tune,f02ecc98-df89-4dd4-aa7e-fdf20c51bad5,,18,,,title: 18 عیار; spec میزان عیار=18 عیار; no weight,ai,,,yes
+112,tune,1b4207f4-ea72-41bd-bae1-aad0470a1eb2,,18,,,title: طلا ۱۸ عیار; no weight,ai,,,yes
+113,tune,75563d18-394b-45f3-a9a6-45dec8c8120b,,,,,nothing stated (طلا روس),ai,,,yes
+114,tune,0b04aca3-6bd4-4a4c-806d-e9dbbf2fe126,9.82,18,,,spec وزن=9.820 گرم; spec عیار=18,ai,,,yes
+115,tune,ea7797f5-e99e-43b0-9c1a-27c8f8da0988,,,,,nothing stated,ai,,,yes
+116,tune,b1f6efde-4214-45a8-b301-ffe3f0c64dd8,,,,,nothing stated (طلاروس),ai,,,yes
+117,tune,b025de38-9edc-4481-86b1-b09922338a8a,,,,,nothing stated (مشابه طلا),ai,,,yes
+118,tune,7422ff28-709b-4f02-9c2e-b3a9a65e11b1,6.55,18,,,spec وزن=6.550 گرم; spec عیار=18; title کم اجرت (no number),ai,,,yes
+119,tune,d18e966e-2d2f-404c-a6e0-fb4247b465d2,0.1,,,,spec وزن=۱۰۰ سوت; title ۱۰۰ سوتی,ai,,,yes
+120,tune,2e9df9a2-d75c-4d1f-946c-9caf4ac117b4,1.18,18,,,spec وزن=1.180; title ۱۸ عیار,ai,,,yes
+121,tune,45f36a3a-e272-4b5f-8e24-8c2e0990f55d,2,,,,spec وزن=2 گرم,ai,,,yes
+122,tune,17ed5b98-7549-4a68-b565-554c91a8e154,,,,,nothing stated (استیل طرح طلا),ai,,,yes
+123,tune,17bef8de-5058-4cbb-b0f1-779cfaff1986,0.26,18,,,spec عیار طلا=18; weight only in shop title «...مدل آسانسوری پلاک دار دوقلب 0.26»,ai,,,yes
+124,tune,05d5ce59-2db3-463c-868a-e7f48c1c217e,0.3,18,,,title: پلاک طلا ۱۸ عیار ۳۰۰ سوتی,ai,,,yes
+125,tune,18c66a58-c6b2-4922-84d7-6935a9155826,,,,,nothing stated (طلا روس),ai,,,yes
+126,tune,897e5392-4552-4544-9340-4b4aba88cbf6,0.24,,,,title وزن ۰.۲۴ گرم; spec وزن پلاک=0.240گرم; اجرت ساخت=اجرت پایین (no number),ai,,,yes
+127,tune,7a1ad5ea-fc85-460c-ba15-ac263983cdbc,,,,,nothing stated (طرح طلا استیل),ai,,,yes
+128,tune,d176960c-b462-43f4-b5c5-6707ec0b4d6e,,,,,nothing stated (طرح طلا),ai,,,yes
+129,tune,5b89f0f2-2aed-4b5c-8a59-149b999654a0,14.08,,9,,spec وزن=14.08; spec اجرت=9.00,ai,,,yes
+130,tune,99695ae9-4dfb-406f-984c-efd2a093bd09,,,,,nothing stated (silver),ai,,,yes
+131,tune,790a8e0c-ebbc-4006-9202-785cd8666f95,,24,,,spec جنس=ورق طلا 24 عیار on steel 316 frame,ai,,,yes
+132,tune,3aea9e67-14ee-40fc-8620-beed325f0150,,24,,,spec جنس تصویر=ورق طلا 24 عیار (gold-leaf part); no weight,ai,,,yes
+133,tune,8e06e4eb-531a-4948-9ae8-194f09d88426,2.24,18,,,spec وزن طلا 18 عیار=2.240 گرم,ai,,,yes
+134,tune,5df79ebc-37c8-464f-9524-5ed2ac9ca2e2,,,,,nothing stated,ai,,,yes
+135,tune,c9c666da-8711-4913-99ed-a67670260eca,0.63,18,,,title/spec: ۱۸عیار ... وزن ۰/۶۳۰سوت (read as 0.630 g = 630 سوت),ai,,,yes
+136,tune,282f1fda-0904-42ce-9069-8c9702a00f48,,,,,title: روکش طلا ۱۸ عیار is plating,ai,,,yes
+137,tune,31c5b7e7-8c71-4673-9257-7e6527d8ed7d,,,,,nothing stated (طلا روس),ai,,,yes
+138,tune,ec0cca0d-d7d9-432b-9cb9-7a6e63b961d5,,18,,,spec عیار=18; no weight,ai,,,yes
+139,tune,13b7fda4-9f67-4ad9-adb5-63e498bd8a87,,,,,spec وزن=1/1.2/1.5 گرم/900 سوت variants -> blank,ai,,,yes
+140,tune,89d691f2-4124-4e72-a0cb-57e478a13eb7,,18,,,"spec عیار=18; shop titles give different weights for other models (3.44, 4.11) -> blank",ai,,,yes
+141,tune,f65c56fc-c5e0-4f90-8eb3-681e7cdc9132,,,,,nothing stated («3» in shop title is a model no.),ai,,,yes
+142,tune,d454cbd7-cc5f-4163-aed0-5aa82bb33930,,,,,spec جنس=آلیاژ مس با چهار لایه آبکاری طلا; nothing stated,ai,,,yes
+143,tune,4f535fdc-173d-4dc4-9633-4a322284f344,25.43,18,39,,spec وزن (گرم)=25/430; spec عیار=18; spec اجرت(درصد)=39%,ai,,,yes
+144,tune,dfd4eed6-5c4f-411b-a5f6-4dd574e8c0e9,,18,,,spec عیار=18; no weight,ai,,,yes
+145,tune,68e7e28b-7c7b-4b7a-929c-fdc00b0a70c6,,,,,nothing stated (آبکاری طلا),ai,,,yes
+146,tune,0cad4abf-cdaa-43f0-b8d9-4f44d00bac9c,,18,,,title: پلاک طلا ۱۸ عیار; no weight,ai,,,yes
+147,tune,7290a52e-2f54-48cc-a768-7226770f0ec9,,,,,nothing stated (طرح طلا),ai,,,yes
+148,tune,c15f6619-1e9c-47b8-866a-aea12247ffd2,,,,,nothing stated (مشابه طلا),ai,,,yes
+149,tune,aaa1f3d8-02e3-452b-91bf-f4032e6c2c7e,,18,,,spec عیار=18 عیار; no weight,ai,,,yes
+150,tune,be755bda-ca4b-4ce6-9ea2-e3039555d558,,,,,nothing stated (طلا روس),ai,,,yes
+151,tune,bbf944c6-2116-44c3-9c40-86e7334a3dd4,,18,,,title ۱۸ عیار; spec وزن lists 10 variants -> blank,ai,,,yes
+152,tune,60f560a8-f23b-43cf-b4e8-3abec596be82,,,,,nothing stated,ai,,,yes
+153,tune,2cd6e500-abe9-4a3b-8f29-43f21e7727be,,,,,nothing stated (استیل),ai,,,yes
+154,tune,959c4b97-4231-40a6-afb0-6136dd8aeec7,,18,,,karat only in shop title «گردنبند طلا 18 عیار زنانه مدل ونکلیف ژینا»; no weight,ai,,,yes
+155,tune,e92edf09-e9e2-4a78-bb48-5f740efde94b,,18,27,,spec عیار=18; spec اجرت=27%,ai,,,yes
+156,tune,822358d2-6219-4668-9d35-61c8cb081c18,3.7,,,,spec «نقره عیار ۹۲۵ ... آبکاری طلا»=وزن: 3/7 (silver item; ۹۲۵ is silver),ai,,,yes
+157,tune,dc397119-1259-46cd-aab5-8e20dfc8abe7,0.3,,,,title/spec: ۳۰۰ سوت,ai,,,yes
+158,tune,64db800f-cc3e-4366-b445-637d2d2d0eb0,,18,,,"title: 18 عیار; only buckets وزن فیلتر=کمتر از 2 گرم, اجرت فیلتر=کمتر از 16 درصد",ai,,,yes
+159,tune,7eb79f6e-455e-47eb-9256-e214116b912d,,,,,nothing stated (طلا روس),ai,,,yes
+160,tune,cd90bc7d-2799-46e0-9592-a0bde16657b5,,18,,,title: طلا 18 عیار; no weight,ai,,,yes
+161,tune,e74fc2cf-4c74-44cf-b34e-4084906ff297,0.75,18,33,,spec وزن (گرم)=0/750; spec عیار=18; spec اجرت(درصد)=33%,ai,,,yes
+162,tune,ea756ff1-e4ad-4969-9bf0-bf6bf13524fc,,18,,,spec جنس=طلا ۱۸ عیار; spec وزن=از ۲۷۰ سوت تا ۵۳۰ سوت is a range -> blank,ai,,,yes
+163,tune,b81a0284-11b6-4fdf-96c8-ccaad0ac70ab,3.19,18,25,,spec وزن=3.19 گرم (title same); spec عیار=۱۸; spec اجرت ساخت=25 درصد,ai,,,yes
+164,tune,f599bede-c3c7-4c33-9dfb-29845da93df4,,,,,shop title «زیر گرم» is only a bucket,ai,,,yes
+165,tune,7857bcf2-ed5c-4182-b575-df4610671d07,,,,,"spec وزن=1.190, 1.400 variants -> blank",ai,,,yes
+166,tune,4c0d2f3b-2b42-4675-9aef-2c30403c24b0,,18,,,title ۱۸ عیار; spec بدون زنجیر=۲۹۰ سوت / با زنجیر=۱.۱۱۰ two variants -> blank,ai,,,yes
+167,tune,b4ffe0ac-e867-40b8-bdcf-b17a04e5543e,,18,,,spec عیار=18; اجرت ساخت is an unfilled placeholder,ai,,,yes
+168,tune,866c1a00-9654-453c-b672-25f04c9f1f9e,,18,,,title: زنجیر طلا ۱۸ عیار; no weight,ai,,,yes
+169,tune,ffc46686-aa19-4591-ae75-21c89250f397,7,18,,,spec وزن طلای آب شده (گرم)=7.00; spec عیار (طلا)=18,ai,,,yes
+170,tune,49311d67-526d-4b5a-b699-032d904e391d,,,,,nothing stated (استیل),ai,,,yes
+171,tune,046a4c0d-8e8f-4c59-a051-88436cff576b,,18,,,spec عیار=18; no weight,ai,,,yes
+172,tune,5adb66ae-b607-448d-8dbf-77b3ee45aea1,,,,,nothing stated,ai,,,yes
+173,tune,56d74d2c-e01e-4946-8c8f-d65553b05ff5,,,,,"spec وزن=0.07, 0.08 variants -> blank",ai,,,yes
+174,tune,39ca5f6d-3134-423e-8e3c-b31c160ce46c,,,,,nothing stated (طرح طلا),ai,,,yes
+175,tune,b5d416a7-8042-43e2-bed3-c4f5463ed872,,,,,spec وزن=۰.۶۰۰ تا ۰.۹۰۰ is a range; اجرت ساخت=اجرت پایین (no number),ai,,,yes
+176,tune,73874497-39c8-4804-bbbb-c87a17443acc,,,,,shop titles: آبکاری طلا ۱۸عیار is plating,ai,,,yes
+177,tune,1ddd2e36-e763-4650-9fdb-baaa7780c5b2,6.19,,,,title: سرویس طلا تراش وزن 6.19,ai,,,yes
+178,tune,a284fe73-6e05-49fe-a9aa-769544edafb7,,,,,shop title «زیر گرم» is only a bucket,ai,,,yes
+179,tune,4c46d4fe-296b-4f4e-9a6a-f25fde22ff8d,2.87,18,,,spec وزن=2.870 گرم; spec عیار=18,ai,,,yes
+180,tune,21f97f59-1719-4127-aefe-7cc98bc0e2f4,,,,,nothing stated (ابکاری طلا),ai,,,yes
+181,tune,bd0cbc99-d2bd-4899-b9a0-1a5db28deb5a,,,,,nothing stated,ai,,,yes
+182,tune,d9834b11-6cd3-490d-9f06-913e57e006a9,50,18,,,title: طلای آب شده ۱۸ عیار 50 گرمی,ai,,,yes
+183,tune,645904df-16c5-43a2-9087-7e83d43cf6ce,,,,,nothing stated (استیل آبکاری طلا),ai,,,yes
+184,tune,b90ce7ba-be0c-41ff-8b76-bd985042cca1,2.58,18,,,spec وزن=2.580; title ۱۸ عیار,ai,,,yes
+185,tune,e9571c63-30f2-4bc9-85ce-99020b7313b8,0.2,,,,title/spec: ۲۰۰ سوت,ai,,,yes
+186,tune,5641f03f-ed5e-41e8-af64-f8198863cf0a,,,,,nothing stated,ai,,,yes
+187,tune,d7db1bfc-663a-4498-bf2e-2d901d2c9abb,,,,,nothing stated (طلاروس),ai,,,yes
+188,tune,13756a6e-ce93-44c3-b9b6-315022576da5,,,,,"only buckets وزن فیلتر=کمتر از 2 گرم, اجرت فیلتر=27 تا 100 درصد",ai,,,yes
+189,tune,40e2c8d9-4531-48b3-aafc-035c6a80c70e,,18,,,title ۱۸ عیار; shop titles list variants 170 سوت / 250 سوت -> blank,ai,,,yes
+190,tune,260c9c88-845c-4cd5-90bc-be4362431621,,,,,nothing stated (استیل آبکاری طلا),ai,,,yes
+191,tune,2d290a2c-108e-4d7b-89a0-d35edac047be,,,,,nothing stated,ai,,,yes
+192,tune,2170c939-0d0b-4587-96c2-7d9010742c34,420,18,,conflict;unit?,page name1: ۱۸ عیار وزن ۴۲۰ گرم vs search title ۵۳۰ گرم; half-set at 16.4M toman,ai,,,yes
+193,tune,6e92311e-2d52-4cde-b008-8606abb6e213,,18,17.5,,spec عیار=18; spec اجرت=17.5%,ai,,,yes
+194,tune,ab3879f0-d5b2-45ec-bbca-243914439c3c,,,,,nothing stated (silver ۹۲۵ with white-gold plating),ai,,,yes
+195,tune,931502a1-ae3d-4782-ba19-38db03e5fece,,18,,,title: طلا ۱۸ عیار; no weight,ai,,,yes
+196,tune,897b006d-1da7-4043-8338-a6ea4b91ae80,,18,,,title: طلا سفید ۱۸ عیار; no weight,ai,,,yes
+197,tune,97a341c2-4760-450c-81a7-a3d38bc0db0d,,,,,nothing stated,ai,,,yes
+198,tune,ec9675a4-61d5-4ee1-b18b-2d8f16187dc2,,,,,nothing stated (برنجی طرح طلا),ai,,,yes
+199,tune,a5c67100-819e-47a6-8b7a-a1715fa51bad,1.65,,,,"spec وزن (گرم)=1.65 (silver 925 item, rhodium plated)",ai,,,yes
+200,tune,f8520059-55a2-452b-9e09-d1592b5dd9ff,,,,,nothing stated (steel),ai,,,yes
+201,tune,dac6c3bd-7014-4daf-9ef7-0d8ad1bc3d8e,4,18,,,spec وزن=4; title 4 گرمی 750 عیار,ai,,,yes
+202,tune,0552a2a8-e921-4c26-9d4a-6edef9d40e63,1,18,,,spec وزن طلای آب شده (گرم)=1.00; spec عیار (طلا)=18,ai,,,yes
+203,tune,969f8fe0-5cc5-43ea-ab4c-58a76bcff4d3,,18,,,title: طلا 18 عیار; no weight,ai,,,yes
+204,tune,4edf42dc-fc92-41ad-bca1-d34dbd8effd4,3,18,,,spec وزن=3; title 3 گرمی 750 عیار,ai,,,yes
+205,tune,9437a26e-b93c-4d17-b324-4682b114fa4d,0.93,18,,,spec وزن=0.93 گرم; title ۱۸ عیار,ai,,,yes
+206,tune,ce3ba737-c11c-4e3c-a4be-9ed806dbbe5f,20,18,,,title: طلای آب شده ۱۸ عیار 20 گرمی,ai,,,yes
+207,tune,5885b63f-829a-4765-a412-bbbb548c48b5,,,,,nothing stated (طرح طلا),ai,,,yes
+208,tune,18a17821-9784-4240-97ec-6f91c0ca2a3c,,24,,,title: ورق طلای ۲۴ عیار (gold-leaf part); no weight,ai,,,yes
+209,tune,1d1b337b-7cba-4477-b8ab-ae355ec6c7a2,2.6,,9,,spec وزن=2.60; spec اجرت=9.00,ai,,,yes
+210,tune,8b7f6d4b-52be-473c-8f93-8f7085e655df,,,,,nothing stated,ai,,,yes
+211,test,60783ba9-1dd2-4ce4-b2dd-b45dc71158c2,,,,,nothing stated (طلا روس),owner_audit,ok,,yes
+212,test,7b0ef72a-724d-40ff-8bf7-0e12a571b05e,0.045,18,,conflict,spec وزن=۰/۰۴۵ گرم vs title وزن ۴۵ گرم; spec عیار=۱۸ (shop: lemon pendant with 18k gold bail),owner_audit,wrong,وزن نوشته 45 گرم نه ۰/۰۴۵ گرم,no
+213,test,35b11a0f-42b3-4cca-b080-b7906a75ad00,,,,,nothing stated (طرح طلا),owner_audit,ok,,yes
+214,test,9d403c2d-04b6-4d52-9ae2-81cb80109e85,,,,,nothing stated (مشابه طلا),owner_audit,ok,,yes
+215,test,02ebd80b-52e6-45d6-8a8c-2cbf14833f27,,,,,nothing stated (ابکاری طلا),owner_audit,ok,,yes
+216,test,b07a852a-b667-49b7-a6a0-cc3a2d219857,,,,,spec وزن=هم وزن طلا (no number),owner_audit,ok,,yes
+217,test,a021f4c2-1277-4f10-b2c1-71ad7df726cf,,,,,nothing stated (مشابه طلا),owner_audit,ok,,yes
+218,test,73a9e751-cb59-407d-afa7-6d6fe32ba703,28.16,,9,,spec وزن=28.16; spec اجرت=9.00,owner_audit,ok,,yes
+219,test,064c2a4f-4320-4452-88d4-c61995beab85,,,,,nothing stated,owner_audit,ok,,yes
+220,test,0adc1c15-e608-4590-b4e8-10ef8dcf40c5,,,,,nothing stated,owner_audit,ok,,yes
+221,test,ca3de6b3-d1eb-4657-8daa-4d0f31658d02,,,,,nothing stated (برنجی),owner_audit,ok,,yes
+222,test,8aa15881-e892-431b-badb-b65406e592b7,13.94,18,,,spec وزن=13/940; spec عیار=18 عیار (750),owner_audit,ok,,yes
+223,test,5252fa7f-b18b-4a7e-a815-da38006f7977,1.04,18,,,spec وزن=1.040 گرم; spec عیار=18,owner_audit,ok,,yes
+224,test,f9f38bd5-64a9-48e4-967f-4a61b32830bf,,18,,,"spec عیار طلا=18 عیار; shop titles list different weights (0.24, 0.3, 0.560) -> blank",owner_audit,ok,,yes
+225,test,8ce7cbe4-093e-4353-8c09-a5e141668012,,,,,"spec وزن=۵.۲۰۰ گرم, ۵.۷۰۰ گرم variants -> blank",owner_audit,ok,,yes
+226,test,9ec5fbc3-637d-4002-815f-0a2f6ca567fe,,,,,title کم اجرت،بدون سود و مالیات (no ojrat number),owner_audit,ok,,yes
+227,test,ce6e164d-b553-4c6b-a826-7fb53d650aa3,0.87,18,,,title: طلا ۱۸ عیار; spec وزن=0.87 (only shop says استیل آبکاری طلای ۱۸ عیار at 1.05M),owner_audit,wrong,وزن رو جایی پیدا نکردم,no
+228,test,7b7f3198-5f71-44fa-bb37-3437e8dd44d1,100,18,,unit?,title: طلا ۱۸ عیار وزن ۱۰۰ گرم (pendant at 4.76M toman),owner_audit,ok,,yes
+229,test,ca072ad8-5110-4e15-a4c0-6a3c6620ecc5,,18,,,spec عیار=18 عیار; no weight,owner_audit,ok,,yes
+230,test,6da2185e-2bf8-4a6a-98d9-475ee60f485b,,,,,nothing stated (برنجی),owner_audit,ok,,yes
+231,test,d39dd537-6e01-4475-8fcc-9966677047f4,,,,,nothing stated (نقره ۹۲۵ روکش طلا),owner_audit,ok,,yes
+232,test,d8211136-57a6-4f48-b1ab-a0665f122a9a,1.21,,,,spec وزن=1.210گرم,owner_audit,ok,,yes
+233,test,c705853e-c4f8-4c2a-abf6-50669c5d95d4,,,,,nothing stated (طلا روس),owner_audit,ok,,yes
+234,test,d1cd757f-d75a-497e-8203-d062f1151297,0.1,,,,title/spec: ۱۰۰ سوت,owner_audit,ok,,yes
+235,test,2d3b6d92-c471-4a3b-a9cd-9ec1f68820e9,,18,,,title: طلا ۱۸ عیار; no weight,owner_audit,ok,,yes
+236,test,25b5fa54-5cd7-464b-ac52-98dd9800d355,0.1,,,,title/spec: ۱۰۰ سوت,owner_audit,ok,,yes
+237,test,83b07bd9-0b93-496a-977a-ac95dca9137a,,,,,nothing stated (طلا روس; ۲ میل is width),owner_audit,ok,,yes
+238,test,137cc5ba-7828-4b4a-bb48-3c2c8c2700c9,63.753,18,,conflict,title/spec وزن=63.753 گرم = وزن معادل عیار ۷۵۰; spec عیار=738; shop title says 64.79 گرمی با عیار738,owner_audit,ok,,yes
+239,test,b9cb2853-3acf-4a9b-ab5e-e19e064686fb,2,18,,,title: طلای آب‌شده ۲ گرم ۱۸ عیار; spec میزان خلوص=750,owner_audit,ok,,yes
+240,test,5decadde-f928-46c5-8cef-5188901d6123,880,18,,unit?,title: ۱۸ عیار آینه‌ای وزن ۸۸۰ گرم (bangle at 63.8M toman),owner_audit,ok,,yes
+241,test,da020c16-21af-4361-82ed-e1203862f8f4,,,,,"nothing stated (steel pendant, pearl)",owner_audit,ok,,yes
+242,test,2463a49c-4880-4d43-acd3-4174be201488,,,,,nothing stated (آبکاری طلا; ۳ میل is thickness),owner_audit,ok,,yes
+243,test,86d29d60-1bd2-49eb-9054-897dc968c7ad,,,,,nothing stated (استیل),owner_audit,ok,,yes
+244,test,d1b99387-3190-4d21-89d7-af91322b012d,,,,,nothing stated (طرح طلا),owner_audit,ok,,yes
+245,test,13f567f7-d9e8-4cc4-abec-605bc48aae5e,,,,,nothing stated (طلاروس),owner_audit,ok,,yes
+246,test,97a36504-38e6-429f-960b-1211e55656f6,4.06,18,18,,spec وزن خالص طلا=4.060 گرم (title same); spec عیار طلا=18; spec اجرت ساخت=18,owner_audit,ok,,yes
+247,test,9825db69-885e-44a8-b76f-86806ee3e163,9,18,,,spec وزن طلای آب شده (گرم)=9.00; spec عیار (طلا)=18,owner_audit,ok,,yes
+248,test,c911bdde-1ea3-4dbe-97c7-da90f9510ab8,,,,,nothing stated,owner_audit,ok,,yes
+249,test,65766120-02e3-4403-94e4-d0b78c687e42,0.73,18,,,spec وزن=۷۳۰ سوت; spec جنس=طلا ۱۸ عیار,owner_audit,ok,,yes
+250,test,5559aa52-cb7a-439b-bca4-90da486d63ae,400,18,,unit?,title: ۱۸ عیار وزن ۴۰۰ گرم (bracelet at 48.9M toman),owner_audit,ok,,yes
+251,test,2772ee27-ad0b-4e61-a1a4-14d6becfff5a,46.22,,9,,spec وزن=46.22; spec اجرت=9.00,owner_audit,ok,,yes
+252,test,d4ee0537-f3c8-49a8-a40c-75ea4ebee18b,,18,,,title: طلا 18 عیار; no weight,owner_audit,ok,,yes
+253,test,edfc4032-9a1b-4e45-93f3-6abb319fd7fb,5,18,,,spec وزن=5; title 5 گرمی 750 عیار,owner_audit,ok,,yes
+254,test,c1034d1d-e7b0-4994-ad9c-7514aa7fa4ea,,,,,nothing stated (استیل آبکاری طلا),owner_audit,ok,,yes
+255,test,88441ed8-941b-4330-81a6-60bd6e771208,,,,,title: ابکاری چند لایه طلا ۱۸ عیار is plating; spec استیل آبکاری طلا,owner_audit,ok,,yes
+256,test,898341ee-e680-438a-ae52-6b12b6e4e2d5,,18,,,spec عیار طلا=18 عیار; no weight,owner_audit,ok,,yes
+257,test,86076a09-5833-4da5-9dd7-4ab68784dded,,,,,nothing stated,owner_audit,ok,,yes
+258,test,4c720123-cfd4-4af7-b830-2e769f0d95f9,15,18,,,title: طلای آب شده ۱۵ گرم ۱۸ عیار; spec عیار=750,owner_audit,ok,,yes
+259,test,072368ff-8aa5-4099-a177-4845c56959b9,,18,,,spec عیار=18; no weight,owner_audit,ok,,yes
+260,test,a40c1e4b-395f-4b75-b1ff-f05bcae89a43,,,,,nothing stated (استیل آبکاری),owner_audit,ok,,yes
+261,test,20525501-3d49-440e-ac76-483cd03ddd65,,,,,spec جنس=مس با آبکاری طلا; nothing stated,owner_audit,ok,,yes
+262,test,aae2df45-f28a-4e31-8dc7-1cfba11eb4d1,,18,20,,spec عیار=18 عیار; spec اجرت ساخت=20; spec وزن=0.090/0.110/0.120/0.130 variants -> blank,owner_audit,ok,,yes
+263,test,ee8f8df8-d1c1-42c3-9af6-0d121487e0d3,4,18,,,spec وزن طلای آب شده (گرم)=4.00; spec عیار (طلا)=18,owner_audit,ok,,yes
+264,test,99335b63-8489-49bb-a0bb-39a0b3cec8af,,,,,nothing stated,owner_audit,ok,,yes
+265,test,409d92fd-5f60-4334-9f9b-e3146ad30eb5,1.2,,5,,spec وزن النگو=۱.۲۰۰; spec اجرت ساخت=۵,owner_audit,ok,,yes
+266,test,12f42b5a-a888-4c37-87d7-934f43f54354,,,,,nothing stated,owner_audit,ok,,yes
+267,test,83a6997c-6e85-4d80-9ee1-8e5a99f586fb,1.52,18,0,,spec وزن=۱.۵۲ گرم; spec عیار=۱۸ عیار-۷۵۰; title بدون اجرت,owner_audit,ok,,yes
+268,test,3d70ee5d-da28-408b-856a-5adc87e2a528,0.25,,,,spec وزن=0.25,owner_audit,ok,,yes
+269,test,269e82de-1ed0-4929-9954-392ec9fe6d60,,,,,nothing stated (طلاروس),owner_audit,ok,,yes
+270,test,b3978996-07f6-498f-a4e7-2d9b2cb6c809,,,,,nothing stated,owner_audit,ok,,yes
+271,test,2499d392-fb57-4947-bdcf-792d61bd2543,,,,,nothing stated,owner_audit,ok,,yes
+272,test,3c4d8f3e-5537-49f5-8e6e-aad79b543f48,,,,,nothing stated (آبکاری طلا),owner_audit,ok,,yes
+273,test,91782a23-338c-44f5-8c26-6425eb122d5b,,18,,,spec عیار طلا=18 عیار; spec lists two variants 250 سوت ونکلیف / 220 سوت دایره -> blank,owner_audit,ok,,yes
+274,test,d9ae7bfe-c56c-4207-9a7a-c34d29600a66,,,,,nothing stated,owner_audit,ok,,yes
+275,test,5c15f6e3-c2cd-4902-8907-0f48d5a762b9,,,,,nothing stated,owner_audit,ok,,yes
+276,test,83059caf-4e0c-4578-a596-10c5cec707b0,,,,,nothing stated,owner_audit,ok,,yes
+277,test,e9b0292c-b2b2-4bc7-ba97-5f94572673d3,1.99,18,8,,spec وزن=1.99; spec عیار طلا=18; spec اجرت=8,owner_audit,ok,,yes
+278,test,87b768af-f6a2-4924-b1ee-04026244baa1,,18,,,spec جنس=طلای 18 عیار (750); no weight,owner_audit,ok,,yes
+279,test,05dadc3f-4423-4e4c-a714-8939eec59830,0.1,,,,title/spec: ۱۰۰ سوت,owner_audit,ok,,yes
+280,test,cdbd3e63-5699-414a-aa29-3f0c91d4e1ea,170,18,,unit?,title: طلا ۱۸ عیار ونکلیف تراش با زنجیر ۱۷۰ گرم (pendant+chain at 15.9M toman),owner_audit,ok,,yes
+281,test,3dc95448-6e9b-405f-9137-aa43e5647645,8.26,,18,,spec وزن=8.26; spec اجرت=18.00,owner_audit,ok,,yes
+282,test,a612abee-2888-475c-a52a-2c79a34cc842,1.08,,,,spec وزن=۱.۰۸ گرم,owner_audit,ok,,yes
+283,test,edac5478-9c46-4765-8fe9-f0ee10fe8e0a,,,,,nothing stated,owner_audit,ok,,yes
+284,test,ddb4f334-5ef5-4853-9e05-7007db3e6a4f,,18,,,spec عیار=18 عیار; no weight,owner_audit,ok,,yes
+285,test,9b98f0f0-c301-41c7-867e-12c8faccf24e,,,,,spec جنس=ورق طلا 24 عیار on steel 316 frame,owner_audit,wrong,استیل با روکش ورق طلا؛ عیار ۲۴ معنی ندارد,yes
+286,test,d00ef474-b705-4528-8d01-8448a1ca48c3,1.98,,,,spec وزن=1.98 گرم (title same),owner_audit,ok,,yes
+287,test,0e37a673-0a31-44e0-a4ac-18f7f4184ff4,0.77,18,,,spec وزن=۰/۷۷۰ گرم; title ۱۸ عیار,owner_audit,ok,,yes
+288,test,315822f9-b4f1-42fb-a966-7c1547b939f6,,24,,,"title: النگو طلا ۲۴ عیار (only shop title says آبکاری شمش طلا 24 عیار, 1.9M toman)",owner_audit,ok,,yes
+289,test,c1e3b8c2-5538-4df1-afea-03447bc1d5b6,,,,,nothing stated (طلا روس),owner_audit,ok,,yes
+290,test,bf6bcada-3ca7-4bab-b72c-df337882254c,0.15,18,,,spec وزن=0.150; title ۱۸ عیار,owner_audit,ok,,yes
+291,test,7b7788d0-db21-480f-9771-4c7272d45724,1.08,,26,,spec وزن=1.08 گرم; spec اجرت ساخت=26 درصد,owner_audit,ok,,yes
+292,test,f955cf70-a9b7-452d-b514-b1bc6c2a97fe,,,,,nothing stated (طرح طلا),owner_audit,ok,,yes
+293,test,17115645-1256-43a5-93e7-865c373aace5,,,,,nothing stated,owner_audit,ok,,yes
+294,test,c1b2f96e-90cf-4cd1-833d-839de9a2442b,,18,,,spec وزن=0.240/0.260/0.320/0.380 variants -> blank; karat from shop title «گوشواره طلا ۱۸ عیارحلقه ای ساده»,owner_audit,ok,,yes
+295,test,ab3af872-1b59-4771-9d33-bdff3be37752,,18,,,spec عیار=18; no weight,owner_audit,ok,,yes
+296,test,438b0bb4-8a88-48e2-8cf7-f0fc1f84c507,,,0,,ojrat from shop title «گردنبند طلا بدون اجرت و مالیات»,owner_audit,ok,,yes
+297,test,a7e3c196-0d08-41b7-8d05-8a59a83f05fc,,,,,nothing stated (آبکاری طلا),owner_audit,ok,,yes
+298,test,c60b39b7-3306-42e4-bc89-a142e08e9635,,,,,shop title آبکاری طلا۱۸عیار is plating,owner_audit,ok,,yes
+299,test,626d08d8-05e4-46ce-9508-0ef902ebd29f,,24,,,spec جنس تصویر=ورق طلا 24 عیار (gold-leaf part); no weight,owner_audit,ok,,yes
+300,test,7fc22435-04b7-428e-a9fa-2bbd4cc21fac,,,,,nothing stated (نقره طرح طلا),owner_audit,ok,,yes

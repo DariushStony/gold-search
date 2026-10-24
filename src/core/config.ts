@@ -1,0 +1,124 @@
+// Every threshold, rate and word list the rules use (NFR-12). Values marked
+// "design choice" in the PRD are tuned on the tune split only (eval plan §2);
+// each change is logged in docs/product/decisions.md.
+export const config = {
+  gold: {
+    unionStaleMinutes: 10, // BR-03
+    marketOpenWindowMinutes: 30, // A-01 operational definition (D-28)
+    uncertainPct: 1, // BR-04
+  },
+  price: {
+    vatByJalaliYear: { 1405: 0.10 } as Record<number, number>, // BR-44: on ojrat + profit only
+    profit: 0.07, // A-02: seller profit when not declared
+    resaleBasis: 740 / 750, // BR-42: used-gold buy-back basis
+    vatOverchargeTolerance: 0.02, // BR-47, design choice
+  },
+  extract: {
+    weightRangeG: [0.01, 200] as const, // BR-22, inclusive
+    weightConflictToleranceG: 0.005,
+    weightSpecKeyIgnore: ["فیلتر", "بازه", "سنگ", "کل"], // buckets and stone or total weights are not gold weight
+    karatByNumber: { 18: 18, 750: 18, 21: 21, 875: 21, 24: 24, 995: 24, 999: 24 } as Record<number, number>, // BR-23
+    platingWords: ["آبکاری", "ابکاری", "روکش"], // a karat next to these describes plating, not the piece
+    // BR-25: galleries named in market research [S-43] [S-44]; "گالری" alone in a shop name is generic.
+    galleries: [
+      { name: "ماوی", patterns: ["ماوی"] },
+      { name: "الی", patterns: ["الی گلد", "گالری الی", "گالری طلای الی"] },
+    ],
+    usedWords: ["دست دوم", "کارکرده", "طلای قدیمی"], // BR-26
+    // BR-27: earliest match in the title wins; values on the right are what the product gets.
+    itemTypes: [
+      ["نیم ست", "سرویس"], ["سرویس", "سرویس"], ["ست", "سرویس"], ["گردنبند", "گردنبند"], ["دستبند", "دستبند"],
+      ["انگشتر", "انگشتر"], ["حلقه", "انگشتر"], ["گوشواره", "گوشواره"], ["النگو", "النگو"], ["زنجیر", "زنجیر"],
+      ["پلاک", "پلاک"], ["آویز", "آویز"], ["پابند", "پابند"], ["سنجاق", "سنجاق"], ["سکه", "سکه"], ["شمش", "شمش"],
+      ["آب شده", "آب‌شده"],
+    ] as [string, string][],
+    audience: { women: ["زنانه", "دخترانه"], men: ["مردانه", "پسرانه"], kids: ["بچگانه", "نوزاد", "کودک"] },
+    // BR-58: concrete style tags only.
+    styleTags: [
+      { value: "کارتیه", patterns: ["کارتیه", "کارتیر"] }, { value: "ونکلیف", patterns: ["ونکلیف", "ون کلیف"] },
+      { value: "بولگاری", patterns: ["بولگاری"] }, { value: "رولو", patterns: ["رولو"] },
+      { value: "دو رنگ", patterns: ["دو رنگ", "دورنگ"] }, { value: "رزگلد", patterns: ["رزگلد", "رز گلد"] },
+      { value: "ایتالیایی", patterns: ["ایتالیایی"] }, { value: "اسم", patterns: ["اسم"] },
+      { value: "تابستانی", patterns: ["تابستانی"] }, { value: "شرابه", patterns: ["شرابه"] },
+    ],
+    // BR-2A; matched as whole words, with the optional suffix «ی».
+    nonGold: {
+      stones: ["برلیان", "الماس", "نگین", "سنگ", "زیرکن"],
+      cord: ["بند بافت", "نخ", "چرم", "طناب"],
+      beads: ["مهره", "میوکی", "مروارید", "صدف"],
+    },
+    stoneSpecKeys: ["جنس نگین", "نوع سنگ", "رنگ سنگ", "سنگ"],
+    noneValues: ["ندارد", "-", "0"],
+  },
+  offers: {
+    staleHours: 24, // BR-14
+    maxAgeDays: 7, // BR-14; not applied in archive mode (BR-16)
+  },
+  parse: {
+    tomanAmbiguousFrom: 300, // BR-52: «سیصد تومن» may be thousand or million; below this «تومن» means million (design choice)
+    minBudgetToman: 500_000, // BR-52: smaller budgets are asked about
+    ojrat: { none: 2, low: 10 }, // BR-59
+    // Finglish and colloquial spellings seen in EV-QRY (tune split), mapped before the rules run.
+    rewrite: [["\\bgift\\b", "هدیه"], ["\\btalaa?\\b", "طلا"], ["\\bbaraye\\b", "برای"], ["\\broze madar\\b", "روز مادر"], ["\\bta\\b", "تا"],
+      ["\\bmil+ion\\b", "میلیون"], ["\\bojrate kam\\b", "اجرت کم"], ["\\bpasandaz\\b", "پس انداز"], ["\\bba\\b", "با"],
+      ["ملیون", "میلیون"], ["انگستر", "انگشتر"], ["تابستونی", "تابستانی"], ["مردونه", "مردانه"], ["زنونه", "زنانه"], ["دسته دو", "دست دوم"],
+      ["پس‌انداز", "پس انداز"], ["گردن بند", "گردنبند"], ["نیمست", "نیم ست"], ["آبشده", "آب شده"]] as [string, string][],
+    itemTypes: [["سرویس", "سرویس"], ["نیم ست", "سرویس"], ["گردنبند", "گردنبند"], ["دستبند", "دستبند"], ["انگشتر", "انگشتر"],
+      ["گوشواره", "گوشواره"], ["النگو", "النگو"], ["زنجیر", "زنجیر"], ["پلاک", "پلاک"], ["تک پوش", "پلاک"], ["آویز", "آویز"], ["پابند", "پابند"]] as [string, string][],
+    forms: [["سکه", "سکه"], ["پارسیان", "سکه"], ["بهار آزادی", "سکه"], ["آب شده", "آب‌شده"], ["شمش", "شمش"], ["دلار", "ارز"]] as [string, string][],
+    jewelryWords: ["جواهر", "جواهرات", "زینتی"],
+    usedWords: ["دست دوم", "کارکرده", "طلای قدیمی"],
+    lightWords: ["ظریف", "سبک", "کوچیک", "کوچک"],
+    heavyWords: ["سنگین", "پرحجم", "درشت"],
+    styles: [["کارتیه", "کارتیه"], ["ونکلیف", "ونکلیف"], ["ون کلیف", "ونکلیف"], ["ورساچه", "ورساچه"], ["بولگاری", "بولگاری"], ["رولو", "رولو"],
+      ["دو رنگ", "دو رنگ"], ["رزگلد", "رزگلد"], ["رز گلد", "رزگلد"], ["اسم", "اسم"], ["حرف", "حرف"], ["تابستانی", "تابستانی"],
+      ["ایتالیایی", "ایتالیایی"], ["قلب", "قلب"], ["بینهایت", "بینهایت"], ["وان یکاد", "وان یکاد"], ["و ان یکاد", "وان یکاد"], ["ماه تولد", "ماه تولد"],
+      ["حلقه ای", "حلقه‌ای"], ["بزرگ", "بزرگ"], ["مینیمال", "مینیمال"], ["هندی", "هندی"], ["پهن", "پهن"], ["میخی", "میخی"], ["میخ", "میخی"],
+      ["اسپرت", "اسپرت"], ["طلای سفید", "طلای سفید"], ["عربی", "عربی"], ["آینه ای", "آینه‌ای"]] as [string, string][],
+    occasions: [["روز مادر", "روز_مادر"], ["روز زن", "روز_زن"], ["سالگرد", "سالگرد_ازدواج"], ["ولنتاین", "ولنتاین"], ["یلدا", "یلدا"],
+      ["عروسی", "عروسی"], ["نامزدی", "نامزدی"], ["نشون", "نامزدی"], ["تولد", "تولد"]] as [string, string][],
+    recipients: [["مادر", "مادر", "women"], ["مامان", "مادر", "women"], ["madar", "مادر", "women"], ["پدر", "پدر", "men"], ["بابا", "پدر", "men"],
+      ["همسر", "همسر", null], ["دوست دختر", "دوست‌دختر", "women"], ["نامزد", "نامزد", null], ["خواهر", "خواهر", "women"], ["همکار", "همکار", null],
+      ["نوزاد", "نوزاد", "kids"], ["دختر", "دختر", "women"], ["دوست", "دوست", null]] as [string, string, string | null][],
+    audience: { women: ["زنانه", "دخترانه", "خانم"], men: ["مردانه", "پسرانه", "آقایان"], kids: ["بچگانه"] },
+    shops: [["ماوی", "ماوی"], ["الی گالری", "الی"], ["گالری الی", "الی"], ["الی", "الی"], ["دیجی کالا", "دیجی‌کالا"], ["دیجیکالا", "دیجی‌کالا"]] as [string, string][],
+    cities: ["تهران", "مشهد", "اصفهان", "شیراز", "تبریز", "کرج", "قم", "اهواز", "رشت", "کرمان"],
+    giftWords: ["هدیه", "کادو", "سوغاتی"],
+    savingsWords: ["پس انداز", "سرمایه", "ضرر", "سود", "حفظ ارزش", "خرج نشه", "پولمو طلا", "موقع فروش"],
+    beautyWords: ["استفاده کنم", "روزمره", "هر روز", "مده", "مد روز", "شیک", "مدلی", "خودم بخوام", "برای خودم"],
+  },
+  rank: {
+    // BR-62 intent weights (design choice; tuned on the EV-RNK tune split at M5, D-25). Each column sums to 1.
+    weights: {
+      gift: { budget_fit: 0.25, weight_fit: 0.20, type_style_fit: 0.20, seller_trust: 0.20, newness: 0.10, low_premium: 0, weight_known: 0, freshness: 0.05 },
+      beauty: { budget_fit: 0.10, weight_fit: 0.05, type_style_fit: 0.45, seller_trust: 0.20, newness: 0, low_premium: 0, weight_known: 0.15, freshness: 0.05 },
+      savings: { budget_fit: 0.10, weight_fit: 0, type_style_fit: 0.05, seller_trust: 0.10, newness: 0, low_premium: 0.60, weight_known: 0.10, freshness: 0.05 },
+      unknown: { budget_fit: 0.20, weight_fit: 0.10, type_style_fit: 0.25, seller_trust: 0.20, newness: 0, low_premium: 0.15, weight_known: 0.05, freshness: 0.05 },
+    },
+    budgetBand: 0.15, // BR-52, both ends included
+    weightBand: 0.10, // BR-54, both ends included
+    unknownWeightFit: 0.5, // BR-62
+    unknownShopScore: 0.5, // BR-62
+  },
+  explain: {
+    extraReasons: false, // CR-02 (proposed): reason sentences beyond TX-66 need content-guide text first
+  },
+  label: {
+    // BR-31: any of these makes a product not gold, even next to «۱۸ عیار». Tuned on the EV-MAT tune split.
+    notGoldWords: ["آبکاری", "ابکاری", "روکش", "ژوپینگ", "xuping", "استیل", "نقره", "بدل", "بدلیجات", "مشابه طلا",
+      "کپی طلا", "طرح طلا", "رنگ ثابت", "ضد حساسیت", "gp", "gf", "برنج",
+      "بدون حساسیت", "ثبات رنگ", "کپی"], // tune split, 2026-10-23
+    notGoldPatterns: ["رنگ(?:\\s+\\S+){1,2}\\s+ثابت"], // «رنگ کاملا ثابت»، «رنگ 100% ثابت»; tune split, 2026-10-23
+    // BR-32 (CR-03): real gold with stones, cord, leather or beads stays real and gets the non-gold-parts flag
+    // from extraction (BR-2A); the owner's definition (D1, D2) leaves no words that make a product «mixed».
+    mixedWords: [] as string[],
+    mixedBeforeGoldWords: [] as string[],
+    minWeightFloorG: 0.05 as number | null, // BR-3A (CR-01), design choice: review unknown-weight items priced under this much gold
+    scanSpecs: true, // BR-31 (CR-01): look for BR-31 words in the material and brand specs too
+    specKeysToScan: ["جنس", "برند"],
+    lowRatio: 0.9, // BR-35, design choice
+    highRatio: 2.5, // BR-36, design choice
+  },
+};
+
+export type Config = typeof config;

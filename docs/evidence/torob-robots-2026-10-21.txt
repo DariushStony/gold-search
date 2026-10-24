@@ -1,0 +1,23 @@
+# Fetched 2026-10-21 (~23:50 Tehran) with curl from an Iranian connection.
+# Archived copies: https://web.archive.org/web/20261002234719id_/https://torob.com/robots.txt
+#                  https://web.archive.org/web/20260212000311id_/https://api.torob.com/robots.txt
+#                  (the 2026-02-12 API copy also allowed /price-chart; the live copy below does not)
+
+## https://torob.com/robots.txt
+User-agent: *
+Disallow:   /search/
+
+User-agent: AhrefsBot
+Disallow: /
+
+Sitemap: https://torob.com/sitemap.xml
+
+## https://api.torob.com/robots.txt
+User-agent: *
+Disallow: /
+Allow: /v4/base-product/search
+Allow: /v4/base-product/similar-base-product
+Allow: /v4/base-product/details
+Allow: /v4/internet-shop/list
+Allow: /v4/special-offers
+Allow: /v4/internet-shop/special-offers

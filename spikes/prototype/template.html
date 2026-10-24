@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>زرسنج — نمونه‌ی طراحی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;500;700;800&display=swap">
+<style>
+:root {
+  --velvet: #123F3D;
+  --velvet-2: #1B524F;
+  --on-velvet: #F2EFE6;
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --ink: #1A1D24;
+  --muted: #5E6672;
+  --line: #DFE3E8;
+  --gold: #B8892B;
+  --gold-soft: #E9D9B3;
+  --ojrat: #8A93A3;
+  --profit: #B4BBC6;
+  --tax: #D3D8DF;
+  --accent: #C8323C;
+  --real: #1F7A4D;
+  --mixed: #A86A12;
+  --notgold: #6B7280;
+  --review: #B4461B;
+  --radius-s: 8px;
+  --radius-l: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12161B; --surface: #1A2027; --ink: #ECEEF1; --muted: #A2AAB5; --line: #2C343E;
+    --ojrat: #6F7888; --profit: #555E6C; --tax: #3E4652; --gold-soft: #4A3C1E;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.75 Vazirmatn, Tahoma, sans-serif; }
+.num { font-variant-numeric: tabular-nums; }
+a { color: var(--accent); }
+button, input { font: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.notice { background: #FFF6D6; color: #5A4300; font-size: 13px; padding: 8px 16px; text-align: center; }
+@media (prefers-color-scheme: dark) { .notice { background: #3A3110; color: #F3E3A8; } }
+
+.tray { background: radial-gradient(120% 140% at 85% 0%, var(--velvet-2), var(--velvet) 60%); color: var(--on-velvet); padding: 20px 16px 22px; }
+.tray-in { max-width: 760px; margin: 0 auto; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-family: Lalezar, Vazirmatn, sans-serif; font-weight: 400; font-size: 34px; margin: 0; letter-spacing: 0; color: var(--gold-soft); }
+.rate { font-size: 13px; opacity: .9; }
+.rate b { color: #F4D88A; font-weight: 700; }
+.scen { display: flex; gap: 8px; margin: 14px 0 10px; flex-wrap: wrap; }
+.scen button { background: transparent; color: var(--on-velvet); border: 1px solid #ffffff55; border-radius: 999px; padding: 4px 14px; cursor: pointer; }
+.scen button[aria-pressed="true"] { background: var(--on-velvet); color: var(--velvet); border-color: var(--on-velvet); }
+.query { width: 100%; background: #0B2A29; color: #fff; border: 1px solid #ffffff33; border-radius: var(--radius-l); padding: 14px 16px; font-size: 18px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.chip { font-size: 14px; border-radius: 999px; padding: 3px 12px; background: #ffffff1f; border: 1px solid #ffffff33; }
+.chip.sort { border-style: dashed; background: transparent; }
+.chip.info { background: transparent; border-color: #ffffff22; opacity: .85; }
+.legend { font-size: 12px; opacity: .75; margin-top: 8px; }
+
+main { max-width: 760px; margin: 0 auto; padding: 16px; }
+.summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin: 4px 0 12px; flex-wrap: wrap; }
+.summary button { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 14px; margin-bottom: 12px; display: grid; grid-template-columns: 88px 1fr; gap: 14px; cursor: pointer; }
+.card:hover { border-color: var(--gold); }
+.card img { width: 88px; height: 88px; object-fit: contain; background: #fff; border-radius: var(--radius-s); }
+.title { font-weight: 700; font-size: 16px; line-height: 1.6; margin: 0; }
+.meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.badge { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 0 8px; margin-inline-start: 4px; }
+.badge.real { color: var(--real); background: color-mix(in srgb, var(--real) 12%, transparent); }
+.badge.mixed { color: var(--mixed); background: color-mix(in srgb, var(--mixed) 14%, transparent); }
+.badge.notgold { color: var(--notgold); background: color-mix(in srgb, var(--notgold) 14%, transparent); }
+.price-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 12px; margin-top: 8px; }
+.price { font-weight: 800; font-size: 18px; white-space: nowrap; }
+.premium { font-size: 13px; white-space: nowrap; }
+.premium b { color: var(--gold); }
+
+/* invoice strip: the memorable element */
+.strip { display: flex; height: 12px; border-radius: 3px; overflow: hidden; margin: 8px 0 4px; background: var(--tax); }
+.strip span { display: block; height: 100%; }
+.strip .g { background: var(--gold); }
+.strip .o { background: var(--ojrat); }
+.strip .p { background: var(--profit); }
+.strip .t { background: var(--tax); }
+.strip-key { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.strip-key i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-inline-end: 4px; vertical-align: middle; }
+.resale { font-size: 13px; margin-top: 4px; }
+
+.why { border-inline-start: 3px solid var(--gold); background: var(--surface); border-radius: var(--radius-s); padding: 10px 14px; margin: -2px 0 16px; font-size: 14px; }
+
+.section-title { font-size: 15px; font-weight: 700; margin: 22px 0 8px; }
+.savings { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 14px; margin: 18px 0; }
+.savings table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.savings td, .savings th { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: start; }
+.savings .own { color: var(--muted); font-size: 12px; }
+.fine { font-size: 12px; color: var(--muted); }
+
+.sheet-bg { position: fixed; inset: 0; background: #0008; display: none; z-index: 10; }
+.sheet { position: fixed; inset-inline: 0; bottom: 0; max-height: 88vh; overflow: auto; background: var(--surface); border-radius: 18px 18px 0 0; padding: 18px 16px 24px; transform: translateY(100%); transition: transform .25s ease; z-index: 11; max-width: 760px; margin: 0 auto; }
+.sheet.open { transform: none; }
+@media (prefers-reduced-motion: reduce) { .sheet { transition: none; } }
+.sheet h2 { font-size: 18px; margin: 0 0 4px; }
+.bd { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+.bd td { padding: 6px 2px; border-bottom: 1px solid var(--line); }
+.bd td:last-child { text-align: left; }
+.inputs { font-size: 12px; color: var(--muted); }
+.cta { display: block; width: 100%; text-align: center; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-s); padding: 12px; margin-top: 14px; font-weight: 700; text-decoration: none; }
+.close { float: left; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); }
+
+footer { max-width: 760px; margin: 0 auto; padding: 8px 16px 40px; font-size: 12px; color: var(--muted); }
+
+.fb { background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius-l); padding: 14px; margin-top: 24px; }
+.fb-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.fb-row input { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; background: transparent; color: var(--ink); }
+.fb-row button { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 6px; padding: 2px 10px; cursor: pointer; min-height: 36px; }
+.fb-row button.on { background: var(--real); color: #fff; border-color: var(--real); }
+.fb textarea { width: 100%; min-height: 54px; direction: ltr; font: 12px monospace; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="notice">نمونه‌ی طراحی، غیررسمی و وابسته به ترب نیست. کالاها واقعی‌اند (ترب، ۳۰ مهر ۱۴۰۵)؛ چیپ‌ها و ترتیب برای نمایش طراحی دستی چیده شده‌اند.</div>
+<header class="tray">
+  <div class="tray-in">
+    <div class="brand">
+      <h1>زرسنج</h1>
+      <div class="rate num">نرخ هر گرم طلای ۱۸ عیار: <b id="g"></b> تومان، اتحادیه، <span id="gt"></span></div>
+    </div>
+    <div class="scen" role="group" aria-label="سناریوی نمونه" id="scen"></div>
+    <input class="query" id="q" readonly aria-label="درخواست">
+    <div class="chips" id="chips"></div>
+    <div class="legend">چیپ پررنگ: فیلتر (حذف می‌کند)؛ چیپ خط‌چین: فقط ترتیب را عوض می‌کند</div>
+  </div>
+</header>
+
+<main>
+  <div class="summary"><span id="count"></span><button id="showEx">کالاهای کنار گذاشته را ببین</button></div>
+  <div id="results"></div>
+  <div id="savings"></div>
+  <div id="review"></div>
+  <div id="excluded" hidden></div>
+
+  <section class="fb" aria-label="نظر تو">
+    <div class="section-title" style="margin-top:0">نظر تو درباره‌ی هر بخش</div>
+    <div id="fb"></div>
+    <button id="copy" style="margin-top:8px">کپی نتیجه</button>
+    <textarea id="out" readonly></textarea>
+  </section>
+</main>
+
+<footer>
+  منبع داده‌ها: ترب (جست‌وجو و صفحه‌ی کالا، ۳۰ مهر ۱۴۰۵)، تابلوی اتحادیه‌ی طلای تهران. «سازگار با طلای واقعی» یعنی ادعای فروشنده و قیمت با هم جورند، نه تأیید فیزیکی. این مقایسه‌ی هزینه است، نه توصیه‌ی سرمایه‌گذاری.
+</footer>
+
+<div class="sheet-bg" id="bg"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"></div>
+
+<script>
+const D = /*DATA*/null;
+const G = D.G, VAT = 0.10, PROFIT = 0.07, USED = 740 / 750;
+const nf = n => Math.round(n).toLocaleString("fa-IR");
+const mf = n => (n / 1e6).toLocaleString("fa-IR", { maximumFractionDigits: 1 }) + " میلیون";
+const pf = n => (n * 100).toLocaleString("fa-IR", { maximumFractionDigits: 1 });
+const wf = n => n.toLocaleString("fa-IR", { maximumFractionDigits: 2 });
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+function math(it) {
+  if (!it.weight || it.label !== "gold") return null;
+  const gold = it.weight * G, ratio = it.price / gold;
+  const o = Math.max(0, (ratio + VAT) / ((1 + VAT) * (1 + PROFIT)) - 1);
+  const ojrat = gold * o, profit = (gold + ojrat) * PROFIT, tax = (ojrat + profit) * VAT;
+  const resale = gold * USED, breakeven = it.price / (it.weight * USED);
+  return { gold, ratio, premium: ratio - 1, o, ojrat, profit, tax, resale, breakeven, rise: breakeven / G - 1 };
+}
+
+function strip(m, price) {
+  const total = Math.max(price, m.gold + m.ojrat + m.profit + m.tax);
+  const w = x => (100 * x / total).toFixed(2) + "%";
+  return `<div class="strip" aria-hidden="true"><span class="g" style="width:${w(m.gold)}"></span><span class="o" style="width:${w(m.ojrat)}"></span><span class="p" style="width:${w(m.profit)}"></span><span class="t" style="width:${w(m.tax)}"></span></div>
+  <div class="strip-key"><span><i style="background:var(--gold)"></i>طلا ${mf(m.gold)}</span><span><i style="background:var(--ojrat)"></i>اجرت ≈٪${pf(m.o)}</span><span><i style="background:var(--profit)"></i>سود</span><span><i style="background:var(--tax)"></i>مالیات</span></div>`;
+}
+
+function card(it, i) {
+  const m = math(it);
+  const badge = it.label === "gold" ? '<span class="badge real">سازگار با طلای واقعی</span>' : it.label === "mixed" ? '<span class="badge mixed">مخلوط</span>' : '<span class="badge notgold">غیرطلا</span>';
+  const meta = [it.weight ? `${wf(it.weight)} گرم (${it.weight_src === "spec" ? "از مشخصات" : "از عنوان"})` : "وزن نامعلوم", it.shops?.length ? `${nf(it.shops.length)} فروشگاه` : it.shop_text].filter(Boolean).join("، ");
+  return `<article class="card" tabindex="0" data-i="${i}">
+    <img src="${esc(it.image)}" alt="" loading="lazy">
+    <div>
+      <p class="title">${esc(it.title)}${badge}</p>
+      <div class="meta num">${esc(meta)}</div>
+      <div class="price-row"><span class="price num">${mf(it.price)} تومان</span>${m ? `<span class="premium num"><b>٪${pf(m.premium)}</b> بالاتر از ارزش طلا</span>` : ""}</div>
+      ${m ? strip(m, it.price) + `<div class="resale num">اگر فردا بفروشی، حدود ${mf(m.resale)} برمی‌گردد (برآورد)</div>` : `<div class="resale">قیمت قابل شکستن نیست؛ وزن اعلام نشده.</div>`}
+    </div></article>`;
+}
+
+function why(a, b) {
+  const ma = math(a), mb = math(b);
+  if (!ma || !mb) return "";
+  const parts = [];
+  if (cur.id === "gift") {
+    if (a.weight !== b.weight) parts.push(`سبک‌تر است: ${wf(a.weight)} گرم در برابر ${wf(b.weight)} گرم`);
+    if ((a.shops?.length || 0) !== (b.shops?.length || 0)) parts.push(`در ${nf(a.shops?.length || 0)} فروشگاه هست، دومی در ${nf(b.shops?.length || 0)}`);
+    parts.push(`${mf(a.price)} در برابر ${mf(b.price)} تومان، هر دو در بودجه`);
+  } else if (cur.id === "savings") {
+    parts.push(`٪${pf(ma.premium)} در برابر ٪${pf(mb.premium)} بالاتر از ارزش طلا`);
+    parts.push(`با ${pf(ma.rise)}٪ رشد نرخ طلا سربه‌سر می‌شود، دومی با ${pf(mb.rise)}٪`);
+  } else {
+    parts.push(`طرح خواسته‌شده را دارد`);
+    parts.push(`٪${pf(ma.premium)} در برابر ٪${pf(mb.premium)} بالاتر از ارزش طلا`);
+  }
+  return `<div class="why num"><b>چرا اولی؟</b> ${parts.join("؛ ")}.</div>`;
+}
+
+const SAVINGS = [
+  ["جواهر همین نتایج", s => `٪${pf(s)} بالاتر از ارزش طلا (میانه)`, "محاسبه روی همین نتایج"],
+  ["طلای دست‌دوم", () => "۷ تا ۹٪ رشد قیمت برای سربه‌سر", "مجله‌ی دیجی‌کالا [S-52]"],
+  ["آب‌شده‌ی فیزیکی", () => "۴٪ یا بیشتر", "بانک اول [S-53]"],
+  ["طلای دیجیتال", () => "۱ تا ۲٪", "بانک اول [S-53]"],
+  ["ترب طلا", () => "خرید ۰٪، فروش ۱٪", "ایران‌بروکر [S-13]؛ محصول ترب"],
+];
+
+let cur = D.scenarios[0], open = null;
+function render() {
+  document.getElementById("g").textContent = nf(G);
+  document.getElementById("gt").textContent = D.g_time;
+  document.getElementById("scen").innerHTML = D.scenarios.map(s => `<button aria-pressed="${s.id === cur.id}" data-s="${s.id}">${s.label}</button>`).join("");
+  document.getElementById("q").value = cur.text;
+  document.getElementById("chips").innerHTML = cur.chips.map(([k, v, r]) => `<span class="chip ${r}">${k}: ${v}</span>`).join("");
+  document.getElementById("count").textContent = `${nf(cur.items.length)} نتیجه؛ ${nf(D.excluded.length)} کالای غیرطلا کنار گذاشته شد`;
+  document.getElementById("results").innerHTML = cur.items.map((it, i) => card(it, i) + (i === 0 && cur.items[1] ? why(it, cur.items[1]) : "")).join("");
+  const prem = cur.items.map(math).filter(Boolean).map(m => m.premium).sort((a, b) => a - b);
+  const med = prem.length ? prem[Math.floor(prem.length / 2)] : 0;
+  document.getElementById("savings").innerHTML = cur.savings ? `<section class="savings"><div class="section-title" style="margin-top:0">اگر هدفت پس‌انداز است: هزینه‌ی رفت و برگشت</div>
+    <table><tr><th>شکل</th><th>هزینه</th><th>منبع</th></tr>${SAVINGS.map(([f, v, src]) => `<tr><td>${f}</td><td class="num">${v(med)}</td><td class="own">${src}</td></tr>`).join("")}</table>
+    <p class="fine">این مقایسه‌ی هزینه است، نه توصیه‌ی سرمایه‌گذاری.</p></section>` : "";
+  document.getElementById("review").innerHTML = D.review.length ? `<div class="section-title">نیاز به بررسی (مخلوط یا مشکوک)</div>` + D.review.map((it, i) => card(it, 100 + i)).join("") : "";
+  document.getElementById("excluded").innerHTML = `<div class="section-title">کنار گذاشته‌ها و دلیلشان</div>` + D.excluded.map(it => `<div class="meta">«${esc(it.title)}» — غیرطلا</div>`).join("");
+}
+
+function sheet(it) {
+  const m = math(it);
+  const rows = m ? [["ارزش طلا", m.gold], ["اجرت (برآورد از قیمت)", m.ojrat], ["سود فروشنده (٪۷)", m.profit], ["مالیات (٪۱۰ روی اجرت و سود)", m.tax], ["قیمت آگهی", it.price]] : [];
+  const shops = (it.shops || []).map(s => `<tr><td>${esc(s.shop)}</td><td class="num">${mf(s.price)} تومان</td></tr>`).join("");
+  document.getElementById("sheet").innerHTML = `<button class="close" id="x" aria-label="بستن">×</button><h2 id="sh-t">${esc(it.title)}</h2>
+    <div class="meta">برچسب: ${it.label === "gold" ? "سازگار با طلای واقعی" : it.label === "mixed" ? "مخلوط" : "غیرطلا"}${it.weight ? `، ${wf(it.weight)} گرم` : ""}</div>
+    ${m ? `<table class="bd num">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${mf(v)} تومان</td></tr>`).join("")}
+      <tr><td>اگر فردا بفروشی (پایه‌ی ۷۴۰، برآورد)</td><td>${mf(m.resale)} تومان</td></tr>
+      <tr><td>نرخ هر گرم که در آن ضرر نمی‌کنی</td><td>${mf(m.breakeven)} تومان (٪${pf(m.rise)} رشد)</td></tr></table>
+      <div class="inputs num">ورودی‌ها: وزن ${wf(it.weight)} گرم (${it.weight_src === "spec" ? "مشخصات صفحه" : "عنوان"})؛ نرخ ${nf(G)} تومان، اتحادیه، ${D.g_time}؛ سود ٪۷؛ مالیات ٪۱۰</div>` : `<p>وزن اعلام نشده؛ شکستن قیمت ممکن نیست.</p>`}
+    ${shops ? `<div class="section-title">فروشگاه‌ها</div><table class="bd">${shops}</table>` : ""}
+    <div class="section-title">تاریخچه‌ی «بالاتر از ارزش طلا»</div><p class="fine">بعد از ۱۴ روز جمع‌آوری نمایش داده می‌شود.</p>
+    <a class="cta" href="${esc(it.url)}" target="_blank" rel="noopener">دیدن در فروشگاه</a>`;
+  document.getElementById("bg").style.display = "block";
+  requestAnimationFrame(() => document.getElementById("sheet").classList.add("open"));
+  document.getElementById("x").onclick = closeSheet;
+  document.getElementById("x").focus();
+}
+function closeSheet() { document.getElementById("sheet").classList.remove("open"); document.getElementById("bg").style.display = "none"; }
+
+document.addEventListener("click", e => {
+  const s = e.target.closest("[data-s]"); if (s) { cur = D.scenarios.find(x => x.id === s.dataset.s); render(); return; }
+  const c = e.target.closest(".card"); if (c) { const i = +c.dataset.i; sheet(i >= 100 ? D.review[i - 100] : cur.items[i]); }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.classList?.contains("card")) e.target.click(); });
+document.getElementById("bg").onclick = closeSheet;
+document.getElementById("showEx").onclick = () => { const x = document.getElementById("excluded"); x.hidden = !x.hidden; };
+
+const FB = [["search", "کادر جست‌وجو و چیپ‌ها"], ["card", "کارت نتیجه"], ["strip", "نوار فاکتور (طلا، اجرت، سود، مالیات)"], ["why", "توضیح «چرا اولی؟»"], ["sheet", "برگه‌ی جزئیات"], ["savings", "کارت پس‌انداز"], ["excluded", "کنار گذاشته‌ها و نیاز به بررسی"], ["look", "حس و رنگ کلی"]];
+const KEY = "proto-feedback-2026-10-23";
+let fb = {}; try { fb = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+function renderFb() {
+  document.getElementById("fb").innerHTML = FB.map(([id, label]) => `<div class="fb-row" data-f="${id}"><span>${label}</span><button data-v="ok" class="${fb[id]?.v === "ok" ? "on" : ""}">خوبه</button><button data-v="change" class="${fb[id]?.v === "change" ? "on" : ""}">تغییر بده</button><input placeholder="چه چیزی؟ (اختیاری)" value="${esc(fb[id]?.note || "")}"></div>`).join("");
+  document.getElementById("out").value = FB.filter(([id]) => fb[id]?.v).map(([id]) => `${id}:${fb[id].v}${fb[id].note ? "(" + fb[id].note.replace(/[()\s]+/g, "_") + ")" : ""}`).join(" ");
+}
+document.getElementById("fb").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const id = b.closest(".fb-row").dataset.f; fb[id] = { ...(fb[id] || {}), v: b.dataset.v }; try { localStorage.setItem(KEY, JSON.stringify(fb)); } catch (er) {} renderFb(); });
+document.getElementById("fb").addEventListener("change", e => { if (e.target.tagName !== "INPUT") return; const id = e.target.closest(".fb-row").dataset.f; fb[id] = { ...(fb[id] || {}), note: e.target.value }; try { localStorage.setItem(KEY, JSON.stringify(fb)); } catch (er) {} renderFb(); });
+document.getElementById("copy").onclick = () => navigator.clipboard.writeText(document.getElementById("out").value);
+render(); renderFb();
+</script>
+</body>
+</html>

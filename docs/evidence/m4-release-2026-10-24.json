@@ -1,0 +1,97 @@
+{
+ "release": "M4",
+ "date": "2026-10-24",
+ "pipeline_version": "0.1.0",
+ "how": "node eval/ev-mat.ts|ev-ext.ts|ev-prm.ts --split=test --release; scored once (eval plan §2)",
+ "ev_mat": {
+  "split": "test",
+  "n": 78,
+  "real_vs_rest_accuracy": "84.6",
+  "ci95": [
+   "75.0",
+   "91.0"
+  ],
+  "macro_f1": "0.742",
+  "baseline_accuracy": "74.4",
+  "confusion": {
+   "not_gold→review": 7,
+   "not_gold→real": 4,
+   "not_gold→not_gold": 21,
+   "gold→mixed": 1,
+   "gold→real": 34,
+   "gold→review": 3,
+   "mixed→mixed": 3,
+   "mixed→real": 4,
+   "mixed→review": 1
+  }
+ },
+ "ev_ext": {
+  "split": "test",
+  "extraction_accuracy": {
+   "value": "96.9",
+   "ci95": [
+    "89.3",
+    "99.1"
+   ],
+   "n": 64,
+   "target": "≥ 95"
+  },
+  "weight_recall": {
+   "value": "100.0",
+   "ci95": [
+    "88.6",
+    "100.0"
+   ],
+   "n": 30,
+   "target": "≥ 95"
+  },
+  "weight_precision": {
+   "value": "96.6",
+   "n": 29
+  },
+  "karat_accuracy": {
+   "value": "94.1",
+   "ci95": [
+    "80.9",
+    "98.4"
+   ],
+   "n": 34
+  },
+  "weight_coverage_of_gold": {
+   "value": "60.5",
+   "ci95": [
+    "44.7",
+    "74.4"
+   ],
+   "n": 38,
+   "target": "report only"
+  }
+ },
+ "ev_prm": {
+  "split": "test",
+  "n_rows": 39,
+  "n_clean": 25,
+  "mae_clean_pp": 1.01,
+  "ci95": [
+   0.5,
+   1.55
+  ],
+  "n_non_gold_parts": 14,
+  "mae_non_gold_parts_pp": 81.5,
+  "target_pp": 3
+ },
+ "targets": {
+  "ev_mat_real_vs_rest": "≥ 95 (missed)",
+  "ev_ext_extraction": "≥ 95 (met)",
+  "ev_ext_weight_recall": "≥ 95 (met)",
+  "ev_prm_mae_pp": "≤ 3 (met)"
+ },
+ "ev_mat_error_causes": {
+  "label definition differs between AI tune labels and owner test labels": 5,
+  "price likely in rial; system says review by design (BR-35, BR-36)": 3,
+  "cheap «طلا روس» just above the BR-3A floor": 3,
+  "fancy pendant with a small gold ring": 1
+ },
+ "ai_annotator_vs_owner_on_test_real_vs_rest": "70/78",
+ "status": "EV-MAT test split retired: any rule change after this needs a fresh owner-labelled sample (eval plan §2)"
+}

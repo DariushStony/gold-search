@@ -1,0 +1,62 @@
+{
+  "stamp": "2026-10-23",
+  "script": "spikes/eval/offer-freshness.ts",
+  "card_vs_details": {
+    "n": 280,
+    "equal": 234,
+    "equal_pct": 83.6,
+    "equal_ci95": [
+      78.8,
+      87.5
+    ],
+    "within_1pct": 268,
+    "within_1pct_pct": 95.7,
+    "within_1pct_ci95": [
+      92.7,
+      97.5
+    ]
+  },
+  "runs": [
+    {
+      "run": "2026-10-22T05:37:21.111Z",
+      "products": 450,
+      "several_shops": 77,
+      "share_pct": 17.1,
+      "ci95": [
+        13.9,
+        20.9
+      ]
+    },
+    {
+      "run": "2026-10-22T06:45:04.950Z",
+      "products": 461,
+      "several_shops": 84,
+      "share_pct": 18.2,
+      "ci95": [
+        15,
+        22
+      ]
+    },
+    {
+      "run": "2026-10-23T06:56:00.625Z",
+      "products": 439,
+      "several_shops": 95,
+      "share_pct": 21.6,
+      "ci95": [
+        18,
+        25.7
+      ]
+    }
+  ],
+  "details_pages": {
+    "products": 300,
+    "offers": 3667,
+    "in_stock_or_in_person_priced": 877,
+    "in_person_priced": 210,
+    "products_with_in_person_tab": 103,
+    "products_with_in_person_tab_pct": 34.3,
+    "offers_with_shop_score": 3457,
+    "offers_with_shop_score_pct": 94.3,
+    "offers_price_unreliable": 72
+  }
+}

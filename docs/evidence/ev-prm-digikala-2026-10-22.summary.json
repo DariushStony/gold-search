@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-22",
+  "n_ids": 130,
+  "n_rows": 130,
+  "mae_pp": 32.26,
+  "mae_ci95_pp": [
+    22.556,
+    40.15
+  ],
+  "median_pp": 2.777,
+  "p90_pp": 138.009,
+  "within_1pp": 49,
+  "n_clean_subset": 85,
+  "mae_clean_pp": 1.114,
+  "assumptions": {
+    "vat": 0.1,
+    "profit": 0.07,
+    "price": "rrp (list, before discount)",
+    "gold_price": "Digikala's own gold_price"
+  }
+}

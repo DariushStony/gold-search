@@ -1,0 +1,22 @@
+{
+ "success": true,
+ "data": {
+  "ID": "2138641",
+  "date": "2026-10-23 17:17:03",
+  "IRG18": {
+   "value": 26247800,
+   "compare_value": -822853.39,
+   "compare_percent": 3.04
+  },
+  "IRG24": {
+   "value": 34993000,
+   "compare_value": -1097111.11,
+   "compare_percent": 3.04
+  },
+  "IRG17": {
+   "value": 113700000,
+   "compare_value": -3564401.15,
+   "compare_percent": 3.04
+  }
+ }
+}
