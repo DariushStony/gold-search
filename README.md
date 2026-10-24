@@ -12,7 +12,7 @@
 - **مرحله‌ی فعلی:** ساخت، M4؛ قراردادها منجمد (D-29). Gate 1 و Gate 2 گذشته (D-18، D-27).
 - **نقشه‌ی سندها:** [docs/README.md](docs/README.md)
 
-**خلاصه‌ی یک‌صفحه‌ای:** [docs/summary.md](docs/summary.md)
+**خلاصه‌ی یک‌صفحه‌ای:** [docs/summary.md](docs/summary.md)؛ متن ویدیو: [docs/video-script.md](docs/video-script.md)
 
 ## اجرا
 
