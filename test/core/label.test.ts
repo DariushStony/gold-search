@@ -66,7 +66,7 @@ test("AC-ML-06 (BR-37): a gold claim without weight stays real, flagged, never r
 test("BR-38: a clean real label has a readable reason", () => {
   const r = label("انگشتر طلا ۱۸ عیار وزن ۱ گرم", { price: 32_400_000 });
   assert.equal(r.label, "real");
-  assert.deepEqual(r.reasons, ["واژه‌ی طلا و عیار در عنوان؛ قیمت با ارزش طلا سازگار است"]);
+  assert.deepEqual(r.reasons, ["واژه‌ی طلا و عیار در عنوان آمده و قیمت با ارزش طلا جور است"]);
 });
 
 test("BR-23, BR-38: real gold without a karat says the karat is assumed", () => {

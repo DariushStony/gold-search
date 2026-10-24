@@ -5,7 +5,7 @@ export const TX = {
   weightOrUnitError: "احتمال خطای وزن یا واحد", // TX-11
   weightUnknown: "وزن نامعلوم", // TX-12
   shopTitleMismatch: "عنوان یک فروشگاه با بقیه نمی‌خواند", // TX-13
-  consistentGold: "واژه‌ی طلا و عیار در عنوان؛ قیمت با ارزش طلا سازگار است", // TX-14
+  consistentGold: "واژه‌ی طلا و عیار در عنوان آمده و قیمت با ارزش طلا جور است", // TX-14
   karatAssumed: "عیار فرض‌شده", // TX-20
   belowMinWeightValue: "قیمت از ارزش طلای کمترین وزن ممکن هم کمتر است", // TX-93, BR-3A
   inSpecs: (word: string) => `در مشخصات آمده: ${word}`, // TX-94, BR-31

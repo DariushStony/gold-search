@@ -159,13 +159,13 @@ function explain(a: Card, b: Card): SearchResult["explanation"] {
     if (gain <= 0) continue;
     if (c.name === "low_premium" && a.offer.premium_pct !== null && b.offer.premium_pct !== null) {
       const [x, y] = [Number(a.offer.premium_pct.toFixed(1)), Number(b.offer.premium_pct.toFixed(1))];
-      reasons.push({ gain, text: `این یکی ${formatPct(x)} بالاتر از ارزش طلاست؛ دومی ${formatPct(y)}`, numbers: [x, y] }); // TX-66
+      reasons.push({ gain, text: `این یکی ${formatPct(x)} بالاتر از ارزش طلاست و دومی ${formatPct(y)}`, numbers: [x, y] }); // TX-66
     }
     // Other reasons wait for their content-guide text (CR-02); config.explain.extraReasons stays off until then.
   }
   const top = reasons.sort((x, y) => y.gain - x.gain).slice(0, 3);
   if (top.length === 0) return null;
-  return { text: `چرا اولی؟ ${top.map((r) => r.text).join("؛ ")}`, numbers: top.flatMap((r) => r.numbers).slice(0, 3), template: true }; // TX-65
+  return { text: `چرا اولی؟ ${top.map((r) => r.text).join("، ")}`, numbers: top.flatMap((r) => r.numbers).slice(0, 3), template: true }; // TX-65
 }
 
 function rank(cards: Card[], chips: Chip[], products: Map<string, ProductRecord>): Card[] {
