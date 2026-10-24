@@ -53,6 +53,8 @@ export const config = {
   offers: {
     staleHours: 24, // BR-14
     maxAgeDays: 7, // BR-14; not applied in archive mode (BR-16)
+    // Shops type placeholders such as 999,999,999,999,999 for «call for price»; no gold piece on Torob costs 100 billion toman.
+    maxPriceToman: 100_000_000_000,
   },
   // ADR-0005: AvalAI, OpenAI-compatible; the key comes from AVALAI_API_KEY in the git-ignored .env.
   llm: { baseUrl: "https://api.avalai.ir/v1", model: "gpt-4.1-mini", timeoutMs: 4000, cacheSize: 5000 },

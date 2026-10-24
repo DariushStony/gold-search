@@ -67,8 +67,9 @@ function detailsOffers(productId: string, body: any, fetchedAt: string): OfferRo
     url: o.page_url ?? "", torob_pay: !!o.show_torobpay_badge, price_unreliable: !!o.is_price_unreliable,
     shop_score_pct: typeof o.shop_score_percentile === "number" ? o.shop_score_percentile : null, fetched_at: fetchedAt,
   });
-  for (const o of body.products_info?.result ?? []) if (o.availability && o.price > 0) add(o, "online"); // DM-08: priced offers only
-  for (const o of body.products_in_store_info?.result ?? []) if (o.price > 0) add(o, "in_person");
+  const priced = (o: any) => o.price > 0 && o.price <= config.offers.maxPriceToman; // DM-08: priced offers only, placeholders out
+  for (const o of body.products_info?.result ?? []) if (o.availability && priced(o)) add(o, "online");
+  for (const o of body.products_in_store_info?.result ?? []) if (priced(o)) add(o, "in_person");
   return rows;
 }
 
@@ -106,6 +107,7 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
   const cards = new Map<string, Card[]>();
   for (const day of dayDirs(rawDir)) for (const page of readJsonl(join(rawDir, day, "torob-search.jsonl"))) {
     for (const r of page.results ?? []) {
+      if ((r.price ?? 0) > config.offers.maxPriceToman) continue;
       const list = cards.get(r.random_key) ?? [];
       list.push({ run_id: page.run_id, fetched_at: page.fetched_at, name1: r.name1 ?? "", name2: r.name2 ?? "", price: r.price ?? 0,
         shop_text: r.shop_text ?? "", url: `https://torob.com${r.web_client_absolute_url ?? ""}`, image_url: r.image_url ?? null, is_adv: !!r.is_adv });

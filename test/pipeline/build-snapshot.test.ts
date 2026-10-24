@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -80,4 +80,22 @@ test("buildSnapshot: an offer with no gold quote within 60 minutes gets no break
   assert.equal((db.prepare("SELECT count(*) AS n FROM breakdown").get() as any).n, 0);
   assert.equal((db.prepare("SELECT count(*) AS n FROM offer WHERE gold_quote_id IS NULL").get() as any).n, 4);
   db.close();
+});
+
+test("buildSnapshot: placeholder prices like 999,999,999,999,999 are not offers, and the snapshot still loads", async () => {
+  const raw = rawFixture();
+  const search = join(raw, "2026-10-23", "torob-search.jsonl");
+  const page = JSON.parse(readFileSync(search, "utf8"));
+  page.results.push({ random_key: "junk", name1: "گردنبند طلا ۱۸ عیار", name2: "", price: 999_999_999_999_999, shop_text: "در لؤلؤ گالری", web_client_absolute_url: "/p/junk/x/", image_url: null, is_adv: false });
+  writeFileSync(search, JSON.stringify(page) + "\n");
+  const ring = join(raw, "details", "ring.json");
+  const details = JSON.parse(readFileSync(ring, "utf8"));
+  details.body.products_info.result.push({ shop_name: "لؤلؤ گالری", shop_name2: "تهران", name1: "النگو", price: 9_327_000_093_570_000, availability: true, page_url: "y" });
+  writeFileSync(ring, JSON.stringify(details));
+  const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
+  buildSnapshot({ rawDir: raw, outPath: out });
+  const { loadSnapshot } = await import("../../src/server/snapshot.ts");
+  const snap = loadSnapshot(out);
+  assert.deepEqual(snap.products.map((p) => p.id).sort(), ["fake", "ring"]);
+  assert.ok(snap.products.flatMap((p) => p.offers).every((o) => o.price < 100_000_000_000));
 });
