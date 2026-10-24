@@ -23,6 +23,7 @@ export type ParsedQuery = {
   ask: { kind: "budget_unit" } | null;
   mode: "jewelry" | "non_jewelry" | "both";
   llm_used: boolean;
+  unparsed: string | null; // CR-04: words no rule read, shown as «متوجه نشدم»
 };
 export type Answers = { budget_unit?: "thousand" | "million" };
 
@@ -116,6 +117,34 @@ function budgets(t: string): { amounts: Amount[]; rest: string } {
     rest = rest.replace(m[0], " ");
   }
   return { amounts, rest };
+}
+
+// CR-04: every word some rule looks for, longest first so «روز مادر» goes before «مادر».
+const KNOWN: RegExp[] = [
+  ...[...cfg.itemTypes, ...cfg.forms, ...cfg.styles, ...cfg.occasions, ...cfg.shops].map(([w]) => w),
+  ...cfg.recipients.map(([w]) => w), ...Object.values(cfg.audience).flat(), ...cfg.cities, ...cfg.giftWords, ...cfg.savingsWords,
+  ...cfg.beautyWords, ...cfg.jewelryWords, ...cfg.usedWords, ...cfg.lightWords, ...cfg.heavyWords, "حضوری", "نوزاد", "سالگرد", "سرمایه گذاری",
+].sort((a, b) => b.length - a.length).map((w) => new RegExp(word(w).source, "g")).concat(
+  [/کمترین\s*اجرت/, /(?:کم|بی|بدون|با)\s*اجرت/, /اجرت\s*(?:کم|پایین)/, /بدون\s*(?:سنگ|نگین)/, /ترب\s*پی|قسطی|اقساطی/, /چه\s*مدل/].map((r) => new RegExp(r.source, "g")));
+const FILLER = new Set(cfg.fillerWords);
+
+// What is left after the rules, as runs of unknown words in their order; filler alone never counts.
+function unread(rest: string): string | null {
+  let t = rest;
+  for (const re of KNOWN) t = t.replace(re, " | ");
+  const runs: string[] = [];
+  let run: string[] = [];
+  const flush = () => {
+    while (run.length && FILLER.has(run.at(-1)!)) run.pop();
+    if (run.length) runs.push(run.join(" "));
+    run = [];
+  };
+  for (const tok of t.split(/\s+/).filter(Boolean)) {
+    if (tok === "|") flush();
+    else if (!FILLER.has(tok) || run.length) run.push(tok);
+  }
+  flush();
+  return runs.length ? runs.join("، ") : null;
 }
 
 function firstMatches(t: string, list: [string, string][]): string[] {
@@ -223,5 +252,5 @@ export function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
 
   const jewelry = chips.some((c) => c.kind === "item_type") || jewelryNamed;
   const mode = forms.length === 0 ? "jewelry" : jewelry ? "both" : "non_jewelry";
-  return { chips, intent, suggest_intent: intent === "unknown", ask, mode, llm_used: false };
+  return { chips, intent, suggest_intent: intent === "unknown", ask, mode, llm_used: false, unparsed: unread(t) };
 }

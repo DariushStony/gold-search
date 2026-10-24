@@ -134,3 +134,18 @@ test("AC-QU-05, AC-QU-06 (BR-55, BR-56): rules only, every chip from the sentenc
   assert.equal(p.llm_used, false);
   assert.ok(p.chips.every((c) => c.origin === "text"));
 });
+
+test("CR-04: words the rules did not read come back for the «متوجه نشدم» line", () => {
+  const p = parseQuery("یه النگو سبک برای خانمم، حدود یک و نیم میلیون، تو مایه‌های ۲ گرم");
+  assert.equal(one(p, "item_type"), "النگو");
+  assert.match(p.unparsed ?? "", /نیم میلیون/);
+  assert.doesNotMatch(p.unparsed ?? "", /النگو|سبک|خانم/);
+  assert.match(parseQuery("یه چیز طلا برای مامانم که خوشش بیاد").unparsed ?? "", /خوشش بیاد/);
+});
+
+test("CR-04: the sample sentences and fully read sentences leave nothing unread", () => {
+  for (const s of ["۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم", "یه دستبند ظریف برای روز مادر تا ۲۰ تومن",
+    "زنجیر دو رنگ ایتالیایی مردانه", "یه انگشتر زیر ۳۰۰", "یه گردنبند برای تولد همسرم تا ۳۰ میلیون", "یه انگشتر طلا",
+    "سکه پارسیان یا طلای آب شده برای پس‌انداز", "النگو ۲۰ گرمی زیر ۵ میلیون", "دستبند طلا"])
+    assert.equal(parseQuery(s).unparsed, null, s);
+});

@@ -3,9 +3,9 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.4 |
+| Version | 0.5 |
 | Owner | Dariush Hadipour (Tech Lead role) |
-| Last updated | 2026-10-23 |
+| Last updated | 2026-10-24 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
 | Standard | OpenAPI 3.1 (generated from the route schemas at build time); errors as RFC 9457 problem details |
 
@@ -171,6 +171,7 @@ type ParseResponse = {
   ask: { kind: "budget_unit"; span: [number, number] } | null;   // BR-52: the only blocking question
   mode: "jewelry" | "non_jewelry" | "both";                      // BR-57, from form chips
   llm_used: boolean;                 // BR-55
+  unparsed: string | null;           // CR-04: words no rule read, shown as TX-100; null when every word was read
 };
 ```
 
@@ -308,7 +309,7 @@ One example per operation. Product and prices are real Torob data from the 2026-
     { "kind": "budget_max", "role": "filter", "level": "product", "value": 60000000, "origin": "text", "span": [0, 14] },
     { "kind": "ojrat_max", "role": "filter", "level": "product", "value": 10, "origin": "text", "span": [23, 30] },
     { "kind": "intent", "role": "filter_and_sort", "level": "product", "value": "savings", "origin": "text", "span": [44, 56] } ],
-  "intent": "savings", "suggest_intent": false, "ask": null, "mode": "jewelry", "llm_used": false }
+  "intent": "savings", "suggest_intent": false, "ask": null, "mode": "jewelry", "llm_used": false, "unparsed": null }
 ```
 
 **`POST /parse`** `{ "text": "یه انگشتر زیر ۳۰۰" }` → `200` with `"ask": { "kind": "budget_unit", "span": [10, 17] }` and no budget chip. Then `{ "text": "یه انگشتر زیر ۳۰۰", "answers": { "budget_unit": "million" } }` → the `budget_max` chip `300000000` with `"origin": "user"`.
@@ -381,3 +382,4 @@ Notes on the example:
 | 0.2 | 2026-10-23 | Technical review (D-28): representative offer and per-offer breakdown; live vs fetch-time G; nullable gold price; chip `level` and `origin: user`; intent only in chips; budget-unit flow; `mode` for BR-57; stateless `POST /excluded`; events aligned with the tracking plan, with `session_id`; `410 snapshot-expired`; `/healthz` |
 | 0.3 | 2026-10-23 | Freeze readiness: naming, field mapping to the data model, retry safety and caching per operation; explicit auth statement; user text per error; deprecation rule; event names; one example per operation (§8) |
 | 0.4 | 2026-10-23 | Freeze review fixes: product detail is `POST /products/{id}` with chips (offer filters and score match the card); `GET /status` replaces `/gold-price` and `/healthz` and carries the snapshot state for the archive banner; methodology is a static page, not an endpoint; role and level fixed per chip kind; `origin` is text or user; budget question blocks only in the client (no 422); `partial_reason` only for non-gold parts; `parts`, `no_breakdown_reason`, `weight_conflict`, `sample`, `weight_unknown_bucket`; savings rows with `source_url` and `url`; `relax` names the chip and the results it would bring back; event `snapshot_id` nullable and `string[]` props; error example on `/parse`; `gold-price-unavailable` dropped (null instead) |
+| 0.5 | 2026-10-24 | CR-04: `unparsed` on the `/parse` response |

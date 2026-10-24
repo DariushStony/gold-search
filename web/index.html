@@ -63,6 +63,7 @@ button, input { font: inherit; }
 .chip.sort { border-style: dashed; background: transparent; }
 .chip.info { background: transparent; border-color: #ffffff22; opacity: .85; }
 .legend { font-size: 12px; opacity: .75; margin-top: 8px; }
+.unread { font-size: 13px; opacity: .85; margin-top: 8px; }
 
 main { max-width: 760px; margin: 0 auto; padding: 16px; }
 .summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin: 4px 0 12px; flex-wrap: wrap; }
@@ -142,6 +143,7 @@ footer { max-width: 760px; margin: 0 auto; padding: 8px 16px 40px; font-size: 12
     <input class="query" id="q" maxlength="300" autocomplete="off" placeholder="دنبال چه طلایی هستید؟ با یک جمله بنویسید" aria-label="جست‌وجوی طلا">
     <div class="samples" id="samples"></div>
     <div class="chips" id="chips" aria-live="polite"></div>
+    <div class="unread" id="unread" hidden></div>
     <div class="ask" id="ask" hidden></div>
     <div class="suggest" id="suggest" hidden></div>
     <div class="legend">چیپ پررنگ: فیلتر (حذف می‌کند)؛ چیپ خط‌چین: فقط ترتیب را عوض می‌کند</div>
@@ -213,10 +215,14 @@ async function status() {
 let timer = null;
 async function parse() {
   const text = $("q").value.trim();
-  if (!text) { st.chips = []; renderChips(); return; }
+  if (!text) { st.chips = []; renderChips(); $("unread").hidden = true; return; }
   let p;
   try { p = await post("/parse", { text, answers: st.answers }); } catch (code) { return showError(code); }
   st.text = text; st.chips = p.chips; renderChips();
+  // CR-04: say which part of the sentence no rule read, so a missing chip is not a mystery.
+  const u = (p.unparsed ?? "").replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]), cut = u.lastIndexOf(" ", 70);
+  $("unread").hidden = !u;
+  $("unread").textContent = u ? `متوجه نشدم: «${u.length > 70 ? u.slice(0, cut > 0 ? cut : 70) + "…" : u}». اگر مهم است، ساده‌تر بنویسید.` : "";
   $("ask").hidden = !p.ask;
   $("ask").innerHTML = p.ask ? `منظورتان هزار تومان است یا میلیون؟ <button data-unit="thousand">هزار تومان</button><button data-unit="million">میلیون تومان</button>` : "";
   if (p.ask) { for (const id of ["results", "savings", "sections"]) $(id).innerHTML = ""; $("count").textContent = ""; $("showEx").hidden = true; $("suggest").hidden = true; return; }
