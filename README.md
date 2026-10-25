@@ -19,11 +19,11 @@
 نیاز: Node 24 یا بالاتر (TypeScript مستقیم اجرا می‌شود؛ `node:sqlite` و `node:test` داخلی‌اند).
 
 ```bash
-npm install
-npm run check
+pnpm install
+pnpm check
 node src/collector/collect.ts
-npm run snapshot
-npm run demo
+pnpm snapshot
+pnpm demo
 node eval/ev-mat.ts
 ```
 

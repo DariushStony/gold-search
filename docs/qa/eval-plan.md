@@ -3,9 +3,9 @@
 | | |
 | --- | --- |
 | Status | draft (stage 03) |
-| Version | 0.2 |
+| Version | 0.3 |
 | Owner | Dariush Hadipour |
-| Last updated | 2026-10-23 |
+| Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) §4, §11, §20; [labeling guide](labeling-guide.md) |
 | Standard | ISO/IEC/IEEE 29119-3 (test plan terms); held-out evaluation with confidence intervals |
 
@@ -18,7 +18,7 @@
 | EV-MAT | material label accuracy, macro-F1 (BR-30–BR-39) | Torob gold-jewelry search results from scheduled snapshots | stratified random by query, seed 42, one row per Torob product | AI annotator from title, details page and price; 30-row human audit with Cohen's κ (D-20; [guide](labeling-guide.md) §1–2) | 210 tune / 90 test. The test split is owner-labelled (D-21); 12 «unsure» rows are left out, so 78 are scored. At 95% accuracy the 95% Wilson half-width is about ±4.8 points on 78 rows |
 | EV-EXT | weight / karat extraction (BR-20–BR-28) | same rows as EV-MAT | same | human reading of title and product page | same |
 | EV-PRM | implied-ojrat error (BR-43) | Digikala gold-jewelry products across 4 sort orders | first 150 unique ids (script order) | Digikala's declared `gold_wage` | bootstrap CI on MAE; n≈150 |
-| EV-QRY | query understanding (BR-50–BR-57) | Persian gold requests | 98: 60 authored (20 per intent) + 38 real requests copied verbatim from public forum threads (39%; ninisite.com, 1393–1405) | chip schema filled by the AI annotator, every row confirmed or rejected by the owner | per-intent breakdown needs ≥ 20 each; `unknown` intent rows test BR-53 |
+| EV-QRY | query understanding (BR-50–BR-57) | Persian gold requests | 98: 60 authored (written as 20 per intent; after the owner's review the labels are 20 gift, 20 beauty, 12 savings, 8 unknown) + 38 real requests copied verbatim from public forum threads (39%; ninisite.com, 1393–1405) | chip schema filled by the AI annotator, every row confirmed or rejected by the owner | per-intent breakdown needs ≥ 20 each; `unknown` intent rows test BR-53 |
 | EV-RNK | ranking quality (BR-60–BR-67) | real queries from EV-QRY | ≥ 30 queries × top-10 pooled from both systems, judged in one blind session at M5 (D-25) | graded relevance 0–3, judged blind to system ([guide](labeling-guide.md) §5) | bootstrap over queries |
 | EV-MCH | Torob ↔ Digikala matching (BR-81–BR-83, after MVP); decision evidence for D-24, not a release metric | Torob listings with a Digikala offer + same-gallery candidates | ≥ 100 pairs, half expected matches | human judgement of "same physical item" | precision CI at ≥ 95% |
 
@@ -70,3 +70,4 @@
 |---|---|---|
 | 0.1 | 2026-10-22 | First draft for Gate 2 |
 | 0.2 | 2026-10-23 | Technical review (D-28): EV-MAT interval width corrected (±4.8 on 78 scored test rows, not ±2.5); release vs push rules; pass rule; weight recall vs coverage; offer freshness and card–details agreement |
+| 0.3 | 2026-10-25 | EV-QRY intent counts after the owner's review (20/20/12/8), not the authoring plan (20 per intent) |
