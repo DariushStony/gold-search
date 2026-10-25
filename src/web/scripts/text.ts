@@ -4,7 +4,6 @@ import type { ChipKind } from '../../shared/chips.ts';
 const SAMPLES = [
   'یه دستبند ظریف برای روز مادر تا ۲۰ تومن',
   '۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم',
-  'زنجیر دو رنگ ایتالیایی مردانه',
 ];
 
 const KIND: Record<string, string> = {
