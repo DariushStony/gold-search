@@ -1,0 +1,166 @@
+/* Archify diagrams inlined in the Atlas. Archify draws with semantic classes (c-, t-, a-, m-, s-) that read
+   these variables, so the same SVG follows the light and dark tokens without its own runtime. */
+.diagram {
+  margin: var(--space-5) 0;
+  --frontend-fill: color-mix(in srgb, var(--gold) 12%, var(--surface));
+  --frontend-stroke: var(--gold-ink);
+  --backend-fill: var(--surface);
+  --backend-stroke: var(--ink-2);
+  --database-fill: color-mix(in srgb, var(--real) 9%, var(--surface));
+  --database-stroke: var(--real);
+  --external-fill: var(--sunk);
+  --external-stroke: var(--muted);
+  --cloud-fill: var(--gold-soft);
+  --cloud-stroke: var(--gold);
+  --security-stroke: var(--action);
+  --text: var(--ink);
+  --text-muted: var(--muted);
+  --text-dim: var(--muted);
+  --arrow: var(--muted);
+  --arrow-emphasis: var(--action);
+  --grid: transparent;
+  --mask: var(--surface);
+  --lane-fill: color-mix(in srgb, var(--ink) 3%, transparent);
+  --lane-stroke: var(--line);
+}
+.diagram-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  padding: var(--space-3);
+}
+.diagram svg {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+.diagram figcaption {
+  font-size: var(--text-s);
+  color: var(--muted);
+  margin-top: var(--space-2);
+}
+.diagram-text {
+  margin-top: var(--space-2);
+  font-size: var(--text-s);
+}
+.diagram-text summary {
+  cursor: pointer;
+  color: var(--gold-ink);
+  min-height: 32px;
+}
+
+.diagram .c-frontend {
+  fill: var(--frontend-fill);
+  stroke: var(--frontend-stroke);
+}
+.diagram .c-backend {
+  fill: var(--backend-fill);
+  stroke: var(--backend-stroke);
+}
+.diagram .c-database {
+  fill: var(--database-fill);
+  stroke: var(--database-stroke);
+}
+.diagram .c-external {
+  fill: var(--external-fill);
+  stroke: var(--external-stroke);
+}
+.diagram .c-cloud {
+  fill: var(--cloud-fill);
+  stroke: var(--cloud-stroke);
+}
+.diagram .c-region {
+  fill: color-mix(in srgb, var(--gold) 5%, transparent);
+  stroke: var(--cloud-stroke);
+  stroke-dasharray: 8, 4;
+}
+.diagram .c-lane {
+  fill: var(--lane-fill);
+  stroke: var(--lane-stroke);
+  stroke-dasharray: 6, 6;
+}
+.diagram .c-grid {
+  stroke: var(--grid);
+  fill: none;
+}
+.diagram .c-mask {
+  fill: var(--mask);
+  stroke: none;
+}
+.diagram .t-primary {
+  fill: var(--text);
+}
+.diagram .t-muted {
+  fill: var(--text-muted);
+}
+.diagram .t-dim {
+  fill: var(--text-dim);
+}
+.diagram .t-cloud {
+  fill: var(--cloud-stroke);
+}
+.diagram .t-edge-default {
+  fill: var(--arrow);
+}
+.diagram .t-edge-emphasis {
+  fill: var(--arrow-emphasis);
+}
+.diagram .t-edge-dashed {
+  fill: var(--database-stroke);
+}
+.diagram .a-default {
+  stroke: var(--arrow);
+  fill: none;
+}
+.diagram .a-emphasis {
+  stroke: var(--arrow-emphasis);
+  fill: none;
+}
+.diagram .a-dashed {
+  stroke: var(--database-stroke);
+  fill: none;
+  stroke-dasharray: 4, 4;
+}
+.diagram .m-default {
+  fill: var(--arrow);
+}
+.diagram .m-emphasis {
+  fill: var(--arrow-emphasis);
+}
+.diagram .m-dashed {
+  fill: var(--database-stroke);
+}
+.diagram .m-security {
+  fill: var(--security-stroke);
+}
+.diagram .semantic-sigil {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.76;
+}
+.diagram .semantic-sigil .sigil-fill {
+  fill: currentColor;
+  stroke: none;
+}
+.diagram .s-frontend {
+  color: var(--frontend-stroke);
+}
+.diagram .s-backend {
+  color: var(--backend-stroke);
+}
+.diagram .s-database {
+  color: var(--database-stroke);
+}
+.diagram .s-external {
+  color: var(--external-stroke);
+}
+.diagram [data-edge-from] {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

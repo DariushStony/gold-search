@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "One search, from sentence to cards",
+    "output": ".archify/sequence-zarsanj-search-20261025-160529/zarsanj-search.html",
+    "locale": "en",
+    "viewBox": [1080, 640],
+    "column_fit": "spread",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "git@github.com:DariushStony/gold-search.git",
+      "link_mode": "local-only",
+      "revision": "3a09715ac9c4f45a7dfba56b83c7d7de63f8d192"
+    }
+  },
+  "participants": [
+    { "id": "shopper", "type": "external", "label": "Shopper", "sublabel": "types one sentence" },
+    { "id": "page", "type": "frontend", "label": "Search page", "sublabel": "chips are the model",
+      "sources": [{ "path": "src/web/scripts/main.ts", "line": 27, "label": "parse()" }, { "path": "src/web/scripts/results.ts", "line": 108, "label": "run()" }] },
+    { "id": "server", "type": "backend", "label": "Node server", "sublabel": "rate-limited API",
+      "sources": [{ "path": "src/app/server.ts", "line": 361, "label": "/api/v1/parse" }, { "path": "src/app/server.ts", "line": 387, "label": "/api/v1/search" }] },
+    { "id": "reader", "type": "backend", "label": "Sentence reader", "sublabel": "rules, then checks",
+      "sources": [{ "path": "src/domains/query/ai-reader.ts", "line": 33, "end_line": 52, "label": "parser()" }, { "path": "src/domains/query/llm.ts", "line": 119, "label": "mergeLlm" }] },
+    { "id": "avalai", "type": "external", "label": "AvalAI", "sublabel": "gpt-4.1-mini",
+      "sources": [{ "path": "src/domains/query/ai-reader.ts", "line": 9, "end_line": 30, "label": "avalai()" }] },
+    { "id": "ranking", "type": "backend", "label": "Ranking", "sublabel": "snapshot in memory",
+      "sources": [{ "path": "src/domains/ranking/rank.ts", "line": 396, "label": "search()" }] }
+  ],
+  "segments": [
+    { "from": 150, "to": 355, "label": "Read the sentence" },
+    { "from": 365, "to": 520, "label": "Search and show" }
+  ],
+  "messages": [
+    { "id": "type", "from": "shopper", "to": "page", "y": 165, "label": "sentence", "variant": "default" },
+    { "id": "post-parse", "from": "page", "to": "server", "y": 190, "label": "POST /parse", "variant": "emphasis" },
+    { "id": "rules", "from": "server", "to": "reader", "y": 215, "label": "parse(text)", "variant": "default" },
+    { "id": "ask-llm", "from": "reader", "to": "avalai", "y": 245, "label": "unread words only", "variant": "dashed", "note": "4 s timeout" },
+    { "id": "llm-json", "from": "avalai", "to": "reader", "y": 275, "label": "JSON, strict schema", "variant": "return" },
+    { "id": "checked", "from": "reader", "to": "server", "y": 305, "label": "checked chips", "variant": "return" },
+    { "id": "chips", "from": "server", "to": "page", "y": 335, "label": "chips + unread", "variant": "return" },
+    { "id": "post-search", "from": "page", "to": "server", "y": 385, "label": "POST /search (chips)", "variant": "emphasis" },
+    { "id": "rank", "from": "server", "to": "ranking", "y": 410, "label": "search(chips)", "variant": "default" },
+    { "id": "ranked", "from": "ranking", "to": "server", "y": 440, "label": "results, review, why", "variant": "return" },
+    { "id": "cards", "from": "server", "to": "page", "y": 470, "label": "cards + price split", "variant": "return" },
+    { "id": "show", "from": "page", "to": "shopper", "y": 500, "label": "chips, cards, sort", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "page", "from": 160, "to": 505, "type": "frontend" },
+    { "participant": "server", "from": 185, "to": 340, "type": "backend" },
+    { "participant": "reader", "from": 210, "to": 310, "type": "backend" },
+    { "participant": "avalai", "from": 240, "to": 280, "type": "external" },
+    { "participant": "server", "from": 380, "to": 475, "type": "backend" },
+    { "participant": "ranking", "from": 405, "to": 445, "type": "backend" }
+  ],
+  "cards": [
+    { "dot": "violet", "title": "Model only where needed", "items": ["No call if the rules read every word", "No call while the sentence asks a question back", "Answers are cached per sentence"] },
+    { "dot": "rose", "title": "Fallback", "items": ["Error, timeout or a rejected chip: the rules' chips stand", "A chip keeps only allowed values and numbers seen in the text"] }
+  ]
+}

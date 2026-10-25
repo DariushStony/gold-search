@@ -18,6 +18,9 @@ COPY eval ./eval
 COPY src ./src
 COPY test ./test
 COPY docs/evidence/torob-robots-2026-10-21.txt ./docs/evidence/
+# the Atlas is rendered from these at build time
+COPY docs/atlas ./docs/atlas
+COPY docs/engineering ./docs/engineering
 RUN pnpm typecheck && pnpm lint && pnpm test && pnpm build
 
 FROM node:24-alpine AS runtime

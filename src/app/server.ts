@@ -2,7 +2,7 @@
 // Serves src/web/index.html and the API contract's endpoints over the in-memory snapshot.
 // Run: node src/app/server.ts [snapshotPath] [port]
 import { randomUUID } from 'node:crypto';
-import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { dirname, join } from 'node:path';
 import { config } from '../core/config.ts';
@@ -246,7 +246,7 @@ function createHandler(snapshotPath: string, deps: Deps = {}) {
     res.end(typeof body === 'string' ? body : JSON.stringify(body));
   };
   // The page and its hashed assets; an asset URL carries ?v=<hash>, so it can be cached for a year.
-  const sendFile = (res: ServerResponse, name: string, cache: string) => {
+  const sendFile = (res: ServerResponse, name: string, cache: string, status = 200) => {
     const type = TYPES[name.slice(name.lastIndexOf('.'))];
     let body: Buffer;
     try {
@@ -255,7 +255,7 @@ function createHandler(snapshotPath: string, deps: Deps = {}) {
       return problem(res, 404, 'not-found', name);
     }
     if (!type) return problem(res, 404, 'not-found', name);
-    res.writeHead(200, { ...HEADERS, 'Content-Type': type, 'Cache-Control': cache });
+    res.writeHead(status, { ...HEADERS, 'Content-Type': type, 'Cache-Control': cache });
     res.end(body);
   };
   const problem = (res: ServerResponse, status: number, type: string, detail: string) =>
@@ -316,6 +316,18 @@ function createHandler(snapshotPath: string, deps: Deps = {}) {
     try {
       if (read && (url.pathname === '/' || url.pathname === '/index.html')) {
         return sendFile(res, 'index.html', 'no-cache');
+      }
+      // the Atlas: static pages built by pnpm build:web; a slug is lower-case letters, digits and dashes only
+      const atlas = read && url.pathname.match(/^\/atlas(?:\/(.*?))?\/?$/);
+      if (atlas) {
+        const name = atlas[1] || 'index';
+        if (
+          /^[a-z0-9-]+$/.test(name) &&
+          existsSync(join(webDir, 'atlas', `${name}.html`))
+        ) {
+          return sendFile(res, `atlas/${name}.html`, 'no-cache');
+        }
+        return sendFile(res, 'atlas/404.html', 'no-cache', 404);
       }
       if (read && url.pathname === '/robots.txt') {
         return send(

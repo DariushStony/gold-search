@@ -293,6 +293,13 @@ function builtPage(): string {
   mkdirSync(join(dir, 'assets'));
   writeFileSync(join(dir, 'index.html'), '<!doctype html><title>زرسنج</title>');
   writeFileSync(join(dir, 'assets', 'app.js'), 'console.log(1)');
+  mkdirSync(join(dir, 'atlas'));
+  for (const page of ['index', 'product', '404']) {
+    writeFileSync(
+      join(dir, 'atlas', `${page}.html`),
+      `<!doctype html><title>atlas ${page}</title>`,
+    );
+  }
   return dir;
 }
 
@@ -371,6 +378,41 @@ test("CR-07: a gold price that moved since the fetch changes no breakdown number
     assert.equal(b.resale_value, 45_316_515); // at the fetch-time G of 27,017,000, not today's 30,000,000
     assert.equal(Number(b.resale_loss_pct.toFixed(1)), 7.5); // 1 − 45,316,515 ÷ 49,000,000, the representative offer
     assert.equal(b.inputs.g_live, 30_000_000);
+  } finally {
+    server.close();
+  }
+});
+
+test('the Atlas: /atlas and /atlas/<page> serve built pages; an unknown page gets the Atlas 404 page with status 404', async () => {
+  const out = join(mkdtempSync(join(tmpdir(), 'snap-')), 'snapshot.sqlite');
+  buildSnapshot({ rawDir: rawFixture(), outPath: out });
+  const server = createApp(out, {
+    goldPrice: async () => G,
+    eventsFile: null,
+    log: () => {},
+    webDir: builtPage(),
+  }).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  try {
+    for (const [path, want] of [
+      ['/atlas', 'atlas index'],
+      ['/atlas/', 'atlas index'],
+      ['/atlas/product', 'atlas product'],
+    ] as const) {
+      const r = await fetch(base + path);
+      assert.equal(r.status, 200, path);
+      assert.match(r.headers.get('content-type') ?? '', /text\/html/);
+      assert.match(await r.text(), new RegExp(want));
+    }
+    for (const path of [
+      '/atlas/nope',
+      '/atlas/..%2F..%2Fpackage.json',
+      '/atlas/Product',
+    ]) {
+      const r = await fetch(base + path);
+      assert.equal(r.status, 404, path);
+      assert.match(await r.text(), /atlas 404/);
+    }
   } finally {
     server.close();
   }

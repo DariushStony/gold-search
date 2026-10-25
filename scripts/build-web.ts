@@ -6,6 +6,7 @@ import { cpSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as esbuild from 'esbuild';
 import { footer, header, type Section } from '../src/web/templates/chrome.ts';
+import { buildAtlas } from './atlas/build.ts';
 
 const ROOT = new URL('../', import.meta.url).pathname;
 const SRC = join(ROOT, 'src/web');
@@ -37,6 +38,11 @@ const writeHtml: esbuild.Plugin = {
         join(OUT, 'index.html'),
         page(readFileSync(join(SRC, 'index.html'), 'utf8')),
       );
+      const problems = buildAtlas(OUT, page);
+      if (problems.length) {
+        return { errors: problems.map((text) => ({ text: `atlas: ${text}` })) };
+      }
+      return undefined;
     });
   },
 };
@@ -46,6 +52,8 @@ const options: esbuild.BuildOptions = {
     { in: join(SRC, 'scripts/main.ts'), out: 'app' },
     { in: join(SRC, 'scripts/theme-init.ts'), out: 'theme-init' },
     { in: join(SRC, 'styles/main.css'), out: 'app' },
+    { in: join(SRC, 'scripts/atlas.ts'), out: 'atlas' },
+    { in: join(SRC, 'styles/atlas.css'), out: 'atlas' },
   ],
   outdir: join(OUT, 'assets'),
   bundle: true,

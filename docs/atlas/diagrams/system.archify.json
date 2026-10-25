@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Zarsanj: system overview",
+    "output": ".archify/architecture-zarsanj-system-20261025-160529/zarsanj-system.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "git@github.com:DariushStony/gold-search.git",
+      "link_mode": "local-only",
+      "revision": "3a09715ac9c4f45a7dfba56b83c7d7de63f8d192"
+    }
+  },
+  "components": [
+    { "id": "shopper", "type": "external", "label": "Shopper", "sublabel": "phone or desktop browser", "pos": [40, 200], "size": [150, 64] },
+    { "id": "page", "type": "frontend", "label": "Search page", "sublabel": "TypeScript modules", "pos": [290, 200], "size": [160, 64],
+      "sources": [{ "path": "src/web/scripts/main.ts", "line": 19, "end_line": 25, "label": "refresh()" }, { "path": "src/web/scripts/results.ts", "line": 108, "label": "run()" }] },
+    { "id": "server", "type": "backend", "label": "Node HTTP server", "sublabel": "no framework", "pos": [560, 200], "size": [170, 64],
+      "sources": [{ "path": "src/app/server.ts", "line": 222, "end_line": 233, "label": "createHandler" }] },
+    { "id": "reader", "type": "backend", "label": "Sentence reader", "sublabel": "rules first, then checks", "pos": [860, 200], "size": [190, 64],
+      "sources": [{ "path": "src/domains/query/ai-reader.ts", "line": 33, "end_line": 52, "label": "parser()" }, { "path": "src/domains/query/parse.ts", "line": 240, "label": "parseQuery" }] },
+    { "id": "avalai", "type": "external", "label": "AvalAI gateway", "sublabel": "gpt-4.1-mini, JSON schema", "pos": [860, 40], "size": [190, 64],
+      "sources": [{ "path": "src/domains/query/ai-reader.ts", "line": 9, "end_line": 30, "label": "avalai()" }] },
+    { "id": "gold", "type": "external", "label": "Gold price sources", "sublabel": "union board, tgju", "pos": [290, 40], "size": [180, 64],
+      "sources": [{ "path": "src/domains/pricing/gold-feed.ts", "line": 13, "label": "createGoldFeed" }, { "path": "src/app/server.ts", "line": 104, "label": "gold feed" }] },
+    { "id": "ranking", "type": "backend", "label": "Ranking", "sublabel": "filters, labels, score", "pos": [560, 360], "size": [170, 64],
+      "sources": [{ "path": "src/domains/ranking/rank.ts", "line": 396, "label": "search()" }, { "path": "src/domains/ranking/rank.ts", "line": 187, "label": "route()" }] },
+    { "id": "snapshot", "type": "database", "label": "Snapshot", "sublabel": "SQLite, held in memory", "pos": [860, 360], "size": [190, 64],
+      "sources": [{ "path": "src/domains/catalog/snapshot.ts", "line": 23, "label": "loadSnapshot" }, { "path": "src/app/server.ts", "line": 223, "label": "loaded at start" }] },
+    { "id": "torob", "type": "external", "label": "Torob API", "sublabel": "search and product pages", "pos": [40, 540], "size": [170, 64],
+      "sources": [{ "path": "src/domains/collection/collect.ts", "line": 8, "label": "robots.txt" }] },
+    { "id": "collector", "type": "backend", "label": "Collector", "sublabel": "allowed paths, paced", "pos": [310, 540], "size": [170, 64],
+      "sources": [{ "path": "src/domains/collection/collect.ts", "line": 120, "label": "runCollector" }, { "path": "src/domains/collection/collect.ts", "line": 78, "label": "robotsAllows" }] },
+    { "id": "builder", "type": "backend", "label": "Snapshot builder", "sublabel": "extract, label, price split", "pos": [580, 540], "size": [190, 64],
+      "sources": [{ "path": "src/domains/collection/build-snapshot.ts", "line": 229, "label": "buildSnapshot" }] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Hamravesh Darkube container", "wraps": ["server", "reader", "ranking", "snapshot"] },
+    { "kind": "region", "label": "Owner's machine", "wraps": ["collector", "builder"] }
+  ],
+  "connections": [
+    { "id": "types-sentence", "from": "shopper", "to": "page", "label": "one sentence", "variant": "emphasis" },
+    { "id": "page-api", "from": "page", "to": "server", "label": "/parse, /search", "variant": "emphasis" },
+    { "id": "read-sentence", "from": "server", "to": "reader", "label": "parse(text)" },
+    { "id": "unread-words", "from": "reader", "to": "avalai", "label": "unread words only", "variant": "dashed" },
+    { "id": "gold-feed", "from": "gold", "to": "server", "label": "every 2 min", "variant": "dashed", "fromSide": "right", "toSide": "top" },
+    { "id": "search-chips", "from": "server", "to": "ranking", "label": "search(chips)" },
+    { "id": "products", "from": "snapshot", "to": "ranking", "label": "products" },
+    { "id": "collect", "from": "torob", "to": "collector", "label": "JSON pages" },
+    { "id": "raw-files", "from": "collector", "to": "builder", "label": "raw JSONL" },
+    { "id": "ship", "from": "builder", "to": "snapshot", "label": "git push, Darkube build", "fromSide": "right", "toSide": "bottom" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Deterministic", "items": ["Rules read most sentences", "Labels, price split and ranking are code", "Same snapshot and sentence, same answer"] },
+    { "dot": "violet", "title": "Model-driven", "items": ["AvalAI reads only words the rules missed", "Its chips are checked before use", "On error or after 4 s the rules' chips stand"] },
+    { "dot": "amber", "title": "Data", "items": ["The server never calls Torob", "Each offer keeps the gold price of its fetch time"] }
+  ]
+}
