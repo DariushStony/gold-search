@@ -404,7 +404,7 @@
   }
  },
  "not_used": {
-  "claude-haiku-5-5": "through AvalAI it ignored the json_schema (returned fenced JSON in another shape) and took 4.0 s on one sentence"
+  "third small model on AvalAI": "through AvalAI it ignored the json_schema (returned fenced JSON in another shape) and took 4.0 s on one sentence"
  },
  "usage_one_call": {
   "prompt_tokens": 895,

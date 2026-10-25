@@ -17,7 +17,9 @@ spikes/
 
 # Captured API responses stay byte for byte
 test/fixtures/
-.claude/
+
+# Local tool folders
+.*/
 
 # The demo snapshot is binary
 deploy/
