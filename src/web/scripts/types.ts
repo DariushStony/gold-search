@@ -1,14 +1,7 @@
 // The API shapes the page reads (docs/engineering/api-contract.md); only the fields it uses.
-type Label = 'real' | 'mixed' | 'not_gold' | 'review';
+import type { Chip } from '../../shared/chips.ts';
 
-type Chip = {
-  kind: string;
-  value: string | number | boolean;
-  role: 'filter' | 'sort' | 'filter_and_sort' | 'info';
-  level: 'product' | 'offer';
-  origin: 'user' | 'parsed';
-  llm?: true;
-};
+type Label = 'real' | 'mixed' | 'not_gold' | 'review';
 
 type ParseResponse = {
   chips: Chip[];
@@ -60,6 +53,8 @@ type ResultCard = {
   weight_g: number | null;
   offer: Offer;
   offer_count: number;
+  score: number;
+  components: { name: string; weight: number; value: number }[];
 };
 
 type SearchResponse = {
@@ -104,7 +99,6 @@ type StatusResponse = {
 type ErrorCode = number | 'offline';
 
 export {
-  type Chip,
   type ParseResponse,
   type Breakdown,
   type ResultCard,

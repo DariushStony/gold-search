@@ -2,7 +2,7 @@
 // choice before the first paint; this keeps the buttons and the browser bar colour in step with it.
 type Choice = 'light' | 'dark' | 'system';
 
-const BAR = { light: '#ffffff', dark: '#212b36' };
+const BAR = { light: '#fffdf9', dark: '#1d1914' };
 const media = matchMedia('(prefers-color-scheme: dark)');
 
 const saved = (): Choice => {

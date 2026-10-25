@@ -1,15 +1,28 @@
-import { post } from './api.ts';
+import { errorCode, post } from './api.ts';
 import { renderChips } from './chips.ts';
 import { $, esc } from './dom.ts';
-import { clearResults, run, showError } from './results.ts';
-import { closeSheet, openSheet } from './sheet.ts';
-import { st, track } from './state.ts';
+import { initFilters, renderFilters } from './filters.ts';
+import { initOverlays } from './overlay.ts';
+import { clearResults, initImages, run, showError } from './results.ts';
+import { openSheet } from './sheet.ts';
+import { initSort, renderSort } from './sort.ts';
+import { st, track, userChip } from './state.ts';
 import { loadStatus } from './status.ts';
 import { SAMPLES } from './text.ts';
 import { initTheme } from './theme.ts';
-import type { ErrorCode, ParseResponse } from './types.ts';
+import type { ParseResponse } from './types.ts';
 
 const toPersianDigits = (s: string) => s.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]!);
+
+// Chips are the one model: the sentence, the filter panel, the sort control and the × on a chip all edit
+// st.chips, then everything that shows them is drawn again and the search runs.
+async function refresh() {
+  renderChips();
+  renderSort();
+  renderFilters();
+  await run();
+  renderFilters();
+}
 
 async function parse() {
   const text = $<HTMLInputElement>('q').value.trim();
@@ -23,12 +36,11 @@ async function parse() {
   try {
     p = await post<ParseResponse>('/parse', { text, answers: st.answers });
   } catch (code) {
-    return showError(code as ErrorCode);
+    return showError(errorCode(code));
   }
   st.text = text;
   st.chips = p.chips;
   st.llm = p.llm_used;
-  renderChips();
   // CR-04: say which part of the sentence no rule read, so a missing chip is not a mystery.
   const u = toPersianDigits(p.unparsed ?? '');
   const cut = u.lastIndexOf(' ', 70);
@@ -38,10 +50,13 @@ async function parse() {
     : '';
   $('ask').hidden = !p.ask;
   $('ask').innerHTML = p.ask
-    ? `منظورتان هزار تومان است یا میلیون؟ <button data-unit="thousand">هزار تومان</button><button data-unit="million">میلیون تومان</button>`
+    ? `منظورتان هزار تومان است یا میلیون؟ <button type="button" data-unit="thousand">هزار تومان</button><button type="button" data-unit="million">میلیون تومان</button>`
     : '';
-  if (p.ask) return clearResults();
-  await run();
+  if (p.ask) {
+    renderChips();
+    return clearResults();
+  }
+  await refresh();
 }
 
 async function toggleExcluded() {
@@ -50,11 +65,11 @@ async function toggleExcluded() {
     snapshot_id: st.last?.snapshot.id,
   });
   $('excluded').innerHTML =
-    `<div class="section-title">کنار گذاشته‌ها</div>` +
+    `<h2 class="section-title">کنار گذاشته‌ها</h2>` +
     x.items
       .map(
         (i) =>
-          `<div class="meta">«${esc(i.title)}»، ${esc((i.reasons ?? []).join('، '))}</div>`,
+          `<p class="meta">«${esc(i.title)}»، ${esc((i.reasons ?? []).join('، '))}</p>`,
       )
       .join('');
   $('excluded').hidden = !$('excluded').hidden;
@@ -68,48 +83,44 @@ function onClick(e: MouseEvent) {
     st.answers = {};
     return parse();
   }
-  if (d.unit) {
-    st.answers = { budget_unit: d.unit as 'thousand' | 'million' };
+  if (d.unit === 'thousand' || d.unit === 'million') {
+    st.answers = { budget_unit: d.unit };
     track('chip_edited', { kind: 'budget_max', action: 'answer', origin_before: 'none' });
     return parse();
   }
   if (d.intent) {
     st.chips = st.chips
       .filter((c) => c.kind !== 'intent')
-      .concat({
-        kind: 'intent',
-        role: 'filter_and_sort',
-        level: 'product',
-        value: d.intent,
-        origin: 'user',
-      });
+      .concat(userChip('intent', d.intent));
     track('intent_suggestion_used', { intent: d.intent });
-    renderChips();
-    return run();
+    return refresh();
   }
   if (d.rm !== undefined) {
     const [c] = st.chips.splice(Number(d.rm), 1);
     track('chip_edited', { kind: c?.kind, action: 'remove', origin_before: c?.origin });
-    renderChips();
-    return run();
+    return refresh();
+  }
+  if (t.closest('[data-clear-chips]')) {
+    st.chips = [];
+    return refresh();
   }
   if (d.relax !== undefined) {
     st.chips.splice(Number(d.relax), 1);
-    renderChips();
-    return run();
+    return refresh();
   }
+  if (t.closest('[data-retry]')) return st.chips.length ? refresh() : parse();
   if (t.id === 'showEx') return toggleExcluded();
   if (t.closest('#go-search')) {
     clearTimeout(timer);
     return parse();
   }
-  const card = t.closest<HTMLElement>('.card');
-  if (card?.dataset.id) return openSheet(card.dataset.id);
+  const open = t.closest<HTMLElement>('[data-open]');
+  if (open?.dataset.open) return openSheet(open.dataset.open, open);
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined;
 $('samples').innerHTML = SAMPLES.map(
-  (s) => `<button data-sample="${esc(s)}">${esc(s)}</button>`,
+  (s) => `<button type="button" data-sample="${esc(s)}">${esc(s)}</button>`,
 ).join('');
 $('q').addEventListener('input', () => {
   clearTimeout(timer);
@@ -123,11 +134,11 @@ $('q').addEventListener('keydown', (e) => {
   }
 });
 document.addEventListener('click', (e) => void onClick(e));
-document.addEventListener('keydown', (e) => {
-  const t = e.target as HTMLElement;
-  if (e.key === 'Escape') closeSheet();
-  if (e.key === 'Enter' && t.classList?.contains('card')) t.click();
-});
-$('bg').addEventListener('click', closeSheet);
 initTheme();
+initOverlays();
+initImages();
+initSort(() => void refresh());
+initFilters(() => void refresh());
+renderSort();
+renderFilters();
 void loadStatus();

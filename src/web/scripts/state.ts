@@ -1,5 +1,6 @@
+import { ROLE, type Chip, type ChipKind } from '../../shared/chips.ts';
 import { post } from './api.ts';
-import type { Chip, SearchResponse } from './types.ts';
+import type { SearchResponse } from './types.ts';
 
 type Answers = { budget_unit?: 'thousand' | 'million' };
 
@@ -10,6 +11,16 @@ const st: {
   last: SearchResponse | null;
   llm: boolean;
 } = { text: '', chips: [], answers: {}, last: null, llm: false };
+
+// A chip the user set by hand (filter panel, sort control, intent buttons) is the same shape as one read from
+// the sentence, so the server treats both alike (API contract §3).
+const userChip = (kind: ChipKind, value: Chip['value']): Chip => ({
+  kind,
+  value,
+  role: ROLE[kind][0],
+  level: ROLE[kind][1],
+  origin: 'user',
+});
 
 const session = (() => {
   try {
@@ -35,4 +46,4 @@ const track = (name: string, props: Record<string, unknown>) =>
 
 const rankOf = (id: string) => 1 + (st.last?.results.findIndex((c) => c.id === id) ?? 0);
 
-export { st, track, rankOf };
+export { st, userChip, track, rankOf };

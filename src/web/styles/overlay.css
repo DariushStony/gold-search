@@ -1,0 +1,162 @@
+/* Overlays. Details: a side panel at the far edge on desktop, a bottom sheet on a phone. Sort: a short
+   bottom sheet that applies on tap. All of them trap focus, lock the page, close on Escape and the scrim. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  z-index: 20;
+}
+.sheet {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  max-height: 88vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
+  box-shadow: var(--shadow-overlay);
+  padding: var(--space-4) var(--space-4)
+    calc(var(--space-5) + env(safe-area-inset-bottom));
+  z-index: 21;
+  transform: translateY(100%);
+  transition: transform 0.22s ease;
+}
+.sheet.open {
+  transform: none;
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.sheet-head h2 {
+  margin: 0;
+  margin-inline-end: auto;
+  font-size: var(--text-l);
+}
+.close {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  border: 0;
+  background: var(--sunk);
+  color: var(--ink-2);
+  font-size: 20px;
+  line-height: 1;
+}
+.sort-list {
+  display: grid;
+}
+.sort-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  text-align: start;
+  font-size: var(--text-m);
+}
+.sort-list button[aria-pressed='true'] {
+  font-weight: 800;
+}
+.sort-list button[aria-pressed='true']::after {
+  content: '✓';
+  color: var(--gold-ink);
+  font-weight: 800;
+}
+
+.detail h2 {
+  font-size: var(--text-l);
+  margin: 0 0 var(--space-1);
+  padding-inline-end: 48px;
+}
+.detail > .close {
+  position: absolute;
+  inset-inline-end: var(--space-3);
+  top: var(--space-3);
+}
+.bd {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-s);
+  margin: var(--space-3) 0;
+}
+.bd td {
+  padding: var(--space-2) 2px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.bd td:last-child {
+  text-align: left;
+}
+.note {
+  font-size: var(--text-s);
+  color: var(--gold-ink);
+  background: var(--gold-soft);
+  border-radius: var(--radius-s);
+  padding: var(--space-2) var(--space-3);
+}
+.inputs {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.why-rank {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0;
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-s);
+}
+.why-rank li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+.why-rank .bar {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--sunk);
+  overflow: hidden;
+}
+.why-rank .bar span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+.cta {
+  display: block;
+  text-align: center;
+  background: var(--action);
+  color: var(--on-action);
+  border-radius: var(--radius-m);
+  padding: var(--space-3);
+  margin-top: var(--space-4);
+  font-weight: 800;
+  text-decoration: none;
+}
+.cta:hover {
+  background: var(--action-ink);
+}
+
+@media (min-width: 1024px) {
+  .sheet.detail {
+    inset-block: 0;
+    inset-inline-start: auto;
+    width: min(480px, 92vw);
+    max-height: none;
+    border-radius: 0;
+    border-inline-start: 1px solid var(--line);
+    padding: var(--space-5);
+    transform: translateX(-100%);
+  }
+  .sheet.detail.open {
+    transform: none;
+  }
+}

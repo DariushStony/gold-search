@@ -1,0 +1,114 @@
+/* Results toolbar: filters and sort, then every chip of the search in one row (Digikala's mobile pattern). */
+.toolbar {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: var(--header-h);
+  z-index: 6;
+}
+.toolbar-in {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+}
+.tool {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding-inline: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-size: var(--text-s);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tool svg {
+  width: 16px;
+  height: 16px;
+}
+.tool-count {
+  min-width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-xs);
+  display: inline-grid;
+  place-items: center;
+  padding-inline: 5px;
+}
+.chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+  padding-block: 2px;
+}
+.chips::-webkit-scrollbar {
+  display: none;
+}
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 36px;
+  font-size: var(--text-s);
+  border-radius: var(--radius-pill);
+  padding-inline: 12px 4px;
+  background: var(--gold-soft);
+  border: 1px solid var(--gold-line);
+  white-space: nowrap;
+}
+.chip.sort {
+  border-style: dashed;
+  background: transparent;
+}
+.chip.info {
+  background: transparent;
+  border-color: var(--line);
+}
+.chip small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.chip button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+  line-height: 1;
+}
+.chip button:hover {
+  background: var(--sunk);
+  color: var(--ink);
+}
+.chip-clear {
+  flex: none;
+  border: 0;
+  background: none;
+  color: var(--action-ink);
+  font-size: var(--text-s);
+  min-height: 36px;
+  padding-inline: var(--space-2);
+  text-decoration: underline;
+}
+
+/* desktop: filters live in the sidebar and sort is inline, so only the chips stay in the bar */
+@media (min-width: 1024px) {
+  .toolbar .tool {
+    display: none;
+  }
+  .chips {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}

@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as esbuild from 'esbuild';
+import { footer, header, type Section } from '../src/web/templates/chrome.ts';
 
 const ROOT = new URL('../', import.meta.url).pathname;
 const SRC = join(ROOT, 'src/web');
@@ -16,17 +17,26 @@ const hash = (file: string) =>
     .digest('hex')
     .slice(0, 10);
 
+// Fills the shared header and footer, then puts a content hash on every asset URL.
+const page = (html: string) =>
+  html
+    .replace(/<!-- @header:(search|atlas) -->/, (_m, section: Section) => header(section))
+    .replace('<!-- @footer -->', footer())
+    .replace(
+      /"\/assets\/([\w.-]+)"/g,
+      (_m, file: string) => `"/assets/${file}?v=${hash(`assets/${file}`)}"`,
+    );
+
 const writeHtml: esbuild.Plugin = {
   name: 'html',
   setup(build) {
     build.onEnd((result) => {
       if (result.errors.length) return;
       cpSync(join(SRC, 'static'), join(OUT, 'assets'), { recursive: true });
-      const html = readFileSync(join(SRC, 'index.html'), 'utf8').replace(
-        /"\/assets\/([\w.-]+)"/g,
-        (_m, file: string) => `"/assets/${file}?v=${hash(`assets/${file}`)}"`,
+      writeFileSync(
+        join(OUT, 'index.html'),
+        page(readFileSync(join(SRC, 'index.html'), 'utf8')),
       );
-      writeFileSync(join(OUT, 'index.html'), html);
     });
   },
 };

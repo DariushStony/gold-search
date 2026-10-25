@@ -1,0 +1,170 @@
+/* One filter panel: a sticky sidebar on desktop, a near-full-height bottom sheet below 1024px.
+   Every change applies at once, as on Digikala, and the footer shows the real result count. */
+.filters-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.filters-head h2 {
+  font-size: var(--text-l);
+  margin: 0;
+  margin-inline-end: auto;
+}
+.fgroup {
+  border: 0;
+  margin: 0;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+}
+/* a floated legend sits inside the group instead of on its border, so the gap above the options is ours */
+.fgroup legend {
+  float: inline-start;
+  width: 100%;
+  font-weight: 800;
+  font-size: var(--text-m);
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+.fgroup legend + * {
+  clear: both;
+}
+.fgroup .hint {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin: 0 0 var(--space-2);
+}
+.opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding-inline: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-size: var(--text-s);
+  cursor: pointer;
+  user-select: none;
+}
+.opt input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.opt:hover {
+  border-color: var(--gold-line);
+}
+.opt:has(input:checked) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
+}
+.opt:has(input:focus-visible) {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.range {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-s);
+}
+.range input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  padding-inline: var(--space-3);
+  font-size: var(--text-m);
+}
+.range input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.filters-foot {
+  display: none;
+}
+.link {
+  border: 0;
+  background: none;
+  color: var(--action-ink);
+  font-size: var(--text-s);
+  padding: 6px 0;
+  text-decoration: underline;
+}
+.link[disabled] {
+  color: var(--muted);
+  text-decoration: none;
+  cursor: default;
+}
+.primary {
+  border: 0;
+  background: var(--action);
+  color: var(--on-action);
+  border-radius: var(--radius-m);
+  min-height: 46px;
+  font-weight: 800;
+  width: 100%;
+}
+.primary:hover {
+  background: var(--action-ink);
+}
+
+@media (min-width: 1024px) {
+  .filters {
+    position: sticky;
+    top: calc(var(--header-h) + 56px);
+    align-self: start;
+    max-height: calc(100vh - var(--header-h) - 72px);
+    overflow: auto;
+    padding-inline-end: var(--space-2);
+  }
+  .filters .close {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .filters {
+    display: none;
+  }
+  .filters.open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    top: 48px;
+    z-index: 21;
+    background: var(--surface);
+    border-radius: var(--radius-l) var(--radius-l) 0 0;
+    box-shadow: var(--shadow-overlay);
+  }
+  .filters.open .filters-head {
+    padding: var(--space-4);
+  }
+  .filters.open .filters-body {
+    flex: 1;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding-inline: var(--space-4);
+  }
+  .filters.open .filters-foot {
+    display: block;
+    padding: var(--space-3) var(--space-4)
+      calc(var(--space-3) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+  }
+}

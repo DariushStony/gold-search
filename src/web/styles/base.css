@@ -6,18 +6,21 @@ html {
 }
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font:
-    15px/1.75 Vazirmatn,
-    Tahoma,
-    sans-serif;
+  font: 400 var(--text-m) / 1.8 var(--font);
+}
+h1,
+h2,
+h3 {
+  line-height: 1.4;
 }
 .num {
   font-variant-numeric: tabular-nums;
 }
 a {
-  color: var(--brand-ink);
+  color: var(--gold-ink);
+  text-underline-offset: 3px;
 }
 button,
 input {
@@ -28,13 +31,14 @@ button {
   cursor: pointer;
 }
 :focus-visible {
-  outline: 3px solid var(--gold);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
+  border-radius: var(--radius-s);
 }
 .wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-inline: 16px;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
 }
 .sr-only {
   position: absolute;
@@ -44,11 +48,25 @@ button {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+.skip {
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  top: -48px;
+  z-index: 30;
+  background: var(--ink);
+  color: var(--paper);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-s);
+}
+.skip:focus {
+  top: var(--space-2);
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     transition: none !important;
     animation: none !important;
+    scroll-behavior: auto !important;
   }
 }

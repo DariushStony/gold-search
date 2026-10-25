@@ -1,90 +1,114 @@
-/* Torob's slate scale and radish red (read from torob.com, 2026-10-25) with Digikala Gold's deep teal and gold
-   for everything about the gold price. Light is the default; dark follows the system unless the switch says otherwise. */
+/* Warm editorial: paper and ink, one gold accent for everything about gold, red only for actions.
+   Shared by the product and the Atlas. Light is the default; dark follows the device unless the switch says otherwise. */
 :root {
   color-scheme: light;
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --raised: #ffffff;
-  --ink: #1e293b;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --field: #f1f5f9;
-  --brand: #d73948;
-  --brand-ink: #b3263a;
-  --on-brand: #ffffff;
-  --teal-1: #002627;
-  --teal-2: #014c51;
-  --gold: #c8962e;
-  --gold-hi: #e7c36a;
-  --gold-ink: #8a5f0f;
-  --gold-soft: #fff6e3;
-  --gold-line: #eed7a5;
-  --ojrat: #94a3b8;
-  --profit: #cbd5e1;
-  --tax: #e2e8f0;
-  --real: #2e7d32;
-  --mixed: #b45309;
-  --notgold: #64748b;
-  --review: #c2410c;
-  --shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 8px 24px rgb(15 23 42 / 6%);
-  --scrim: rgb(15 23 43 / 60%);
-  --radius-s: 8px;
-  --radius-m: 12px;
-  --radius-l: 16px;
+  --paper: #f6f3ee;
+  --surface: #fffdf9;
+  --sunk: #efe9df;
+  --ink: #1d1813;
+  --ink-2: #463d33;
+  --muted: #72675a;
+  --line: #e3dbcf;
+  --line-strong: #cfc3b2;
+  --gold: #b8892b;
+  --gold-ink: #85600f;
+  --gold-soft: #f5ecd9;
+  --gold-line: #e2cfa6;
+  --action: #c2343f;
+  --action-ink: #a12631;
+  --on-action: #ffffff;
+  --real: #2f6b3a;
+  --mixed: #94590f;
+  --notgold: #6b6256;
+  --review: #a84a17;
+  --ojrat: #8b8072;
+  --profit: #b7ad9f;
+  --tax: #dcd3c6;
+  --image-mat: #ffffff;
+  --scrim: rgb(29 24 19 / 45%);
+  --shadow-overlay: 0 24px 48px rgb(29 24 19 / 18%);
+
+  --font: Vazirmatn, Tahoma, sans-serif;
+  --text-xs: 12px;
+  --text-s: 13px;
+  --text-m: 15px;
+  --text-l: 17px;
+  --text-xl: 20px;
+  --text-2xl: 26px;
+  --text-3xl: 34px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 14px;
+  --radius-pill: 999px;
+
+  --header-h: 60px;
+  --page-max: 1240px;
+  --reading-max: 720px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #15202b;
-    --surface: #212b36;
-    --raised: #263240;
-    --ink: #f1f5f9;
-    --muted: #94a3b8;
-    --line: #334155;
-    --field: #0f172b;
-    --brand: #e5485a;
-    --brand-ink: #f58b97;
-    --gold: #e2b55a;
-    --gold-hi: #f2d48e;
-    --gold-ink: #f2c96e;
-    --gold-soft: #2e2716;
-    --gold-line: #5c4a22;
-    --ojrat: #64748b;
-    --profit: #475569;
-    --tax: #334155;
-    --real: #66bb6a;
-    --mixed: #f59e0b;
-    --notgold: #94a3b8;
-    --review: #fb923c;
-    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+    --paper: #15120e;
+    --surface: #1d1914;
+    --sunk: #241f18;
+    --ink: #f1eadf;
+    --ink-2: #d5cbbd;
+    --muted: #a6998a;
+    --line: #322b22;
+    --line-strong: #4a4033;
+    --gold: #d6aa52;
+    --gold-ink: #e8c47c;
+    --gold-soft: #2a2216;
+    --gold-line: #574628;
+    --action: #e05560;
+    --action-ink: #f08d95;
+    --real: #82c08a;
+    --mixed: #e3a43f;
+    --notgold: #a6998a;
+    --review: #f19a5e;
+    --ojrat: #7d7264;
+    --profit: #5d5448;
+    --tax: #3b342a;
+    --image-mat: #f7f3ec;
     --scrim: rgb(0 0 0 / 60%);
+    --shadow-overlay: 0 24px 48px rgb(0 0 0 / 45%);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #15202b;
-  --surface: #212b36;
-  --raised: #263240;
-  --ink: #f1f5f9;
-  --muted: #94a3b8;
-  --line: #334155;
-  --field: #0f172b;
-  --brand: #e5485a;
-  --brand-ink: #f58b97;
-  --gold: #e2b55a;
-  --gold-hi: #f2d48e;
-  --gold-ink: #f2c96e;
-  --gold-soft: #2e2716;
-  --gold-line: #5c4a22;
-  --ojrat: #64748b;
-  --profit: #475569;
-  --tax: #334155;
-  --real: #66bb6a;
-  --mixed: #f59e0b;
-  --notgold: #94a3b8;
-  --review: #fb923c;
-  --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+  --paper: #15120e;
+  --surface: #1d1914;
+  --sunk: #241f18;
+  --ink: #f1eadf;
+  --ink-2: #d5cbbd;
+  --muted: #a6998a;
+  --line: #322b22;
+  --line-strong: #4a4033;
+  --gold: #d6aa52;
+  --gold-ink: #e8c47c;
+  --gold-soft: #2a2216;
+  --gold-line: #574628;
+  --action: #e05560;
+  --action-ink: #f08d95;
+  --real: #82c08a;
+  --mixed: #e3a43f;
+  --notgold: #a6998a;
+  --review: #f19a5e;
+  --ojrat: #7d7264;
+  --profit: #5d5448;
+  --tax: #3b342a;
+  --image-mat: #f7f3ec;
   --scrim: rgb(0 0 0 / 60%);
+  --shadow-overlay: 0 24px 48px rgb(0 0 0 / 45%);
 }
