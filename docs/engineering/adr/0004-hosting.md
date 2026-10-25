@@ -1,6 +1,6 @@
 # ADR-0004: Host on Liara (Zamin plan), snapshots on its disk
 
-- Status: proposed
+- Status: superseded by ADR-0011, then ADR-0012 (2026-10-25): the demo is hosted on Hamravesh Darkube
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour
 - Related: D-11, D-17; NFR-06, NFR-13; TDD §8, §11; ADR-0002, ADR-0003

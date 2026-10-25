@@ -1,6 +1,6 @@
 # ADR-0007: Union board primary, tgju fallback, G stored per fetch
 
-- Status: proposed
+- Status: accepted (2026-10-25): implemented
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour
 - Related: BR-01–BR-06, BR-48; market research §4.1 [S-40], [S-41]; D-24

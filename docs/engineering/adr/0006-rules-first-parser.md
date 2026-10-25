@@ -1,6 +1,6 @@
 # ADR-0006: Rules-first parser with schema-bound LLM fallback
 
-- Status: proposed
+- Status: accepted (2026-10-25): implemented
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour
 - Related: D-09, D-23, D-26; BR-50–BR-5A, BR-55, BR-73, BR-74; EV-QRY

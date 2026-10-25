@@ -1,6 +1,6 @@
 # ADR-0009: Collector politeness: allowed paths, pacing, stop on 490
 
-- Status: proposed
+- Status: accepted (2026-10-25): implemented and tested (AC-DC-01 to AC-DC-03)
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour
 - Related: BR-10–BR-12, BR-17; TDD TC-02, TC-03; market research §6

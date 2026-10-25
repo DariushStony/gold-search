@@ -1,6 +1,6 @@
 # ADR-0001: TypeScript end to end, Next.js for the web app
 
-- Status: proposed
+- Status: accepted in part (2026-10-25): TypeScript end to end is implemented; Next.js is not, the demo runs on the plain Node server of ADR-0010
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour (owner, delegated to the builder in D-08)
 - Related: D-08; TDD §5 (K-01–K-08)

@@ -1,6 +1,6 @@
 # ADR-0012: Demo on Hamravesh Darkube, built from a private Git repo
 
-- Status: accepted (2026-10-25), first deploy pending the owner's repo and Darkube app
+- Status: accepted (2026-10-25), live at zarsanj.darkube.ir since 2026-10-25
 - Date: 2026-10-25
 - Deciders: Dariush Hadipour
 - Related: supersedes ADR-0011 (Vercel); ADR-0004 (Liara); ADR-0005; BR-14, BR-16, BR-111; NFR-06

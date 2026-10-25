@@ -1,6 +1,6 @@
 # ADR-0008: Evaluation harness in CI with metric gates
 
-- Status: proposed
+- Status: accepted, not yet implemented (2026-10-25): evaluations run with pnpm eval on the owner's machine; CI runs pnpm check and the build only
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour
 - Related: D-04, D-14; PRD §4; eval plan

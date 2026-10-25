@@ -1,6 +1,6 @@
 # ADR-0003: Immutable SQLite snapshot per run; SQLite events log
 
-- Status: proposed
+- Status: accepted in part (2026-10-25): one immutable SQLite snapshot per run is implemented; events go to a JSONL file or the log, not SQLite, and the server keeps only the current snapshot
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour
 - Related: data model §2–§3; DM-06; NFR-05, NFR-13
