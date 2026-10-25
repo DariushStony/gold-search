@@ -95,6 +95,32 @@ test("AC-QU-10 (BR-5A): recipient is info only; «دختر» alone is women, not
   assert.equal(one(parseQuery("طلا برای نوزاد دختر چی بخرم"), "audience"), "kids_girl");
 });
 
+test("BR-5A: «سالگرد» alone is any anniversary; a named one keeps the person's word and adds no recipient", () => {
+  assert.deepEqual(val(parseQuery("هدیه سالگرد"), "occasion"), ["سالگرد"]);
+  assert.deepEqual(val(parseQuery("برای سالگرد ازدواجمون یه انگشتر"), "occasion"), ["سالگرد_ازدواج"]);
+  assert.deepEqual(val(parseQuery("سالگرد عقد"), "occasion"), ["سالگرد_عقد"]);
+  assert.deepEqual(val(parseQuery("سالگرد دوستیمون"), "occasion"), ["سالگرد_دوستی"]);
+  const engaged = parseQuery("گردنبند برای سالگرد نامزدی");
+  assert.deepEqual(val(engaged, "occasion"), ["سالگرد_نامزدی"]);
+  assert.deepEqual(val(engaged, "recipient"), []);
+  assert.equal(engaged.intent, "gift");
+});
+
+test("BR-5A: «دوست دخترم» is one recipient, with a space, a ZWNJ or neither", () => {
+  for (const q of ["دستبند برای دوست دخترم", "دستبند برای دوست‌دخترم", "دستبند برای دوستدخترم"]) {
+    const p = parseQuery(q);
+    assert.deepEqual(val(p, "recipient"), ["دوست‌دختر"], q);
+    assert.equal(one(p, "audience"), "women", q);
+    assert.equal(p.intent, "gift", q);
+  }
+  const boyfriend = parseQuery("انگشتر برای دوست پسرم");
+  assert.deepEqual(val(boyfriend, "recipient"), ["دوست‌پسر"]);
+  assert.equal(one(boyfriend, "audience"), "men");
+  const both = parseQuery("گردنبند برای سالگرد دوست دخترم");
+  assert.deepEqual(val(both, "occasion"), ["سالگرد"]);
+  assert.deepEqual(val(both, "recipient"), ["دوست‌دختر"]);
+});
+
 test("AC-QU-11 (BR-54): «۲ گرمی» is a weight target; «سنگین» only sorts", () => {
   assert.equal(one(parseQuery("دستبند ۲ گرمی"), "weight_target"), 2);
   const heavy = parseQuery("انگشتر سنگین");

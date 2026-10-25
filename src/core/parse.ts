@@ -213,6 +213,10 @@ export function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
   if (has(t, "حضوری")) add("in_person", true);
   for (const c of cfg.cities) if (has(t, c)) add("city", c);
 
+  // Cut the anniversary out first so «نامزدی» or «دوستی» inside it is not read again as an occasion or a recipient.
+  let anniversary: string | null = null;
+  take(new RegExp(`سالگرد(?:\\s*(${cfg.anniversaryKinds.join("|")}))?\\S*`), (m) => { anniversary ??= m[1] ? `سالگرد_${m[1]}` : "سالگرد"; });
+
   // BR-5A: who it is for; «دختر» alone is a woman, «نوزاد دختر» a baby girl.
   const baby = has(t, "نوزاد");
   const babyGirl = baby && /نوزاد\s*دختر|دختر\s*نوزاد/.test(t), babyBoy = baby && /نوزاد\s*پسر|پسر\s*نوزاد/.test(t);
@@ -221,7 +225,7 @@ export function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
     if (!has(t, w)) continue;
     if (v === "دختر" && baby) continue;
     if (v === "دوست" && /دوستان/.test(t) && !/دوستم/.test(t)) continue;
-    if (v === "دوست" && chips.some((c) => c.value === "دوست‌دختر")) continue;
+    if ((v === "دوست" || v === "دختر") && chips.some((c) => c.value === "دوست‌دختر" || c.value === "دوست‌پسر")) continue;
     add("recipient", v);
     impliedAudience ??= aud;
   }
@@ -230,7 +234,7 @@ export function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
   const audience = babyGirl ? "kids_girl" : babyBoy ? "kids_boy" : baby ? "kids" : stated ?? (has(t, "روز زن") ? "women" : impliedAudience);
   if (audience) add("audience", audience);
 
-  const occasions = firstMatches(t, cfg.occasions);
+  const occasions = [...(anniversary ? [anniversary] : []), ...firstMatches(t, cfg.occasions)];
   const giftWord = cfg.giftWords.some((w) => has(t, w));
   for (const o of occasions) add("occasion", o === "تولد" && baby ? "تولد_نوزاد" : o);
   if (baby && (giftWord || occasions.length === 0) && !occasions.length) add("occasion", "تولد_نوزاد");
