@@ -1,13 +1,18 @@
 // Hard sentences whose key fact the rules miss (builder-labelled proxy, D-14): rules alone vs rules + LLM (ADR-0005).
 // Run: node --env-file=.env eval/ev-hard.ts [--model=gpt-4.1-nano]
-import { ROOT, readCsv, throttled } from "./lib.ts";
-import { parseQuery, type ParsedQuery } from "../src/domains/query/parse.ts";
-import { avalai, parser } from "../src/domains/query/ai-reader.ts";
-import { config } from "../src/core/config.ts";
+import { config } from '../src/core/config.ts';
+import { avalai, parser } from '../src/domains/query/ai-reader.ts';
+import { parseQuery, type ParsedQuery } from '../src/domains/query/parse.ts';
+import { readCsv, ROOT, throttled } from './lib.ts';
 
 const key = process.env.AVALAI_API_KEY;
-if (!key) throw new Error("AVALAI_API_KEY is not set (put it in .env and run with --env-file=.env)");
-const model = process.argv.find((a) => a.startsWith("--model="))?.slice(8) ?? config.llm.model;
+if (!key) {
+  throw new Error(
+    'AVALAI_API_KEY is not set (put it in .env and run with --env-file=.env)',
+  );
+}
+const model =
+  process.argv.find((a) => a.startsWith('--model='))?.slice(8) ?? config.llm.model;
 const client = avalai(key, model);
 const ms: number[] = [];
 const timed = throttled(async (m: Parameters<typeof client>[0]) => {
@@ -22,26 +27,40 @@ const withLlm = parser(timed);
 
 const hits = (p: ParsedQuery, targets: string[]) =>
   targets.every((t) => {
-    const [k, v] = t.split("=");
+    const [k, v] = t.split('=');
     return p.chips.some((c) => c.kind === k && String(c.value) === v);
   });
 let rulesOk = 0,
   llmOk = 0,
   used = 0;
 const extra: string[] = [];
-const rowsOut: { id: string; text: string; targets: string[]; rules: boolean; llm: boolean; chips: string[]; unparsed: string | null }[] = [];
+const rowsOut: {
+  id: string;
+  text: string;
+  targets: string[];
+  rules: boolean;
+  llm: boolean;
+  chips: string[];
+  unparsed: string | null;
+}[] = [];
 const rows = readCsv(`${ROOT}docs/evidence/ev-qry-hard-2026-10-24.csv`);
 for (const r of rows) {
-  const targets = r.targets!.split(";");
+  const targets = r.targets!.split(';');
   const rules = parseQuery(r.text!);
   const both = await withLlm(r.text!);
   rulesOk += Number(hits(rules, targets));
   llmOk += Number(hits(both, targets));
   used += Number(both.llm_used);
   const fromRules = new Set(rules.chips.map((c) => `${c.kind}=${c.value}`));
-  for (const c of both.chips)
-    if (typeof c.value === "number" && !fromRules.has(`${c.kind}=${c.value}`) && !targets.includes(`${c.kind}=${c.value}`))
+  for (const c of both.chips) {
+    if (
+      typeof c.value === 'number' &&
+      !fromRules.has(`${c.kind}=${c.value}`) &&
+      !targets.includes(`${c.kind}=${c.value}`)
+    ) {
       extra.push(`${r.id} ${c.kind}=${c.value}`);
+    }
+  }
   rowsOut.push({
     id: r.id!,
     text: r.text!,
@@ -51,7 +70,9 @@ for (const r of rows) {
     chips: both.chips.map((c) => `${c.kind}=${c.value}`),
     unparsed: both.unparsed,
   });
-  console.error(`${r.id} ${hits(both, targets) ? "ok  " : "miss"} ${both.chips.map((c) => `${c.kind}=${c.value}`).join(" ")} | unread: ${both.unparsed}`);
+  console.error(
+    `${r.id} ${hits(both, targets) ? 'ok  ' : 'miss'} ${both.chips.map((c) => `${c.kind}=${c.value}`).join(' ')} | unread: ${both.unparsed}`,
+  );
 }
 const sorted = [...ms].sort((a, b) => a - b);
 console.log(

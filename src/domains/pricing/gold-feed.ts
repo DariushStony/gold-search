@@ -1,8 +1,8 @@
 // The live gold price for requests (BR-01 to BR-05), refreshed in the background so a slow source never holds up a
 // request. On 2026-10-25 the union board took 10 to 12 s to answer, from Hamravesh and from the owner's machine alike.
-import { selectReference, type Quote, type Reference } from "./gold-price.ts";
+import { selectReference, type Quote, type Reference } from './gold-price.ts';
 
-type Source = "union" | "tgju";
+type Source = 'union' | 'tgju';
 export type GoldFeedOptions = {
   sources: Record<Source, () => Promise<Quote | null>>;
   ttlMs: number; // a refresh starts once the last one is this old
@@ -28,21 +28,29 @@ export function createGoldFeed(o: GoldFeedOptions): () => Promise<Reference | nu
         ref = selectReference(latest.union ?? null, latest.tgju ?? null, new Date());
         return;
       }
-      reason = "no quote in the response";
+      reason = 'no quote in the response';
     } catch (e) {
       reason = (e as Error).message;
     }
     // Once per new reason, so a source that stays down does not flood the log.
-    if (lastFailure.get(source) !== reason) log(`gold price: ${source} failed (${reason}); keeping its last quote or using the other source`);
+    if (lastFailure.get(source) !== reason) {
+      log(
+        `gold price: ${source} failed (${reason}); keeping its last quote or using the other source`,
+      );
+    }
     lastFailure.set(source, reason);
   };
 
   return async () => {
     if (!inFlight && Date.now() - refreshedAt >= o.ttlMs) {
       refreshedAt = Date.now();
-      inFlight = Promise.all([pull("union"), pull("tgju")]).finally(() => (inFlight = null));
+      inFlight = Promise.all([pull('union'), pull('tgju')]).finally(
+        () => (inFlight = null),
+      );
     }
-    if (!ref && inFlight) await Promise.race([inFlight, new Promise((r) => setTimeout(r, o.firstWaitMs))]);
+    if (!ref && inFlight) {
+      await Promise.race([inFlight, new Promise((r) => setTimeout(r, o.firstWaitMs))]);
+    }
     return ref;
   };
 }

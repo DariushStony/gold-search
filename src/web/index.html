@@ -6,7 +6,10 @@
     <meta name="robots" content="noindex" />
     <title>زرسنج</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap"
+    />
     <style>
       /* Torob's light product look (slate scale, brand radish) with gold for everything about gold. */
       :root {
@@ -91,12 +94,18 @@
         position: relative;
       }
       .tray::after {
-        content: "";
+        content: '';
         position: absolute;
         inset-inline: 0;
         bottom: -1px;
         height: 3px;
-        background: linear-gradient(90deg, transparent, var(--gold-hi) 30%, var(--gold) 70%, transparent);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--gold-hi) 30%,
+          var(--gold) 70%,
+          transparent
+        );
       }
       .tray-in {
         max-width: 760px;
@@ -538,119 +547,168 @@
           <h1>زرسنج</h1>
           <div class="rate num" id="rate">در حال گرفتن قیمت طلا</div>
         </div>
-        <input class="query" id="q" maxlength="300" autocomplete="off" placeholder="دنبال چه طلایی هستید؟ با یک جمله بنویسید" aria-label="جست‌وجوی طلا" />
+        <input
+          class="query"
+          id="q"
+          maxlength="300"
+          autocomplete="off"
+          placeholder="دنبال چه طلایی هستید؟ با یک جمله بنویسید"
+          aria-label="جست‌وجوی طلا"
+        />
         <div class="samples" id="samples"></div>
         <div class="chips" id="chips" aria-live="polite"></div>
         <div class="unread" id="unread" hidden></div>
         <div class="ask" id="ask" hidden></div>
         <div class="suggest" id="suggest" hidden></div>
-        <div class="legend">چیپ پررنگ فیلتر است و کالا را کنار می‌گذارد. چیپ خط‌چین فقط ترتیب را عوض می‌کند.</div>
+        <div class="legend">
+          چیپ پررنگ فیلتر است و کالا را کنار می‌گذارد. چیپ خط‌چین فقط ترتیب را عوض می‌کند.
+        </div>
       </div>
     </header>
     <main>
-      <div class="summary"><span id="count"></span><button id="showEx" hidden></button></div>
+      <div class="summary">
+        <span id="count"></span><button id="showEx" hidden></button>
+      </div>
       <div id="results"></div>
       <div id="savings"></div>
       <div id="sections"></div>
       <div id="excluded" hidden></div>
     </main>
     <footer>
-      نسخه‌ی مفهومی غیررسمی است و وابسته به ترب نیست. داده: ترب (جست‌وجو و صفحه‌ی کالا)، تابلوی اتحادیه‌ی طلای تهران و tgju. «سازگار با طلای واقعی» یعنی ادعای
-      فروشنده و قیمت با هم جورند، نه تأیید فیزیکی.
+      نسخه‌ی مفهومی غیررسمی است و وابسته به ترب نیست. داده: ترب (جست‌وجو و صفحه‌ی کالا)،
+      تابلوی اتحادیه‌ی طلای تهران و tgju. «سازگار با طلای واقعی» یعنی ادعای فروشنده و قیمت
+      با هم جورند، نه تأیید فیزیکی.
     </footer>
     <div class="sheet-bg" id="bg"></div>
-    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"></div>
+    <div
+      class="sheet"
+      id="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sh-t"
+    ></div>
     <script>
-      const API = "/api/v1";
-      const SAMPLES = ["یه دستبند ظریف برای روز مادر تا ۲۰ تومن", "۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم", "زنجیر دو رنگ ایتالیایی مردانه"];
+      const API = '/api/v1';
+      const SAMPLES = [
+        'یه دستبند ظریف برای روز مادر تا ۲۰ تومن',
+        '۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم',
+        'زنجیر دو رنگ ایتالیایی مردانه',
+      ];
       const KIND = {
-        intent: "نیت",
-        item_type: "نوع",
-        form: "شکل",
-        budget_min: "حداقل بودجه",
-        budget_max: "حداکثر بودجه",
-        budget_target: "حدود بودجه",
-        weight_min: "حداقل وزن",
-        weight_max: "حداکثر وزن",
-        weight_target: "وزن",
-        weight_pref: "وزن",
-        karat: "عیار",
-        audience: "برای",
-        recipient: "گیرنده",
-        condition: "وضعیت",
-        ojrat_max: "حداکثر اجرت",
-        ojrat_sort: "ترتیب",
-        no_stones: "بدون سنگ",
-        style: "طرح",
-        shop: "فروشگاه",
-        torob_pay: "قسطی با ترب‌پی",
-        in_person: "حضوری",
-        city: "شهر",
-        occasion: "مناسبت",
+        intent: 'نیت',
+        item_type: 'نوع',
+        form: 'شکل',
+        budget_min: 'حداقل بودجه',
+        budget_max: 'حداکثر بودجه',
+        budget_target: 'حدود بودجه',
+        weight_min: 'حداقل وزن',
+        weight_max: 'حداکثر وزن',
+        weight_target: 'وزن',
+        weight_pref: 'وزن',
+        karat: 'عیار',
+        audience: 'برای',
+        recipient: 'گیرنده',
+        condition: 'وضعیت',
+        ojrat_max: 'حداکثر اجرت',
+        ojrat_sort: 'ترتیب',
+        no_stones: 'بدون سنگ',
+        style: 'طرح',
+        shop: 'فروشگاه',
+        torob_pay: 'قسطی با ترب‌پی',
+        in_person: 'حضوری',
+        city: 'شهر',
+        occasion: 'مناسبت',
       };
       const VAL = {
-        gift: "هدیه",
-        beauty: "زیبایی",
-        savings: "پس‌انداز",
-        light: "سبک",
-        heavy: "سنگین",
-        women: "زنانه",
-        men: "مردانه",
-        kids: "بچگانه",
-        kids_girl: "نوزاد دختر",
-        kids_boy: "نوزاد پسر",
-        used: "دست‌دوم",
-        asc: "کمترین اجرت اول",
+        gift: 'هدیه',
+        beauty: 'زیبایی',
+        savings: 'پس‌انداز',
+        light: 'سبک',
+        heavy: 'سنگین',
+        women: 'زنانه',
+        men: 'مردانه',
+        kids: 'بچگانه',
+        kids_girl: 'نوزاد دختر',
+        kids_boy: 'نوزاد پسر',
+        used: 'دست‌دوم',
+        asc: 'کمترین اجرت اول',
       };
-      const LABEL = { real: ["real", "سازگار با طلای واقعی"], mixed: ["mixed", "مخلوط"], not_gold: ["notgold", "غیرطلا"], review: ["review", "مشکوک"] };
-      const FORM = { jewelry: "جواهر (همین نتایج)", used: "طلای دست‌دوم", molten: "طلای آب‌شده", digital: "طلای دیجیتال", torob_gold: "ترب طلا" };
+      const LABEL = {
+        real: ['real', 'سازگار با طلای واقعی'],
+        mixed: ['mixed', 'مخلوط'],
+        not_gold: ['notgold', 'غیرطلا'],
+        review: ['review', 'مشکوک'],
+      };
+      const FORM = {
+        jewelry: 'جواهر (همین نتایج)',
+        used: 'طلای دست‌دوم',
+        molten: 'طلای آب‌شده',
+        digital: 'طلای دیجیتال',
+        torob_gold: 'ترب طلا',
+      };
 
-      const f1 = new Intl.NumberFormat("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-      const f0 = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 0 });
-      const f3 = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 3 });
+      const f1 = new Intl.NumberFormat('fa-IR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      });
+      const f0 = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 });
+      const f3 = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 3 });
       const toman = (n, full) =>
-        full ? `${f0.format(n)} تومان` : Math.abs(n) >= 1e6 ? `${f1.format(n / 1e6)} میلیون تومان` : `${f0.format(n / 1000)} هزار تومان`;
+        full
+          ? `${f0.format(n)} تومان`
+          : Math.abs(n) >= 1e6
+            ? `${f1.format(n / 1e6)} میلیون تومان`
+            : `${f0.format(n / 1000)} هزار تومان`;
       const pct = (n) => `٪${f1.format(n)}`;
       const gram = (n) => `${f3.format(n)} گرم`;
       const when = (iso) =>
-        new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-          timeZone: "Asia/Tehran",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hourCycle: "h23",
+        new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+          timeZone: 'Asia/Tehran',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23',
         })
           .format(new Date(iso))
-          .replace(" ساعت ", "، ");
-      const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+          .replace(' ساعت ', '، ');
+      const esc = (s) =>
+        String(s ?? '').replace(
+          /[&<>"]/g,
+          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
+        );
       const $ = (id) => document.getElementById(id);
       const session = (() => {
         try {
-          return sessionStorage.getItem("sid") || (sessionStorage.setItem("sid", crypto.randomUUID()), sessionStorage.getItem("sid"));
+          return (
+            sessionStorage.getItem('sid') ||
+            (sessionStorage.setItem('sid', crypto.randomUUID()),
+            sessionStorage.getItem('sid'))
+          );
         } catch {
           return crypto.randomUUID();
         }
       })();
 
-      let st = { text: "", chips: [], answers: {}, last: null };
+      let st = { text: '', chips: [], answers: {}, last: null };
       const post = (path, body) =>
-        fetch(API + path, { method: "POST", body: JSON.stringify(body) }).then(
+        fetch(API + path, { method: 'POST', body: JSON.stringify(body) }).then(
           (r) => (r.ok ? r.json() : Promise.reject(r.status)),
-          () => Promise.reject("offline"),
+          () => Promise.reject('offline'),
         );
       // Content guide §5: what happened and what to do, never the server's detail.
       const ERR = {
-        429: "درخواست‌ها زیاد شد. چند ثانیه صبر کنید و دوباره امتحان کنید.",
-        422: "این جمله خیلی بلند است. آن را به کمتر از ۳۰۰ نویسه برسانید.",
-        offline: "اتصال اینترنت برقرار نیست. اتصال را بررسی کنید و دوباره امتحان کنید.",
+        429: 'درخواست‌ها زیاد شد. چند ثانیه صبر کنید و دوباره امتحان کنید.',
+        422: 'این جمله خیلی بلند است. آن را به کمتر از ۳۰۰ نویسه برسانید.',
+        offline: 'اتصال اینترنت برقرار نیست. اتصال را بررسی کنید و دوباره امتحان کنید.',
       };
       const showError = (code) => {
-        $("results").innerHTML = `<div class="empty">${ERR[code] ?? "مشکلی پیش آمد. دوباره امتحان کنید."}</div>`;
-        $("count").textContent = "";
+        $('results').innerHTML =
+          `<div class="empty">${ERR[code] ?? 'مشکلی پیش آمد. دوباره امتحان کنید.'}</div>`;
+        $('count').textContent = '';
       };
       const track = (name, props) =>
-        post("/events", {
+        post('/events', {
           event_id: crypto.randomUUID(),
           name,
           at: new Date().toISOString(),
@@ -661,52 +719,53 @@
         }).catch(() => {});
 
       function chipValue(c) {
-        if (typeof c.value === "boolean") return "";
+        if (typeof c.value === 'boolean') return '';
         if (/^budget/.test(c.kind)) return toman(c.value);
         if (/^weight_(min|max|target)$/.test(c.kind)) return gram(c.value);
-        if (c.kind === "ojrat_max") return pct(c.value);
-        return VAL[c.value] ?? String(c.value).replaceAll("_", " ");
+        if (c.kind === 'ojrat_max') return pct(c.value);
+        return VAL[c.value] ?? String(c.value).replaceAll('_', ' ');
       }
       function renderChips() {
-        $("chips").innerHTML = st.chips
+        $('chips').innerHTML = st.chips
           .map(
             (
               c,
               i,
-            ) => `<span class="chip ${c.role === "sort" ? "sort" : c.role === "info" ? "info" : ""}">${KIND[c.kind]}${chipValue(c) ? ": " + esc(chipValue(c)) : ""}
-    <small>${c.origin === "user" ? "انتخاب شما" : c.llm ? "از جمله‌ی شما، با AI" : "از جمله‌ی شما"}</small><button aria-label="حذف ${KIND[c.kind]}" data-rm="${i}">×</button></span>`,
+            ) => `<span class="chip ${c.role === 'sort' ? 'sort' : c.role === 'info' ? 'info' : ''}">${KIND[c.kind]}${chipValue(c) ? ': ' + esc(chipValue(c)) : ''}
+    <small>${c.origin === 'user' ? 'انتخاب شما' : c.llm ? 'از جمله‌ی شما، با AI' : 'از جمله‌ی شما'}</small><button aria-label="حذف ${KIND[c.kind]}" data-rm="${i}">×</button></span>`,
           )
-          .join("");
+          .join('');
       }
 
       async function status() {
         try {
-          const s = await (await fetch(API + "/status")).json();
+          const s = await (await fetch(API + '/status')).json();
           const g = s.gold_price;
-          $("rate").innerHTML = g
-            ? `طلای ۱۸ عیار: <b>${toman(g.g_toman, true)}</b>، ${g.source === "union" ? "اتحادیه‌ی طلای تهران" : "tgju (منبع جایگزین)"}، ${when(g.quoted_at)}${g.uncertain ? "، دو منبع قیمت با هم فرق دارند" : ""}${g.market_open ? "" : "، قیمت پایان بازار"}`
-            : "قیمت طلا در دسترس نیست";
+          $('rate').innerHTML = g
+            ? `طلای ۱۸ عیار: <b>${toman(g.g_toman, true)}</b>، ${g.source === 'union' ? 'اتحادیه‌ی طلای تهران' : 'tgju (منبع جایگزین)'}، ${when(g.quoted_at)}${g.uncertain ? '، دو منبع قیمت با هم فرق دارند' : ''}${g.market_open ? '' : '، قیمت پایان بازار'}`
+            : 'قیمت طلا در دسترس نیست';
           if (s.snapshot?.archive_mode) {
-            $("archive").hidden = false;
-            $("archive").textContent = `آخرین داده: ${when(s.snapshot.finished_at)}. قیمت فروشگاه‌ها ممکن است تغییر کرده باشد.`;
+            $('archive').hidden = false;
+            $('archive').textContent =
+              `آخرین داده: ${when(s.snapshot.finished_at)}. قیمت فروشگاه‌ها ممکن است تغییر کرده باشد.`;
           }
         } catch {
-          $("rate").textContent = "قیمت طلا در دسترس نیست";
+          $('rate').textContent = 'قیمت طلا در دسترس نیست';
         }
       }
 
       let timer = null;
       async function parse() {
-        const text = $("q").value.trim();
+        const text = $('q').value.trim();
         if (!text) {
           st.chips = [];
           renderChips();
-          $("unread").hidden = true;
+          $('unread').hidden = true;
           return;
         }
         let p;
         try {
-          p = await post("/parse", { text, answers: st.answers });
+          p = await post('/parse', { text, answers: st.answers });
         } catch (code) {
           return showError(code);
         }
@@ -715,76 +774,87 @@
         st.llm = p.llm_used;
         renderChips();
         // CR-04: say which part of the sentence no rule read, so a missing chip is not a mystery.
-        const u = (p.unparsed ?? "").replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]),
-          cut = u.lastIndexOf(" ", 70);
-        $("unread").hidden = !u;
-        $("unread").textContent = u ? `متوجه نشدم: «${u.length > 70 ? u.slice(0, cut > 0 ? cut : 70) : u}». اگر مهم است، ساده‌تر بنویسید.` : "";
-        $("ask").hidden = !p.ask;
-        $("ask").innerHTML = p.ask
+        const u = (p.unparsed ?? '').replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]),
+          cut = u.lastIndexOf(' ', 70);
+        $('unread').hidden = !u;
+        $('unread').textContent = u
+          ? `متوجه نشدم: «${u.length > 70 ? u.slice(0, cut > 0 ? cut : 70) : u}». اگر مهم است، ساده‌تر بنویسید.`
+          : '';
+        $('ask').hidden = !p.ask;
+        $('ask').innerHTML = p.ask
           ? `منظورتان هزار تومان است یا میلیون؟ <button data-unit="thousand">هزار تومان</button><button data-unit="million">میلیون تومان</button>`
-          : "";
+          : '';
         if (p.ask) {
-          for (const id of ["results", "savings", "sections"]) $(id).innerHTML = "";
-          $("count").textContent = "";
-          $("showEx").hidden = true;
-          $("suggest").hidden = true;
+          for (const id of ['results', 'savings', 'sections']) $(id).innerHTML = '';
+          $('count').textContent = '';
+          $('showEx').hidden = true;
+          $('suggest').hidden = true;
           return;
         }
         await run();
       }
 
       async function run() {
-        $("results").innerHTML = `<p class="loading">در حال جست‌وجو</p>`;
+        $('results').innerHTML = `<p class="loading">در حال جست‌وجو</p>`;
         let r;
         try {
-          r = await post("/search", { chips: st.chips });
+          r = await post('/search', { chips: st.chips });
         } catch (code) {
           return showError(code);
         }
         st.last = r;
-        $("suggest").hidden = !r.suggest_intent;
-        $("suggest").innerHTML = r.suggest_intent
+        $('suggest').hidden = !r.suggest_intent;
+        $('suggest').innerHTML = r.suggest_intent
           ? `برای چی می‌خری؟ <button data-intent="gift">هدیه</button><button data-intent="beauty">زیبایی</button><button data-intent="savings">پس‌انداز</button>`
-          : "";
-        $("count").textContent = `${f0.format(r.results.length)} نتیجه`;
-        $("showEx").hidden = !r.excluded_count;
-        $("showEx").textContent = `${f0.format(r.excluded_count)} مورد غیرطلا کنار گذاشته شد`;
-        $("excluded").hidden = true;
+          : '';
+        $('count').textContent = `${f0.format(r.results.length)} نتیجه`;
+        $('showEx').hidden = !r.excluded_count;
+        $('showEx').textContent =
+          `${f0.format(r.excluded_count)} مورد غیرطلا کنار گذاشته شد`;
+        $('excluded').hidden = true;
         let html = r.results
           .slice(0, 20)
-          .map((c, i) => card(c, i) + (i === 0 && r.explanation ? `<div class="why num">${esc(r.explanation.text)}</div>` : ""))
-          .join("");
-        if (!r.results.length && r.mode !== "non_jewelry") {
+          .map(
+            (c, i) =>
+              card(c, i) +
+              (i === 0 && r.explanation
+                ? `<div class="why num">${esc(r.explanation.text)}</div>`
+                : ''),
+          )
+          .join('');
+        if (!r.results.length && r.mode !== 'non_jewelry') {
           html = r.relax
             ? `<div class="empty">با «${esc(KIND[r.relax.kind])}» چیزی پیدا نشد. برداشتنش ${f0.format(r.relax.results_if_removed)} نتیجه برمی‌گرداند.<br><button data-relax="${r.relax.chip_index}">برداشتن «${esc(KIND[r.relax.kind])}»</button></div>`
             : `<div class="empty">هیچ طلای واقعی برای این جست‌وجو پیدا نشد</div>`;
         }
-        $("results").innerHTML = html;
-        $("savings").innerHTML = r.savings_card
+        $('results').innerHTML = html;
+        $('savings').innerHTML = r.savings_card
           ? `<section class="savings"><div class="section-title" style="margin-top:0">هزینه‌ی رفت‌وبرگشت، کنار هم</div>
-    ${r.savings_card.notice ? `<p>سکه و شمش اینجا رتبه‌بندی نمی‌شوند</p>` : ""}
+    ${r.savings_card.notice ? `<p>سکه و شمش اینجا رتبه‌بندی نمی‌شوند</p>` : ''}
     <table><tr><th>شکل</th><th>هزینه‌ی رفت‌وبرگشت</th><th>منبع</th></tr>${r.savings_card.rows
       .map(
-        (x) => `<tr><td>${FORM[x.form]}${x.own_product ? ` <span class="own">محصول ترب</span>` : ""}</td>
-      <td class="num">${x.round_trip_cost_pct == null ? "داده در دسترس نیست" : pct(x.round_trip_cost_pct)}</td><td class="own">${x.source_url ? `<a href="${esc(x.source_url)}" target="_blank" rel="noopener">${esc(x.source)}</a>` : esc(x.source)}</td></tr>`,
+        (
+          x,
+        ) => `<tr><td>${FORM[x.form]}${x.own_product ? ` <span class="own">محصول ترب</span>` : ''}</td>
+      <td class="num">${x.round_trip_cost_pct == null ? 'داده در دسترس نیست' : pct(x.round_trip_cost_pct)}</td><td class="own">${x.source_url ? `<a href="${esc(x.source_url)}" target="_blank" rel="noopener">${esc(x.source)}</a>` : esc(x.source)}</td></tr>`,
       )
-      .join("")}</table>
+      .join('')}</table>
     <p class="fine">این مقایسه‌ی هزینه است، نه توصیه‌ی سرمایه‌گذاری</p></section>`
-          : "";
+          : '';
         const section = (title, list) =>
           list.length
             ? `<div class="section-title">${title}</div>` +
               list
                 .slice(0, 10)
                 .map((c) => card(c, -1))
-                .join("")
-            : "";
-        $("sections").innerHTML =
-          section("وزنشان اعلام نشده", r.weight_unknown_bucket) +
-          section("اجرت قابل محاسبه نیست", r.ojrat_unknown) +
-          section("نیاز به بررسی", r.review) +
-          section("آگهی", r.sponsored);
-        track("query_submitted", {
+                .join('')
+            : '';
+        $('sections').innerHTML =
+          section('وزنشان اعلام نشده', r.weight_unknown_bucket) +
+          section('اجرت قابل محاسبه نیست', r.ojrat_unknown) +
+          section('نیاز به بررسی', r.review) +
+          section('آگهی', r.sponsored);
+        track('query_submitted', {
           text: st.text,
           intent: r.intent,
           chip_kinds: st.chips.map((c) => c.kind),
@@ -801,7 +871,7 @@
       function strip(b) {
         const p = b.parts,
           total = Math.max(1, p.gold + Math.max(0, p.ojrat) + p.profit + p.vat);
-        const w = (x) => ((100 * Math.max(0, x)) / total).toFixed(2) + "%";
+        const w = (x) => ((100 * Math.max(0, x)) / total).toFixed(2) + '%';
         return `<div class="strip" aria-hidden="true"><span class="g" style="width:${w(p.gold)}"></span><span class="o" style="width:${w(p.ojrat)}"></span><span class="p" style="width:${w(p.profit)}"></span><span class="t" style="width:${w(p.vat)}"></span></div>
   <div class="strip-key"><span><i style="background:var(--gold)"></i>ارزش طلا</span><span><i style="background:var(--ojrat)"></i>اجرت</span><span><i style="background:var(--profit)"></i>سود</span><span><i style="background:var(--tax)"></i>مالیات</span></div>`;
       }
@@ -809,67 +879,83 @@
         const o = c.offer,
           b = o.breakdown;
         const [cls, text] = LABEL[c.label];
-        const flags = [o.stale ? "قدیمی" : "", o.torob_pay ? "قسطی با ترب‌پی" : "", b?.partial_reason ? "قطعه‌ی غیرطلا دارد" : ""]
+        const flags = [
+          o.stale ? 'قدیمی' : '',
+          o.torob_pay ? 'قسطی با ترب‌پی' : '',
+          b?.partial_reason ? 'قطعه‌ی غیرطلا دارد' : '',
+        ]
           .filter(Boolean)
           .map((x) => `<span class="badge flag">${x}</span>`)
-          .join("");
+          .join('');
         const meta = [
-          c.weight_g ? gram(c.weight_g) : "وزن نامعلوم",
-          c.offer_count > 1 ? `${f0.format(c.offer_count)} فروشگاه` : (o.shop ?? "ارزان‌ترین فروشگاه"),
-        ].join("، ");
+          c.weight_g ? gram(c.weight_g) : 'وزن نامعلوم',
+          c.offer_count > 1
+            ? `${f0.format(c.offer_count)} فروشگاه`
+            : (o.shop ?? 'ارزان‌ترین فروشگاه'),
+        ].join('، ');
         const math = !b
-          ? `<div class="resale">${o.no_breakdown_reason === "no_gold_quote" ? "قیمت طلای زمان دریافت در دسترس نیست" : "وزن اعلام نشده و نمی‌شود حساب کرد"}</div>`
-          : (b.parts ? strip(b) : `<div class="resale">قطعه‌ی غیرطلا دارد و مقایسه با ارزش طلا کامل نیست</div>`) +
+          ? `<div class="resale">${o.no_breakdown_reason === 'no_gold_quote' ? 'قیمت طلای زمان دریافت در دسترس نیست' : 'وزن اعلام نشده و نمی‌شود حساب کرد'}</div>`
+          : (b.parts
+              ? strip(b)
+              : `<div class="resale">قطعه‌ی غیرطلا دارد و مقایسه با ارزش طلا کامل نیست</div>`) +
             // CR-07: a percentage, so it holds whatever gold has done since the price was fetched.
             `<div class="resale num">اگر بخرید و همین الان بفروشید، حدود ${pct(b.resale_loss_pct)} کمتر برمی‌گردد (برآورد)</div>`;
         return `<article class="card" tabindex="0" data-id="${esc(c.id)}" data-i="${i}">
-    ${c.image_url ? `<img src="${esc(c.image_url)}" alt="" loading="lazy">` : "<div></div>"}
+    ${c.image_url ? `<img src="${esc(c.image_url)}" alt="" loading="lazy">` : '<div></div>'}
     <div><p class="title">${esc(c.title)}<span class="badge ${cls}">${text}</span>${flags}</p>
       <div class="meta num">${esc(meta)}</div>
-      <div class="price-row"><span><span class="price num">${toman(o.price)}</span> <span class="fine num">قیمت ${when(o.fetched_at)}</span></span>${b && !b.partial_reason ? `<span class="premium num"><b>${pct(b.premium_pct)}</b> بالاتر از ارزش طلا</span>` : ""}</div>
+      <div class="price-row"><span><span class="price num">${toman(o.price)}</span> <span class="fine num">قیمت ${when(o.fetched_at)}</span></span>${b && !b.partial_reason ? `<span class="premium num"><b>${pct(b.premium_pct)}</b> بالاتر از ارزش طلا</span>` : ''}</div>
       ${math}</div></article>`;
       }
 
       async function sheet(id) {
         let d;
         try {
-          d = await post(`/products/${encodeURIComponent(id)}`, { chips: st.chips, snapshot_id: st.last?.snapshot.id });
+          d = await post(`/products/${encodeURIComponent(id)}`, {
+            chips: st.chips,
+            snapshot_id: st.last?.snapshot.id,
+          });
         } catch {
           return;
         }
-        track("breakdown_opened", { product_id: id, rank: 1 + (st.last?.results.findIndex((c) => c.id === id) ?? 0), label: d.label });
+        track('breakdown_opened', {
+          product_id: id,
+          rank: 1 + (st.last?.results.findIndex((c) => c.id === id) ?? 0),
+          label: d.label,
+        });
         const b = d.offer.breakdown;
         const rows = b?.parts
           ? [
-              ["ارزش طلا", b.parts.gold],
-              ["اجرت (برآوردی)", b.parts.ojrat],
-              ["سود", b.parts.profit],
-              ["مالیات", b.parts.vat],
-              ["قیمت", d.offer.price],
+              ['ارزش طلا', b.parts.gold],
+              ['اجرت (برآوردی)', b.parts.ojrat],
+              ['سود', b.parts.profit],
+              ['مالیات', b.parts.vat],
+              ['قیمت', d.offer.price],
             ]
           : [];
-        $("sheet").innerHTML = `<button class="close" id="x" aria-label="بستن">×</button><h2 id="sh-t">${esc(d.title)}</h2>
-    <div class="meta">${LABEL[d.label][1]}${d.reasons?.length ? "، " + esc(d.reasons.join("، ")) : ""}</div>
+        $('sheet').innerHTML =
+          `<button class="close" id="x" aria-label="بستن">×</button><h2 id="sh-t">${esc(d.title)}</h2>
+    <div class="meta">${LABEL[d.label][1]}${d.reasons?.length ? '، ' + esc(d.reasons.join('، ')) : ''}</div>
     ${
       rows.length
         ? `<p class="fine num">همه‌ی مبلغ‌های این جدول با قیمت فروشگاه و قیمت طلای ${when(d.offer.fetched_at)} حساب شده‌اند.</p>
-      <table class="bd num">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${toman(v)}</td></tr>`).join("")}
+      <table class="bd num">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${toman(v)}</td></tr>`).join('')}
       <tr><td>اگر بخرید و همین الان بفروشید (برآورد)</td><td>${toman(b.resale_value)}، یعنی ${pct(b.resale_loss_pct)} کمتر</td></tr>
       <tr><td>قیمت سربه‌سر طلا</td><td>${toman(b.breakeven_g, true)}، یعنی ${pct(b.required_rise_pct)} رشد</td></tr></table>
-      <div class="inputs num">ورودی‌های این عدد: وزن ${gram(b.inputs.weight_g)}، عیار ${f0.format(b.inputs.karat)}${b.inputs.karat_assumed ? " (عیار فرض‌شده)" : ""}، قیمت طلا در ${when(d.offer.fetched_at)}: ${toman(b.inputs.g_at_fetch, true)}${b.inputs.g_live ? ` (قیمت طلای امروز ${toman(b.inputs.g_live, true)}، فقط برای مقایسه)` : ""}، سود ${pct(b.inputs.profit * 100)} و مالیات ${pct(b.inputs.vat * 100)} روی اجرت و سود</div>`
-        : `<p>${d.offer.no_breakdown_reason === "no_gold_quote" ? "قیمت طلای زمان دریافت در دسترس نیست" : "وزن اعلام نشده و نمی‌شود حساب کرد"}</p>`
+      <div class="inputs num">ورودی‌های این عدد: وزن ${gram(b.inputs.weight_g)}، عیار ${f0.format(b.inputs.karat)}${b.inputs.karat_assumed ? ' (عیار فرض‌شده)' : ''}، قیمت طلا در ${when(d.offer.fetched_at)}: ${toman(b.inputs.g_at_fetch, true)}${b.inputs.g_live ? ` (قیمت طلای امروز ${toman(b.inputs.g_live, true)}، فقط برای مقایسه)` : ''}، سود ${pct(b.inputs.profit * 100)} و مالیات ${pct(b.inputs.vat * 100)} روی اجرت و سود</div>`
+        : `<p>${d.offer.no_breakdown_reason === 'no_gold_quote' ? 'قیمت طلای زمان دریافت در دسترس نیست' : 'وزن اعلام نشده و نمی‌شود حساب کرد'}</p>`
     }
     <div class="section-title">فروشگاه‌ها</div>
     <table class="bd num">${d.offers
       .slice(0, 5)
       .map(
         (o) =>
-          `<tr><td>${esc(o.shop ?? "ارزان‌ترین فروشگاه")}${o.city ? "، " + esc(o.city) : ""}${o.channel === "in_person" ? "، حضوری" : ""}${o.stale ? " (قدیمی)" : ""}</td><td>${toman(o.price)}<br><span class="fine">دریافت: ${when(o.fetched_at)}</span></td></tr>`,
+          `<tr><td>${esc(o.shop ?? 'ارزان‌ترین فروشگاه')}${o.city ? '، ' + esc(o.city) : ''}${o.channel === 'in_person' ? '، حضوری' : ''}${o.stale ? ' (قدیمی)' : ''}</td><td>${toman(o.price)}<br><span class="fine">دریافت: ${when(o.fetched_at)}</span></td></tr>`,
       )
-      .join("")}</table>
+      .join('')}</table>
     <a class="cta" id="go" href="${esc(d.offer.url)}" target="_blank" rel="noopener">دیدن در فروشگاه</a>`;
-        $("go").onclick = () =>
-          track("offer_clicked", {
+        $('go').onclick = () =>
+          track('offer_clicked', {
             product_id: id,
             rank: 1 + (st.last?.results.findIndex((c) => c.id === id) ?? 0),
             label: d.label,
@@ -880,52 +966,68 @@
             representative: true,
             stale: d.offer.stale,
           });
-        $("bg").style.display = "block";
-        requestAnimationFrame(() => $("sheet").classList.add("open"));
-        $("x").onclick = closeSheet;
-        $("x").focus();
+        $('bg').style.display = 'block';
+        requestAnimationFrame(() => $('sheet').classList.add('open'));
+        $('x').onclick = closeSheet;
+        $('x').focus();
       }
       function closeSheet() {
-        $("sheet").classList.remove("open");
-        $("bg").style.display = "none";
+        $('sheet').classList.remove('open');
+        $('bg').style.display = 'none';
       }
 
-      $("samples").innerHTML = SAMPLES.map((s) => `<button data-sample="${esc(s)}">${esc(s)}</button>`).join("");
-      $("q").addEventListener("input", () => {
+      $('samples').innerHTML = SAMPLES.map(
+        (s) => `<button data-sample="${esc(s)}">${esc(s)}</button>`,
+      ).join('');
+      $('q').addEventListener('input', () => {
         clearTimeout(timer);
         st.answers = {};
         timer = setTimeout(parse, 450);
       });
-      $("q").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
+      $('q').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
           clearTimeout(timer);
           parse();
         }
       });
-      document.addEventListener("click", async (e) => {
+      document.addEventListener('click', async (e) => {
         const t = e.target;
         if (t.dataset?.sample) {
-          $("q").value = t.dataset.sample;
+          $('q').value = t.dataset.sample;
           st.answers = {};
           return parse();
         }
         if (t.dataset?.unit) {
           st.answers = { budget_unit: t.dataset.unit };
-          track("chip_edited", { kind: "budget_max", action: "answer", origin_before: "none" });
+          track('chip_edited', {
+            kind: 'budget_max',
+            action: 'answer',
+            origin_before: 'none',
+          });
           return parse();
         }
         if (t.dataset?.intent) {
           st.chips = st.chips
-            .filter((c) => c.kind !== "intent")
-            .concat({ kind: "intent", role: "filter_and_sort", level: "product", value: t.dataset.intent, origin: "user" });
-          track("intent_suggestion_used", { intent: t.dataset.intent });
+            .filter((c) => c.kind !== 'intent')
+            .concat({
+              kind: 'intent',
+              role: 'filter_and_sort',
+              level: 'product',
+              value: t.dataset.intent,
+              origin: 'user',
+            });
+          track('intent_suggestion_used', { intent: t.dataset.intent });
           renderChips();
           return run();
         }
         if (t.dataset?.rm !== undefined) {
           const c = st.chips[+t.dataset.rm];
           st.chips.splice(+t.dataset.rm, 1);
-          track("chip_edited", { kind: c.kind, action: "remove", origin_before: c.origin });
+          track('chip_edited', {
+            kind: c.kind,
+            action: 'remove',
+            origin_before: c.origin,
+          });
           renderChips();
           return run();
         }
@@ -934,22 +1036,30 @@
           renderChips();
           return run();
         }
-        if (t.id === "showEx") {
-          const x = await post("/excluded", { chips: st.chips, snapshot_id: st.last?.snapshot.id });
-          $("excluded").innerHTML =
+        if (t.id === 'showEx') {
+          const x = await post('/excluded', {
+            chips: st.chips,
+            snapshot_id: st.last?.snapshot.id,
+          });
+          $('excluded').innerHTML =
             `<div class="section-title">کنار گذاشته‌ها</div>` +
-            x.items.map((i) => `<div class="meta">«${esc(i.title)}»، ${esc((i.reasons || []).join("، "))}</div>`).join("");
-          $("excluded").hidden = !$("excluded").hidden;
+            x.items
+              .map(
+                (i) =>
+                  `<div class="meta">«${esc(i.title)}»، ${esc((i.reasons || []).join('، '))}</div>`,
+              )
+              .join('');
+          $('excluded').hidden = !$('excluded').hidden;
           return;
         }
-        const c = t.closest?.(".card");
+        const c = t.closest?.('.card');
         if (c) sheet(c.dataset.id);
       });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeSheet();
-        if (e.key === "Enter" && e.target.classList?.contains("card")) e.target.click();
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSheet();
+        if (e.key === 'Enter' && e.target.classList?.contains('card')) e.target.click();
       });
-      $("bg").onclick = closeSheet;
+      $('bg').onclick = closeSheet;
       status();
     </script>
   </body>

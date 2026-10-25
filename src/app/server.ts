@@ -1,61 +1,66 @@
 // K-04 for the first demo (D-34, ADR-0010): one Node HTTP server, no framework.
 // Serves src/web/index.html and the API contract's endpoints over the in-memory snapshot.
 // Run: node src/app/server.ts [snapshotPath] [port]
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
-import { randomUUID } from "node:crypto";
-import { join, dirname } from "node:path";
-import { loadSnapshot, type Snapshot } from "../domains/catalog/snapshot.ts";
-import { type Chip } from "../domains/query/parse.ts";
-import { avalai, parser, type Llm } from "../domains/query/ai-reader.ts";
-import { search, excludedFor, type Card, type ProductRecord } from "../domains/ranking/rank.ts";
-import { eligibleOffers, isStale } from "../domains/catalog/offers.ts";
-import { priceBreakdown, vatRateFor } from "../domains/pricing/price.ts";
-import { parseTgju, parseUnion, type Reference } from "../domains/pricing/gold-price.ts";
-import { createGoldFeed } from "../domains/pricing/gold-feed.ts";
-import { config } from "../core/config.ts";
-import { readEnv } from "../core/env.ts";
+import { randomUUID } from 'node:crypto';
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { dirname, join } from 'node:path';
+import { config } from '../core/config.ts';
+import { readEnv } from '../core/env.ts';
+import { eligibleOffers, isStale } from '../domains/catalog/offers.ts';
+import { loadSnapshot, type Snapshot } from '../domains/catalog/snapshot.ts';
+import { createGoldFeed } from '../domains/pricing/gold-feed.ts';
+import { parseTgju, parseUnion, type Reference } from '../domains/pricing/gold-price.ts';
+import { priceBreakdown, vatRateFor } from '../domains/pricing/price.ts';
+import { avalai, parser, type Llm } from '../domains/query/ai-reader.ts';
+import { type Answers, type Chip } from '../domains/query/parse.ts';
+import {
+  excludedFor,
+  search,
+  type Card,
+  type ProductRecord,
+} from '../domains/ranking/rank.ts';
 
-const ROOT = new URL("../../", import.meta.url).pathname;
+const ROOT = new URL('../../', import.meta.url).pathname;
 const ARCHIVE_AFTER_H = 48; // BR-16
 const GOLD_TTL_MS = 120_000;
 
 // BR-100: round-trip cost of the other ways to hold gold, as published by each source.
 const SAVINGS_ROWS = [
   {
-    form: "used",
+    form: 'used',
     round_trip_cost_pct: 8,
-    source: "مجله‌ی دیجی‌کالا (۷ تا ۹٪)",
-    source_url: "https://www.digikala.com/mag/where-to-buy-second-hand-gold/",
+    source: 'مجله‌ی دیجی‌کالا (۷ تا ۹٪)',
+    source_url: 'https://www.digikala.com/mag/where-to-buy-second-hand-gold/',
     url: null,
-    as_of: "1404-08-19",
+    as_of: '1404-08-19',
     own_product: false,
   },
   {
-    form: "molten",
+    form: 'molten',
     round_trip_cost_pct: 4,
-    source: "بانک اول (۴٪ یا بیشتر)",
-    source_url: "https://bankavl.com/",
+    source: 'بانک اول (۴٪ یا بیشتر)',
+    source_url: 'https://bankavl.com/',
     url: null,
-    as_of: "1405-05-13",
+    as_of: '1405-05-13',
     own_product: false,
   },
   {
-    form: "digital",
+    form: 'digital',
     round_trip_cost_pct: 1.5,
-    source: "بانک اول (۱ تا ۲٪)",
-    source_url: "https://bankavl.com/",
+    source: 'بانک اول (۱ تا ۲٪)',
+    source_url: 'https://bankavl.com/',
     url: null,
-    as_of: "1405-05-13",
+    as_of: '1405-05-13',
     own_product: false,
   },
   {
-    form: "torob_gold",
+    form: 'torob_gold',
     round_trip_cost_pct: 1,
-    source: "ایران‌بروکر (خرید ۰٪، فروش ۱٪)",
-    source_url: "https://iranbroker.net/gold_platform/torob-gold/",
-    url: "https://torob.com/",
-    as_of: "1404-05",
+    source: 'ایران‌بروکر (خرید ۰٪، فروش ۱٪)',
+    source_url: 'https://iranbroker.net/gold_platform/torob-gold/',
+    url: 'https://torob.com/',
+    as_of: '1404-05',
     own_product: true,
   },
 ] as const;
@@ -64,9 +69,9 @@ const SAVINGS_ROWS = [
 // 25 s because the union board took 10 to 12 s to answer on 2026-10-25; the feed waits in the background.
 async function fetchJson(url: string, init: RequestInit = {}): Promise<unknown> {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(25_000) });
-  const type = res.headers.get("content-type") ?? "";
+  const type = res.headers.get('content-type') ?? '';
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  if (!type.includes("json")) throw new Error(`not JSON (${type || "no content type"})`);
+  if (!type.includes('json')) throw new Error(`not JSON (${type || 'no content type'})`);
   return res.json();
 }
 
@@ -74,14 +79,19 @@ const goldPrice = createGoldFeed({
   sources: {
     union: async () =>
       parseUnion(
-        await fetchJson("https://www.estjt.ir/wp-admin/admin-ajax.php", {
-          method: "POST",
-          body: "action=tablotala_timer",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        await fetchJson('https://www.estjt.ir/wp-admin/admin-ajax.php', {
+          method: 'POST',
+          body: 'action=tablotala_timer',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         }),
         new Date().toISOString(),
       ),
-    tgju: async () => parseTgju(((await fetchJson("https://call1.tgju.org/ajax.json")) as { current?: unknown }).current, new Date().toISOString()),
+    tgju: async () =>
+      parseTgju(
+        ((await fetchJson('https://call1.tgju.org/ajax.json')) as { current?: unknown })
+          .current,
+        new Date().toISOString(),
+      ),
   },
   ttlMs: GOLD_TTL_MS,
   firstWaitMs: 3000,
@@ -89,12 +99,25 @@ const goldPrice = createGoldFeed({
 
 function snapshotInfo(s: Snapshot) {
   const ageH = (Date.now() - Date.parse(s.meta.finished_at)) / 3_600_000;
-  return { id: s.meta.run_id, finished_at: s.meta.finished_at, pipeline_version: s.meta.pipeline_version, archive_mode: ageH > ARCHIVE_AFTER_H };
+  return {
+    id: s.meta.run_id,
+    finished_at: s.meta.finished_at,
+    pipeline_version: s.meta.pipeline_version,
+    archive_mode: ageH > ARCHIVE_AFTER_H,
+  };
 }
 
-function breakdownFor(p: ProductRecord, o: ProductRecord["offers"][number], gLive: Reference | null) {
-  if (p.attrs.weight_g === null) return { breakdown: null, no_breakdown_reason: "weight_unknown" };
-  if (o.g_at_fetch === null) return { breakdown: null, no_breakdown_reason: "no_gold_quote" };
+function breakdownFor(
+  p: ProductRecord,
+  o: ProductRecord['offers'][number],
+  gLive: Reference | null,
+) {
+  if (p.attrs.weight_g === null) {
+    return { breakdown: null, no_breakdown_reason: 'weight_unknown' };
+  }
+  if (o.g_at_fetch === null) {
+    return { breakdown: null, no_breakdown_reason: 'no_gold_quote' };
+  }
   const vat = vatRateFor(new Date(o.fetched_at));
   const b = priceBreakdown({
     price: o.price,
@@ -146,7 +169,8 @@ function cardJson(c: Card, p: ProductRecord, gLive: Reference | null) {
   };
 }
 
-const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]! : null);
+const median = (xs: number[]) =>
+  xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]! : null;
 
 type Deps = {
   goldPrice?: () => Promise<Reference | null>;
@@ -160,45 +184,70 @@ export function createApp(snapshotPath: string, deps: Deps = {}) {
   return createServer(createHandler(snapshotPath, deps));
 }
 
+// Each field is checked where it is used; answers goes to the parser as it is.
+type RequestBody = {
+  text?: unknown;
+  answers?: Answers;
+  chips?: unknown;
+  snapshot_id?: unknown;
+} & Record<string, unknown>;
+
 export function createHandler(snapshotPath: string, deps: Deps = {}) {
   const snap = loadSnapshot(snapshotPath);
   const livePrice = async () => (await (deps.goldPrice ?? goldPrice)()) ?? snap.gold;
   const byId = new Map(snap.products.map((p) => [p.id, p]));
-  const page = () => readFileSync(join(ROOT, "src/web/index.html"), "utf8");
+  const page = () => readFileSync(join(ROOT, 'src/web/index.html'), 'utf8');
   const hits = new Map<string, number[]>();
-  const eventsFile = deps.eventsFile === undefined ? join(ROOT, "data/events/events.jsonl") : deps.eventsFile;
+  const eventsFile =
+    deps.eventsFile === undefined
+      ? join(ROOT, 'data/events/events.jsonl')
+      : deps.eventsFile;
   const log = deps.log ?? ((line: string) => console.log(line));
   const parse = parser(deps.llm ?? null);
 
-  const send = (res: ServerResponse, status: number, body: unknown, type = "application/json; charset=utf-8") => {
-    res.writeHead(status, { "Content-Type": type, "X-Robots-Tag": "noindex", "Cache-Control": "no-store" });
-    res.end(typeof body === "string" ? body : JSON.stringify(body));
+  const send = (
+    res: ServerResponse,
+    status: number,
+    body: unknown,
+    type = 'application/json; charset=utf-8',
+  ) => {
+    res.writeHead(status, {
+      'Content-Type': type,
+      'X-Robots-Tag': 'noindex',
+      'Cache-Control': 'no-store',
+    });
+    res.end(typeof body === 'string' ? body : JSON.stringify(body));
   };
   const problem = (res: ServerResponse, status: number, type: string, detail: string) =>
-    send(res, status, { type: `/problems/${type}`, title: type, status, detail }, "application/problem+json; charset=utf-8");
+    send(
+      res,
+      status,
+      { type: `/problems/${type}`, title: type, status, detail },
+      'application/problem+json; charset=utf-8',
+    );
   const readJson = (req: IncomingMessage) =>
-    new Promise<any>((resolve) => {
-      let raw = "";
-      req.on("data", (d) => {
+    new Promise<RequestBody | null>((resolve) => {
+      let raw = '';
+      req.on('data', (d) => {
         raw += d;
         if (raw.length > 100_000) req.destroy();
       });
-      req.on("end", () => {
+      req.on('end', () => {
         try {
-          resolve(JSON.parse(raw || "{}"));
+          resolve(JSON.parse(raw || '{}'));
         } catch {
           resolve(null);
         }
       });
     });
   // API §2: per IP, in memory only, with one budget for the search calls and another for status and events.
-  const limited = (req: IncomingMessage, bucket: "search" | "light", perMin: number) => {
+  const limited = (req: IncomingMessage, bucket: 'search' | 'light', perMin: number) => {
     const forwarded = deps.trustProxy
-      ? String(req.headers["x-forwarded-for"] ?? "")
-          .split(",")[0]!
+      ? String(req.headers['x-forwarded-for'] ?? '')
+          .split(',')[0]!
           .trim()
-      : "";
-    const ip = `${bucket}:${forwarded || req.socket.remoteAddress || "?"}`;
+      : '';
+    const ip = `${bucket}:${forwarded || req.socket.remoteAddress || '?'}`;
     const now = Date.now();
     const recent = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
     recent.push(now);
@@ -208,22 +257,35 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
   const ctxFor = async () => {
     const info = snapshotInfo(snap);
     const g = await livePrice();
-    return { info, g, ctx: { finishedAt: snap.meta.finished_at, archive: info.archive_mode, gLive: g?.g_toman ?? null } };
+    return {
+      info,
+      g,
+      ctx: {
+        finishedAt: snap.meta.finished_at,
+        archive: info.archive_mode,
+        gLive: g?.g_toman ?? null,
+      },
+    };
   };
-  const validChips = (chips: unknown): chips is Chip[] => Array.isArray(chips) && chips.every((c) => c && typeof c.kind === "string");
+  const validChips = (chips: unknown): chips is Chip[] =>
+    Array.isArray(chips) && chips.every((c) => c && typeof c.kind === 'string');
 
   return async (req: IncomingMessage, res: ServerResponse) => {
-    const url = new URL(req.url ?? "/", "http://local");
-    const read = req.method === "GET" || req.method === "HEAD"; // Node drops the body of a HEAD response itself
+    const url = new URL(req.url ?? '/', 'http://local');
+    const read = req.method === 'GET' || req.method === 'HEAD'; // Node drops the body of a HEAD response itself
     try {
-      if (read && (url.pathname === "/" || url.pathname === "/index.html")) return send(res, 200, page(), "text/html; charset=utf-8");
-      if (
-        url.pathname.startsWith("/api/") &&
-        (url.pathname === "/api/v1/status" || url.pathname === "/api/v1/events" ? limited(req, "light", 120) : limited(req, "search", 30))
-      ) {
-        return problem(res, 429, "rate-limited", "too many requests");
+      if (read && (url.pathname === '/' || url.pathname === '/index.html')) {
+        return send(res, 200, page(), 'text/html; charset=utf-8');
       }
-      if (read && url.pathname === "/api/v1/status") {
+      if (
+        url.pathname.startsWith('/api/') &&
+        (url.pathname === '/api/v1/status' || url.pathname === '/api/v1/events'
+          ? limited(req, 'light', 120)
+          : limited(req, 'search', 30))
+      ) {
+        return problem(res, 429, 'rate-limited', 'too many requests');
+      }
+      if (read && url.pathname === '/api/v1/status') {
         const g = await livePrice();
         return send(res, 200, {
           gold_price: g,
@@ -232,48 +294,61 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
           gold_price_age_min: g ? (Date.now() - Date.parse(g.quoted_at)) / 60_000 : null,
         });
       }
-      if (req.method !== "POST") return problem(res, 404, "not-found", url.pathname);
+      if (req.method !== 'POST') return problem(res, 404, 'not-found', url.pathname);
       const body = await readJson(req);
-      if (!body) return problem(res, 422, "invalid-request", "body is not JSON");
+      if (!body) return problem(res, 422, 'invalid-request', 'body is not JSON');
 
-      if (url.pathname === "/api/v1/parse") {
-        if (typeof body.text !== "string" || body.text.length > 300) return problem(res, 422, "invalid-request", "text: max 300 characters");
+      if (url.pathname === '/api/v1/parse') {
+        if (typeof body.text !== 'string' || body.text.length > 300) {
+          return problem(res, 422, 'invalid-request', 'text: max 300 characters');
+        }
         return send(res, 200, await parse(body.text, body.answers ?? {}));
       }
-      if (url.pathname === "/api/v1/events") {
-        const line = JSON.stringify({ ...body, pipeline_version: snap.meta.pipeline_version }); // BR-111: the client sends no personal data
+      if (url.pathname === '/api/v1/events') {
+        const line = JSON.stringify({
+          ...body,
+          pipeline_version: snap.meta.pipeline_version,
+        }); // BR-111: the client sends no personal data
         if (eventsFile === null) log(line);
         else {
           mkdirSync(dirname(eventsFile), { recursive: true });
-          appendFileSync(eventsFile, line + "\n");
+          appendFileSync(eventsFile, line + '\n');
         }
         return send(res, 202, {});
       }
-      if (!validChips(body.chips)) return problem(res, 422, "invalid-request", "chips: array required");
-      if (body.snapshot_id && body.snapshot_id !== snap.meta.run_id) return problem(res, 410, "snapshot-expired", body.snapshot_id);
+      if (!validChips(body.chips)) {
+        return problem(res, 422, 'invalid-request', 'chips: array required');
+      }
+      if (body.snapshot_id && body.snapshot_id !== snap.meta.run_id) {
+        return problem(res, 410, 'snapshot-expired', String(body.snapshot_id));
+      }
       const { info, g, ctx } = await ctxFor();
 
-      if (url.pathname === "/api/v1/search") {
+      if (url.pathname === '/api/v1/search') {
         const r = search(snap.products, body.chips, ctx);
-        const mode = body.chips.some((c: Chip) => c.kind === "form")
-          ? body.chips.some((c: Chip) => c.kind === "item_type")
-            ? "both"
-            : "non_jewelry"
-          : "jewelry";
+        const mode = body.chips.some((c: Chip) => c.kind === 'form')
+          ? body.chips.some((c: Chip) => c.kind === 'item_type')
+            ? 'both'
+            : 'non_jewelry'
+          : 'jewelry';
         const json = (list: Card[]) => list.map((c) => cardJson(c, byId.get(c.id)!, g));
-        const results = mode === "non_jewelry" ? [] : json(r.results);
+        const results = mode === 'non_jewelry' ? [] : json(r.results);
         const premiums = results
-          .map((c) => (c.offer.breakdown?.partial_reason ? null : (c.offer.breakdown?.premium_pct ?? null)))
+          .map((c) =>
+            c.offer.breakdown?.partial_reason
+              ? null
+              : (c.offer.breakdown?.premium_pct ?? null),
+          )
           .filter((x): x is number => x !== null);
         const savings =
-          r.intent === "savings" || mode !== "jewelry"
+          r.intent === 'savings' || mode !== 'jewelry'
             ? {
-                notice: mode === "jewelry" ? null : "non_jewelry_not_ranked",
+                notice: mode === 'jewelry' ? null : 'non_jewelry_not_ranked',
                 rows: [
                   {
-                    form: "jewelry",
+                    form: 'jewelry',
                     round_trip_cost_pct: median(premiums),
-                    source: "این نتایج",
+                    source: 'این نتایج',
                     source_url: null,
                     url: null,
                     as_of: info.finished_at.slice(0, 10),
@@ -288,7 +363,7 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
           snapshot: info,
           gold_price: g,
           intent: r.intent,
-          suggest_intent: r.intent === "unknown",
+          suggest_intent: r.intent === 'unknown',
           mode,
           results,
           review: json(r.review),
@@ -296,12 +371,12 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
           ojrat_unknown: json(r.ojrat_unknown),
           sponsored: json(r.sponsored),
           excluded_count: r.excluded_count,
-          explanation: mode === "non_jewelry" ? null : r.explanation,
+          explanation: mode === 'non_jewelry' ? null : r.explanation,
           savings_card: savings,
           relax: r.relax,
         });
       }
-      if (url.pathname === "/api/v1/excluded") {
+      if (url.pathname === '/api/v1/excluded') {
         const items = excludedFor(snap.products, body.chips, ctx).map((p) => ({
           id: p.id,
           title: p.title,
@@ -318,12 +393,25 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
           p &&
           search(
             [p],
-            body.chips.filter((c: Chip) => c.level === "offer"),
+            body.chips.filter((c: Chip) => c.level === 'offer'),
             ctx,
           );
-        const c = r && [...r.results, ...r.review, ...r.weight_unknown_bucket, ...r.ojrat_unknown, ...r.sponsored][0];
-        if (!p || !c) return problem(res, 404, "not-found", m[1]!);
-        const offers = eligibleOffers(p.offers, {}, ctx.finishedAt, ctx.archive) as ProductRecord["offers"];
+        const c =
+          r &&
+          [
+            ...r.results,
+            ...r.review,
+            ...r.weight_unknown_bucket,
+            ...r.ojrat_unknown,
+            ...r.sponsored,
+          ][0];
+        if (!p || !c) return problem(res, 404, 'not-found', m[1]!);
+        const offers = eligibleOffers(
+          p.offers,
+          {},
+          ctx.finishedAt,
+          ctx.archive,
+        ) as ProductRecord['offers'];
         return send(res, 200, {
           ...cardJson(c, p, g),
           offers: offers.map(({ g_at_fetch: _g, ...o }) => ({
@@ -335,10 +423,10 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
           shop_avg: [],
         });
       }
-      return problem(res, 404, "not-found", url.pathname);
+      return problem(res, 404, 'not-found', url.pathname);
     } catch (err) {
       console.error(err);
-      return problem(res, 500, "internal", "unexpected error");
+      return problem(res, 500, 'internal', 'unexpected error');
     }
   };
 }
@@ -346,11 +434,18 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
 // A container host (Hamravesh, ADR-0012) sets these through the environment; local runs may pass the path and port as arguments.
 if (import.meta.main) {
   const env = readEnv();
-  const path = process.argv[2] ?? env.snapshotPath ?? join(ROOT, "data/snapshots/latest.sqlite");
+  const path =
+    process.argv[2] ?? env.snapshotPath ?? join(ROOT, 'data/snapshots/latest.sqlite');
   const port = Number(process.argv[3] ?? env.port);
   const key = env.avalaiKey;
   const model = env.avalaiModel ?? config.llm.model;
-  createApp(path, { llm: key ? avalai(key, model) : null, eventsFile: env.eventsFile, trustProxy: env.trustProxy }).listen(port, () =>
-    console.log(`demo: http://localhost:${port} (AI sentence reading: ${key ? model : "off, no AVALAI_API_KEY"})`),
+  createApp(path, {
+    llm: key ? avalai(key, model) : null,
+    eventsFile: env.eventsFile,
+    trustProxy: env.trustProxy,
+  }).listen(port, () =>
+    console.log(
+      `demo: http://localhost:${port} (AI sentence reading: ${key ? model : 'off, no AVALAI_API_KEY'})`,
+    ),
   );
 }

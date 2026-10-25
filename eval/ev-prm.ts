@@ -1,9 +1,9 @@
 // EV-PRM: implied ojrat (BR-43) against Digikala's declared ojrat, on products
 // without non-gold parts (BR-2A, D-19). Run: node eval/ev-prm.ts [--split=test --release]
-import { extract } from "../src/domains/catalog/extract.ts";
-import { impliedOjratPct } from "../src/domains/pricing/price.ts";
-import { config } from "../src/core/config.ts";
-import { ROOT, readCsv, splitFromArgs } from "./lib.ts";
+import { config } from '../src/core/config.ts';
+import { extract } from '../src/domains/catalog/extract.ts';
+import { impliedOjratPct } from '../src/domains/pricing/price.ts';
+import { readCsv, ROOT, splitFromArgs } from './lib.ts';
 
 // Eval plan §2: 70/30 by product id, seed 42 (same generator as the EV-MAT sampler).
 function testIds(ids: string[]): Set<string> {
@@ -23,7 +23,9 @@ function bootstrapMae(errors: number[], resamples = 2000): [number, number] {
   const means: number[] = [];
   for (let r = 0; r < resamples; r++) {
     let s = 0;
-    for (let i = 0; i < errors.length; i++) s += errors[Math.floor(rand() * errors.length)]!;
+    for (let i = 0; i < errors.length; i++) {
+      s += errors[Math.floor(rand() * errors.length)]!;
+    }
     means.push(s / errors.length);
   }
   means.sort((a, b) => a - b);
@@ -33,17 +35,21 @@ function bootstrapMae(errors: number[], resamples = 2000): [number, number] {
 const split = splitFromArgs();
 const all = readCsv(`${ROOT}docs/evidence/ev-prm-digikala-2026-10-22.csv`);
 const test = testIds(all.map((r) => r.id!));
-const rows = all.filter((r) => (split === "test") === test.has(r.id!));
+const rows = all.filter((r) => (split === 'test') === test.has(r.id!));
 
 const clean: number[] = [],
   partial: number[] = [];
 for (const r of rows) {
   const attrs = extract({ title: r.title!, specs: {}, shop: null });
-  const declaredParts = Number(r.non_gold_cost_rial) > 0 || Number(r.non_gold_wage_rial) > 0;
-  const karat = Number(r.carat!.replace("carat_", "")) || 18;
+  const declaredParts =
+    Number(r.non_gold_cost_rial) > 0 || Number(r.non_gold_wage_rial) > 0;
+  const karat = Number(r.carat!.replace('carat_', '')) || 18;
   const gold = Number(r.weight_g) * (Number(r.gold_price_rial) / 10) * (karat / 18);
   const ratio = Number(r.rrp_rial) / 10 / gold;
-  const err = Math.abs(impliedOjratPct(ratio, config.price.vatByJalaliYear[1405]!, config.price.profit) - Number(r.ojrat_declared_pct));
+  const err = Math.abs(
+    impliedOjratPct(ratio, config.price.vatByJalaliYear[1405]!, config.price.profit) -
+      Number(r.ojrat_declared_pct),
+  );
   (attrs.non_gold || declaredParts ? partial : clean).push(err);
 }
 

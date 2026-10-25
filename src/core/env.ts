@@ -14,7 +14,7 @@ export function readEnv(env: NodeJS.ProcessEnv = process.env): Env {
     snapshotPath: env.SNAPSHOT_PATH || undefined,
     avalaiKey: env.AVALAI_API_KEY || undefined,
     avalaiModel: env.AVALAI_MODEL || undefined,
-    eventsFile: env.EVENTS_FILE === "-" ? null : env.EVENTS_FILE || undefined,
-    trustProxy: env.TRUST_PROXY === "1",
+    eventsFile: env.EVENTS_FILE === '-' ? null : env.EVENTS_FILE || undefined,
+    trustProxy: env.TRUST_PROXY === '1',
   };
 }

@@ -1,18 +1,30 @@
 // K-02: all raw files so far → one immutable SQLite snapshot (data model §2).
 // Run: node src/domains/collection/build-snapshot.ts [rawDir] [outPath]
-import { readdirSync, readFileSync, existsSync, rmSync, renameSync, mkdirSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { DatabaseSync } from "node:sqlite";
-import { parseTgju, parseUnion, selectReference, type Quote } from "../pricing/gold-price.ts";
-import { extract, specsFromDetails, type Attributes } from "../catalog/extract.ts";
-import { normalize } from "../../shared/text.ts";
-import { labelProduct } from "../catalog/label.ts";
-import { priceBreakdown, vatRateFor } from "../pricing/price.ts";
-import { eligibleOffers, mergeCard, type OfferRow } from "../catalog/offers.ts";
-import { config } from "../../core/config.ts";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+} from 'node:fs';
+import { dirname, join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+import { config } from '../../core/config.ts';
+import { normalize } from '../../shared/text.ts';
+import { extract, specsFromDetails, type Attributes } from '../catalog/extract.ts';
+import { labelProduct } from '../catalog/label.ts';
+import { eligibleOffers, mergeCard, type OfferRow } from '../catalog/offers.ts';
+import {
+  parseTgju,
+  parseUnion,
+  selectReference,
+  type Quote,
+} from '../pricing/gold-price.ts';
+import { priceBreakdown, vatRateFor } from '../pricing/price.ts';
 
 export const SCHEMA_VERSION = 2;
-export const PIPELINE_VERSION = "0.2.0";
+export const PIPELINE_VERSION = '0.2.0';
 const QUOTE_WINDOW_MS = 60 * 60_000; // DM-01
 // CR-09: the label check may use an older quote. Its bands (0.9 and 2.5 times the gold value) are far wider than gold's
 // moves over a few days: G at fetch and G today were 2.7% to 3.5% apart in the 2026-10-25 snapshot (CR-07).
@@ -47,8 +59,8 @@ type StoredQuote = Quote & { id: number };
 
 const readJsonl = (path: string) =>
   existsSync(path)
-    ? readFileSync(path, "utf8")
-        .split("\n")
+    ? readFileSync(path, 'utf8')
+        .split('\n')
         .filter(Boolean)
         .map((l) => JSON.parse(l))
     : [];
@@ -61,8 +73,10 @@ const MULTI_SHOP = /در\s*[۰-۹0-9]+\s*فروشگاه/;
 function loadQuotes(raw: string): StoredQuote[] {
   const quotes: StoredQuote[] = [];
   for (const day of dayDirs(raw)) {
-    for (const r of readJsonl(join(raw, day, "gold-price.jsonl"))) {
-      const q = String(r.source).includes("tgju") ? parseTgju(r.prices, r.fetched_at) : parseUnion(r.body, r.fetched_at);
+    for (const r of readJsonl(join(raw, day, 'gold-price.jsonl'))) {
+      const q = String(r.source).includes('tgju')
+        ? parseTgju(r.prices, r.fetched_at)
+        : parseUnion(r.body, r.fetched_at);
       if (q) quotes.push({ ...q, id: quotes.length + 1 });
     }
   }
@@ -70,44 +84,61 @@ function loadQuotes(raw: string): StoredQuote[] {
 }
 
 // DM-01: the reference at fetch time, from the quotes of each source nearest to it within 60 minutes.
-function quoteAt(quotes: StoredQuote[], at: string, windowMs = QUOTE_WINDOW_MS): { g: number; id: number } | null {
+function quoteAt(
+  quotes: StoredQuote[],
+  at: string,
+  windowMs = QUOTE_WINDOW_MS,
+): { g: number; id: number } | null {
   const t = Date.parse(at);
-  const nearest = (source: Quote["source"]) =>
+  const nearest = (source: Quote['source']) =>
     quotes
-      .filter((q) => q.source === source && Math.abs(Date.parse(q.fetched_at) - t) <= windowMs)
-      .sort((a, b) => Math.abs(Date.parse(a.fetched_at) - t) - Math.abs(Date.parse(b.fetched_at) - t))[0] ?? null;
-  const union = nearest("union"),
-    tgju = nearest("tgju");
+      .filter(
+        (q) => q.source === source && Math.abs(Date.parse(q.fetched_at) - t) <= windowMs,
+      )
+      .sort(
+        (a, b) =>
+          Math.abs(Date.parse(a.fetched_at) - t) - Math.abs(Date.parse(b.fetched_at) - t),
+      )[0] ?? null;
+  const union = nearest('union'),
+    tgju = nearest('tgju');
   const ref = selectReference(union, tgju, new Date(t));
   if (!ref) return null;
-  const used = ref.source === "union" ? union : tgju;
+  const used = ref.source === 'union' ? union : tgju;
   return { g: ref.g_toman, id: used!.id };
 }
 
 // CR-09: Torob prints a star only for shops it has scored. Marketplaces, new shops and in-person listings carry a
 // default score of 5 without one, and shop_score_percentile is 0 on every offer collected so far.
-export function shopRating(info: { score?: unknown; score_text?: unknown } | undefined): { stars: number | null; months: number | null } {
-  const text = normalize(String(info?.score_text ?? ""));
-  const stars = text.startsWith("★") && typeof info?.score === "number" ? info.score : null;
+export function shopRating(info: { score?: unknown; score_text?: unknown } | undefined): {
+  stars: number | null;
+  months: number | null;
+} {
+  const text = normalize(String(info?.score_text ?? ''));
+  const stars =
+    text.startsWith('★') && typeof info?.score === 'number' ? info.score : null;
   const m = text.match(/(\d+) (سال|ماه) در ترب/);
-  const months = m ? Number(m[1]) * (m[2] === "سال" ? 12 : 1) : text.includes("فروشگاه جدید") ? 0 : null;
+  const months = m
+    ? Number(m[1]) * (m[2] === 'سال' ? 12 : 1)
+    : text.includes('فروشگاه جدید')
+      ? 0
+      : null;
   return { stars, months };
 }
 
 function detailsOffers(productId: string, body: any, fetchedAt: string): OfferRow[] {
   const rows: OfferRow[] = [];
-  const add = (o: any, channel: OfferRow["channel"]) => {
+  const add = (o: any, channel: OfferRow['channel']) => {
     const rating = shopRating(o.score_info);
     rows.push({
       id: `${productId}:${channel}:${rows.length}`,
       product_id: productId,
-      source: "torob_details",
+      source: 'torob_details',
       shop: o.shop_name ?? null,
       city: o.shop_name2 ?? null,
       channel,
-      title: String(o.name1 ?? ""),
+      title: String(o.name1 ?? ''),
       price: o.price,
-      url: o.page_url ?? "",
+      url: o.page_url ?? '',
       torob_pay: !!o.show_torobpay_badge,
       price_unreliable: !!o.is_price_unreliable,
       shop_stars: rating.stars,
@@ -116,20 +147,26 @@ function detailsOffers(productId: string, body: any, fetchedAt: string): OfferRo
     });
   };
   const priced = (o: any) => o.price > 0 && o.price <= config.offers.maxPriceToman; // DM-08: priced offers only, placeholders out
-  for (const o of body.products_info?.result ?? []) if (o.availability && priced(o)) add(o, "online");
-  for (const o of body.products_in_store_info?.result ?? []) if (priced(o)) add(o, "in_person");
+  for (const o of body.products_info?.result ?? []) {
+    if (o.availability && priced(o)) add(o, 'online');
+  }
+  for (const o of body.products_in_store_info?.result ?? []) {
+    if (priced(o)) add(o, 'in_person');
+  }
   return rows;
 }
 
 function cardOffer(productId: string, c: Card): OfferRow {
-  const named = MULTI_SHOP.test(c.shop_text) ? null : c.shop_text.replace(/^در\s+/, "").trim() || null;
+  const named = MULTI_SHOP.test(c.shop_text)
+    ? null
+    : c.shop_text.replace(/^در\s+/, '').trim() || null;
   return {
     id: `${productId}:card`,
     product_id: productId,
-    source: "torob_search",
+    source: 'torob_search',
     shop: named,
     city: null,
-    channel: "online",
+    channel: 'online',
     title: c.name1,
     price: c.price,
     url: c.url,
@@ -141,65 +178,99 @@ function cardOffer(productId: string, c: Card): OfferRow {
   };
 }
 
-function attributeRows(productId: string, a: Attributes): [string, string, string, string, number, string][] {
+function attributeRows(
+  productId: string,
+  a: Attributes,
+): [string, string, string, string, number, string][] {
   const rows: [string, string, string, string, number, string][] = [];
-  const put = (name: string, f: { value: unknown; provenance: string; evidence: string } | null) => {
+  const put = (
+    name: string,
+    f: { value: unknown; provenance: string; evidence: string } | null,
+  ) => {
     if (f) rows.push([productId, name, String(f.value), f.provenance, 1, f.evidence]);
   };
-  put("weight_g", a.weight_g);
-  if (a.weight_conflict) rows.push([productId, "weight_conflict", "true", "spec", 1, a.weight_g?.evidence ?? ""]);
-  put("karat", a.karat);
-  put("declared_ojrat_pct", a.declared_ojrat_pct);
-  put("declared_profit_pct", a.declared_profit_pct);
-  put("gallery", a.gallery);
-  put("item_type", a.item_type);
-  put("audience", a.audience);
-  put("condition", a.condition);
-  for (const s of a.style_tags) put("style_tags", s);
-  put("non_gold_kind", a.non_gold);
-  put("non_gold_cost_toman", a.non_gold_cost_toman);
-  if (a.non_gold) rows.push([productId, "has_non_gold_parts", "true", a.non_gold.provenance, 1, a.non_gold.evidence]);
+  put('weight_g', a.weight_g);
+  if (a.weight_conflict) {
+    rows.push([
+      productId,
+      'weight_conflict',
+      'true',
+      'spec',
+      1,
+      a.weight_g?.evidence ?? '',
+    ]);
+  }
+  put('karat', a.karat);
+  put('declared_ojrat_pct', a.declared_ojrat_pct);
+  put('declared_profit_pct', a.declared_profit_pct);
+  put('gallery', a.gallery);
+  put('item_type', a.item_type);
+  put('audience', a.audience);
+  put('condition', a.condition);
+  for (const s of a.style_tags) put('style_tags', s);
+  put('non_gold_kind', a.non_gold);
+  put('non_gold_cost_toman', a.non_gold_cost_toman);
+  if (a.non_gold) {
+    rows.push([
+      productId,
+      'has_non_gold_parts',
+      'true',
+      a.non_gold.provenance,
+      1,
+      a.non_gold.evidence,
+    ]);
+  }
   return rows;
 }
 
-const tehranDay = (iso: string) => new Date(Date.parse(iso) + 210 * 60_000).toISOString().slice(0, 10);
+const tehranDay = (iso: string) =>
+  new Date(Date.parse(iso) + 210 * 60_000).toISOString().slice(0, 10);
 
-export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: string }): void {
+export function buildSnapshot({
+  rawDir,
+  outPath,
+}: {
+  rawDir: string;
+  outPath: string;
+}): void {
   const quotes = loadQuotes(rawDir);
   const runs = dayDirs(rawDir)
-    .flatMap((d) => readJsonl(join(rawDir, d, "runs.jsonl")))
-    .filter((r) => r.step === "summary");
-  const lastRun = runs.sort((a, b) => String(a.finished_at).localeCompare(String(b.finished_at))).at(-1);
+    .flatMap((d) => readJsonl(join(rawDir, d, 'runs.jsonl')))
+    .filter((r) => r.step === 'summary');
+  const lastRun = runs
+    .sort((a, b) => String(a.finished_at).localeCompare(String(b.finished_at)))
+    .at(-1);
   if (!lastRun) throw new Error(`no completed run in ${rawDir}`);
 
   const cards = new Map<string, Card[]>();
-  for (const day of dayDirs(rawDir))
-    for (const page of readJsonl(join(rawDir, day, "torob-search.jsonl"))) {
+  for (const day of dayDirs(rawDir)) {
+    for (const page of readJsonl(join(rawDir, day, 'torob-search.jsonl'))) {
       for (const r of page.results ?? []) {
         if ((r.price ?? 0) > config.offers.maxPriceToman) continue;
         const list = cards.get(r.random_key) ?? [];
         list.push({
           run_id: page.run_id,
           fetched_at: page.fetched_at,
-          name1: r.name1 ?? "",
-          name2: r.name2 ?? "",
+          name1: r.name1 ?? '',
+          name2: r.name2 ?? '',
           price: r.price ?? 0,
-          shop_text: r.shop_text ?? "",
-          url: `https://torob.com${r.web_client_absolute_url ?? ""}`,
+          shop_text: r.shop_text ?? '',
+          url: `https://torob.com${r.web_client_absolute_url ?? ''}`,
           image_url: r.image_url ?? null,
           is_adv: !!r.is_adv,
         });
         cards.set(r.random_key, list);
       }
     }
+  }
 
   const tmp = `${outPath}.tmp`;
   mkdirSync(dirname(outPath), { recursive: true });
   rmSync(tmp, { force: true });
   const db = new DatabaseSync(tmp);
   db.exec(SCHEMA);
-  db.exec("BEGIN");
-  db.prepare("INSERT INTO meta VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(
+  db.exec('BEGIN');
+  db.prepare('INSERT INTO meta VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
     SCHEMA_VERSION,
     lastRun.run_id,
     lastRun.started_at,
@@ -211,22 +282,37 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
     lastRun.details_fetched ?? 0,
   );
   const insQuote = db.prepare("INSERT INTO gold_quote VALUES (?, ?, '18k', ?, ?, ?)");
-  for (const q of quotes) insQuote.run(q.id, q.source, q.g_toman, q.quoted_at, q.fetched_at);
+  for (const q of quotes) {
+    insQuote.run(q.id, q.source, q.g_toman, q.quoted_at, q.fetched_at);
+  }
 
-  const insProduct = db.prepare("INSERT INTO product VALUES (?, ?, ?, ?, NULL, ?, ?, 0, ?, ?, ?)");
-  const insOffer = db.prepare("INSERT INTO offer VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-  const insAttr = db.prepare("INSERT INTO attribute VALUES (?, ?, ?, ?, ?, ?)");
-  const insLabel = db.prepare("INSERT INTO label VALUES (?, ?, ?, ?, ?)");
-  const insBreakdown = db.prepare("INSERT INTO breakdown VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-  const insHistory = db.prepare("INSERT OR REPLACE INTO history VALUES (?, ?, ?, ?, ?, ?)");
+  const insProduct = db.prepare(
+    'INSERT INTO product VALUES (?, ?, ?, ?, NULL, ?, ?, 0, ?, ?, ?)',
+  );
+  const insOffer = db.prepare(
+    'INSERT INTO offer VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  );
+  const insAttr = db.prepare('INSERT INTO attribute VALUES (?, ?, ?, ?, ?, ?)');
+  const insLabel = db.prepare('INSERT INTO label VALUES (?, ?, ?, ?, ?)');
+  const insBreakdown = db.prepare(
+    'INSERT INTO breakdown VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  );
+  const insHistory = db.prepare(
+    'INSERT OR REPLACE INTO history VALUES (?, ?, ?, ?, ?, ?)',
+  );
 
   for (const [productId, seen] of cards) {
     seen.sort((a, b) => a.fetched_at.localeCompare(b.fetched_at));
     const latest = seen.at(-1)!;
-    const detailsPath = join(rawDir, "details", `${productId}.json`);
-    const details = existsSync(detailsPath) ? JSON.parse(readFileSync(detailsPath, "utf8")) : null;
+    const detailsPath = join(rawDir, 'details', `${productId}.json`);
+    const details = existsSync(detailsPath)
+      ? JSON.parse(readFileSync(detailsPath, 'utf8'))
+      : null;
     const specs = details ? specsFromDetails(details.body) : {};
-    const offers = mergeCard(cardOffer(productId, latest), details ? detailsOffers(productId, details.body, details.fetched_at) : []);
+    const offers = mergeCard(
+      cardOffer(productId, latest),
+      details ? detailsOffers(productId, details.body, details.fetched_at) : [],
+    );
     const rep = eligibleOffers(offers, {}, lastRun.finished_at, false)[0] ?? offers[0]!;
     const attrs = extract({ title: latest.name1, specs, shop: rep.shop });
     const repQuote = quoteAt(quotes, rep.fetched_at, LABEL_QUOTE_WINDOW_MS);
@@ -236,7 +322,9 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
       attributes: attrs,
       price: rep.price,
       g_at_fetch: repQuote?.g ?? null,
-      offer_titles: offers.filter((o) => o.source === "torob_details").map((o) => o.title),
+      offer_titles: offers
+        .filter((o) => o.source === 'torob_details')
+        .map((o) => o.title),
     });
 
     insProduct.run(
@@ -245,13 +333,21 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
       latest.name2,
       latest.image_url,
       latest.url,
-      MULTI_SHOP.test(latest.shop_text) ? Number(normalize(latest.shop_text).match(/\d+/)?.[0]) : 1,
+      MULTI_SHOP.test(latest.shop_text)
+        ? Number(normalize(latest.shop_text).match(/\d+/)?.[0])
+        : 1,
       seen[0]!.fetched_at,
       latest.fetched_at,
       details?.fetched_at ?? null,
     );
     for (const r of attributeRows(productId, attrs)) insAttr.run(...r);
-    insLabel.run(productId, label.label, JSON.stringify(label.reasons), label.price_ratio, label.weight_unknown ? 1 : 0);
+    insLabel.run(
+      productId,
+      label.label,
+      JSON.stringify(label.reasons),
+      label.price_ratio,
+      label.weight_unknown ? 1 : 0,
+    );
 
     for (const o of offers) {
       const q = quoteAt(quotes, o.fetched_at);
@@ -275,14 +371,18 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
       );
       if (!q || !attrs.weight_g) continue;
       const vat = vatRateFor(new Date(o.fetched_at));
-      const profit = (attrs.declared_profit_pct?.value ?? config.price.profit * 100) / 100;
+      const profit =
+        (attrs.declared_profit_pct?.value ?? config.price.profit * 100) / 100;
       const b = priceBreakdown({
         price: o.price,
         weight_g: attrs.weight_g.value,
         karat: attrs.karat?.value ?? 18,
         g_at_fetch: q.g,
         declared_ojrat_pct: attrs.declared_ojrat_pct?.value ?? null,
-        non_gold: { has: !!attrs.non_gold, declared_cost_toman: attrs.non_gold_cost_toman?.value ?? null },
+        non_gold: {
+          has: !!attrs.non_gold,
+          declared_cost_toman: attrs.non_gold_cost_toman?.value ?? null,
+        },
         vat,
         profit,
       });
@@ -302,24 +402,32 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
     }
 
     // DM-05: one row per product × shop × day, the last observation of the day; cards that name no shop use "".
-    if (attrs.weight_g)
+    if (attrs.weight_g) {
       for (const c of seen) {
         const q = quoteAt(quotes, c.fetched_at);
         if (!q) continue;
-        const shop = cardOffer(productId, c).shop ?? "";
+        const shop = cardOffer(productId, c).shop ?? '';
         const gold = (attrs.weight_g.value * q.g * (attrs.karat?.value ?? 18)) / 18;
-        insHistory.run(productId, shop, tehranDay(c.fetched_at), c.price, (c.price / gold - 1) * 100, q.g);
+        insHistory.run(
+          productId,
+          shop,
+          tehranDay(c.fetched_at),
+          c.price,
+          (c.price / gold - 1) * 100,
+          q.g,
+        );
       }
+    }
   }
-  db.exec("COMMIT");
+  db.exec('COMMIT');
   db.close();
   renameSync(tmp, outPath); // the swap is atomic, so a reader never sees a half-written snapshot
 }
 
 if (import.meta.main) {
-  const root = new URL("../../../", import.meta.url).pathname;
-  const raw = process.argv[2] ?? join(root, "data/raw");
-  const out = process.argv[3] ?? join(root, "data/snapshots/latest.sqlite");
+  const root = new URL('../../../', import.meta.url).pathname;
+  const raw = process.argv[2] ?? join(root, 'data/raw');
+  const out = process.argv[3] ?? join(root, 'data/snapshots/latest.sqlite');
   buildSnapshot({ rawDir: raw, outPath: out });
   console.log(`snapshot written: ${out}`);
 }

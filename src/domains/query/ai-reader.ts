@@ -1,27 +1,30 @@
 // ADR-0005: AvalAI's OpenAI-compatible chat API with a strict JSON schema, temperature 0 and a short timeout.
-import { config } from "../../core/config.ts";
-import { normalize } from "../../shared/text.ts";
-import { parseQuery, type Answers, type ParsedQuery } from "./parse.ts";
-import { buildMessages, mergeLlm, LLM_SCHEMA } from "./llm.ts";
+import { config } from '../../core/config.ts';
+import { normalize } from '../../shared/text.ts';
+import { buildMessages, LLM_SCHEMA, mergeLlm } from './llm.ts';
+import { parseQuery, type Answers, type ParsedQuery } from './parse.ts';
 
 export type Llm = (messages: ReturnType<typeof buildMessages>) => Promise<unknown>;
 
 export function avalai(key: string, model = config.llm.model): Llm {
   return async (messages) => {
     const res = await fetch(`${config.llm.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
         temperature: 0,
         messages,
-        response_format: { type: "json_schema", json_schema: { name: "chips", strict: true, schema: LLM_SCHEMA } },
+        response_format: {
+          type: 'json_schema',
+          json_schema: { name: 'chips', strict: true, schema: LLM_SCHEMA },
+        },
       }),
       signal: AbortSignal.timeout(config.llm.timeoutMs),
     });
     if (!res.ok) throw new Error(`avalai ${res.status}`);
     const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    return JSON.parse(body.choices?.[0]?.message?.content ?? "null");
+    return JSON.parse(body.choices?.[0]?.message?.content ?? 'null');
   };
 }
 

@@ -1,12 +1,12 @@
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from 'node:fs';
 
-export const ROOT = new URL("../", import.meta.url).pathname;
+export const ROOT = new URL('../', import.meta.url).pathname;
 
 export function readCsv(path: string): Record<string, string>[] {
-  const text = readFileSync(path, "utf8");
+  const text = readFileSync(path, 'utf8');
   const rows: string[][] = [];
   let row: string[] = [],
-    cell = "",
+    cell = '',
     quoted = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i]!;
@@ -17,27 +17,29 @@ export function readCsv(path: string): Record<string, string>[] {
       } else if (c === '"') quoted = false;
       else cell += c;
     } else if (c === '"') quoted = true;
-    else if (c === ",") {
+    else if (c === ',') {
       row.push(cell);
-      cell = "";
-    } else if (c === "\n") {
+      cell = '';
+    } else if (c === '\n') {
       row.push(cell);
       rows.push(row);
       row = [];
-      cell = "";
-    } else if (c !== "\r") cell += c;
+      cell = '';
+    } else if (c !== '\r') cell += c;
   }
   if (cell || row.length) {
     row.push(cell);
     rows.push(row);
   }
   const [header, ...body] = rows;
-  return body.filter((r) => r.length > 1).map((r) => Object.fromEntries(header!.map((h, i) => [h, r[i] ?? ""])));
+  return body
+    .filter((r) => r.length > 1)
+    .map((r) => Object.fromEntries(header!.map((h, i) => [h, r[i] ?? ''])));
 }
 
 export function details(key: string): { body: any; fetched_at: string } | null {
   const path = `${ROOT}data/raw/details/${key}.json`;
-  return existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : null;
+  return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null;
 }
 
 export function wilson(k: number, n: number, z = 1.96): [number, number] {
@@ -50,10 +52,12 @@ export function wilson(k: number, n: number, z = 1.96): [number, number] {
 }
 
 // Eval plan §2: the test split is scored only on release tags.
-export function splitFromArgs(): "tune" | "test" {
-  const split = process.argv.includes("--split=test") ? "test" : "tune";
-  if (split === "test" && !process.argv.includes("--release")) {
-    throw new Error("The test split is scored only for a release (eval plan §2). Add --release on a release tag.");
+export function splitFromArgs(): 'tune' | 'test' {
+  const split = process.argv.includes('--split=test') ? 'test' : 'tune';
+  if (split === 'test' && !process.argv.includes('--release')) {
+    throw new Error(
+      'The test split is scored only for a release (eval plan §2). Add --release on a release tag.',
+    );
   }
   return split;
 }
@@ -61,7 +65,10 @@ export function splitFromArgs(): "tune" | "test" {
 export const pct = (x: number) => x.toFixed(1);
 
 // AvalAI's per-model limits differ by account level (gpt-4.1-mini: 500 a minute at level 1); a short gap keeps evals polite.
-export function throttled<A extends unknown[], R>(fn: (...a: A) => Promise<R>, gapMs = 300) {
+export function throttled<A extends unknown[], R>(
+  fn: (...a: A) => Promise<R>,
+  gapMs = 300,
+) {
   let next = 0;
   return async (...a: A): Promise<R> => {
     const wait = next - Date.now();
