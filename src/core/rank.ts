@@ -82,18 +82,27 @@ export function components(
   const target = first(chips, "budget_target") as number | undefined;
   const wTarget = first(chips, "weight_target") as number | undefined;
   const pref = first(chips, "weight_pref") as "light" | "heavy" | undefined;
+  const max = first(chips, "budget_max") as number | undefined;
+  const gift = first(chips, "intent") === "gift";
   let weightFit = 1;
   if (wTarget !== undefined) weightFit = w === null ? R.unknownWeightFit : clamp(1 - Math.abs(w - wTarget) / (R.weightBand * wTarget));
   else if (pref) {
-    const known = ctx.candidates.map((c) => c.attrs.weight_g).filter((x): x is number => x !== null);
-    const [lo, hi] = [Math.min(...known), Math.max(...known)];
-    weightFit = w === null ? R.unknownWeightFit : hi === lo ? 1 : pref === "light" ? (hi - w) / (hi - lo) : (w - lo) / (hi - lo);
+    // «ظریف» asks for a piece that is not heavy, not for the least gold: any weight up to the median scores full.
+    const known = ctx.candidates
+      .map((c) => c.attrs.weight_g)
+      .filter((x): x is number => x !== null)
+      .sort((a, b) => a - b);
+    const [lo, hi, mid] = [known[0]!, known.at(-1)!, known[Math.floor(known.length / 2)]!];
+    if (w === null) weightFit = R.unknownWeightFit;
+    else if (pref === "light") weightFit = w <= mid ? 1 : hi === mid ? 1 : (hi - w) / (hi - mid);
+    else weightFit = w >= mid ? 1 : mid === lo ? 1 : (w - lo) / (mid - lo);
   }
   const styles = values(chips, "style") as string[];
   const premium = premiumOf(p, o);
   const age = (Date.parse(ctx.finishedAt) - Date.parse(o.fetched_at)) / 3_600_000;
   return {
-    budget_fit: target === undefined ? 1 : clamp(1 - Math.abs(o.price - target) / (R.budgetBand * target)),
+    // A gift budget is what the buyer means to spend, so a gift near it fits better than one far below it.
+    budget_fit: target !== undefined ? clamp(1 - Math.abs(o.price - target) / (R.budgetBand * target)) : gift && max !== undefined ? clamp(o.price / max) : 1,
     weight_fit: weightFit,
     type_style_fit: styles.length === 0 ? 1 : styles.filter((s) => p.attrs.style_tags.includes(s) || p.title.includes(s)).length / styles.length,
     seller_trust: p.attrs.gallery ? 1 : o.shop_score_pct !== null ? o.shop_score_pct / 100 : R.unknownShopScore,

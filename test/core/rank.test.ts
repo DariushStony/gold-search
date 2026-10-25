@@ -200,3 +200,18 @@ test("BR-39: the set-aside list holds the not-gold products that pass the same f
     ["fake"],
   );
 });
+
+test("CR-08 (BR-62): a gift near the budget the buyer gave ranks above one far below it", () => {
+  const cheap = product({ id: "cheap", title: "دستبند طلا", price: 1_000_000, weight: 0.5, attrs: { item_type: "دستبند" } });
+  const near = product({ id: "near", title: "دستبند طلا", price: 18_000_000, weight: 0.5, attrs: { item_type: "دستبند" } });
+  assert.deepEqual(ids(search([cheap, near], chips("یه دستبند برای روز مادر تا ۲۰ تومن"), ctx)), ["near", "cheap"]);
+});
+
+test("CR-08 (BR-62): «ظریف» gives full weight fit to any piece up to the median weight, so the least gold does not win", () => {
+  const items = [0.02, 1, 1.5, 4, 8].map((w, i) => product({ id: `w${i}`, title: "دستبند طلا", weight: w, attrs: { item_type: "دستبند" } }));
+  const c = chips("یه دستبند ظریف");
+  const fit = (p: ProductRecord) => components(p, p.offers[0]!, c, { ...ctx, candidates: items }).weight_fit;
+  assert.deepEqual(items.slice(0, 3).map(fit), [1, 1, 1]);
+  assert.ok(fit(items[3]!) < 1 && fit(items[3]!) > 0);
+  assert.equal(fit(items[4]!), 0);
+});
