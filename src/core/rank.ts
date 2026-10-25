@@ -30,14 +30,25 @@ export type ProductRecord = {
 export type Ctx = { finishedAt: string; archive: boolean; gLive: number | null };
 export type ComponentName = keyof typeof config.rank.weights.gift;
 export type Card = {
-  id: string; title: string; image_url: string | null; label: Label; reasons: string[]; weight_unknown: boolean;
+  id: string;
+  title: string;
+  image_url: string | null;
+  label: Label;
+  reasons: string[];
+  weight_unknown: boolean;
   offer: ProductRecord["offers"][number] & { stale: boolean; premium_pct: number | null };
-  offer_count: number; price_range: [number, number];
-  score: number; components: { name: ComponentName; weight: number; value: number }[];
+  offer_count: number;
+  price_range: [number, number];
+  score: number;
+  components: { name: ComponentName; weight: number; value: number }[];
 };
 export type SearchResult = {
   intent: "gift" | "beauty" | "savings" | "unknown";
-  results: Card[]; review: Card[]; weight_unknown_bucket: Card[]; ojrat_unknown: Card[]; sponsored: Card[];
+  results: Card[];
+  review: Card[];
+  weight_unknown_bucket: Card[];
+  ojrat_unknown: Card[];
+  sponsored: Card[];
   excluded_count: number;
   explanation: { text: string; numbers: number[]; template: boolean } | null;
   relax: { chip_index: number; kind: ChipKind; results_if_removed: number } | null;
@@ -61,7 +72,12 @@ function ojratOf(p: ProductRecord, o: ProductRecord["offers"][number]): number |
   return impliedOjratPct(ratio, vatRateFor(new Date(o.fetched_at)), config.price.profit);
 }
 
-export function components(p: ProductRecord, o: ProductRecord["offers"][number], chips: Chip[], ctx: Ctx & { candidates: ProductRecord[] }): Record<ComponentName, number> {
+export function components(
+  p: ProductRecord,
+  o: ProductRecord["offers"][number],
+  chips: Chip[],
+  ctx: Ctx & { candidates: ProductRecord[] },
+): Record<ComponentName, number> {
   const w = p.attrs.weight_g;
   const target = first(chips, "budget_target") as number | undefined;
   const wTarget = first(chips, "weight_target") as number | undefined;
@@ -90,7 +106,12 @@ export function components(p: ProductRecord, o: ProductRecord["offers"][number],
 
 type Route = "result" | "review" | "weight_bucket" | "ojrat_bucket" | "sponsored" | "excluded" | "hidden" | "filtered";
 
-function route(p: ProductRecord, chips: Chip[], ctx: Ctx, intent: SearchResult["intent"]): { route: Route; offer?: ProductRecord["offers"][number]; eligible?: ProductRecord["offers"] } {
+function route(
+  p: ProductRecord,
+  chips: Chip[],
+  ctx: Ctx,
+  intent: SearchResult["intent"],
+): { route: Route; offer?: ProductRecord["offers"][number]; eligible?: ProductRecord["offers"] } {
   const a = p.attrs;
   const types = values(chips, "item_type");
   if (types.length && (a.item_type === null || !types.includes(a.item_type))) return { route: "filtered" };
@@ -103,14 +124,17 @@ function route(p: ProductRecord, chips: Chip[], ctx: Ctx, intent: SearchResult["
   if (first(chips, "no_stones") === true && a.non_gold) return { route: "filtered" };
 
   const f: OfferFilters = {
-    shop: first(chips, "shop") as string | undefined, city: first(chips, "city") as string | undefined,
-    in_person: first(chips, "in_person") === true, torob_pay: first(chips, "torob_pay") === true,
+    shop: first(chips, "shop") as string | undefined,
+    city: first(chips, "city") as string | undefined,
+    in_person: first(chips, "in_person") === true,
+    torob_pay: first(chips, "torob_pay") === true,
   };
   const eligible = eligibleOffers(p.offers, f, ctx.finishedAt, ctx.archive) as ProductRecord["offers"];
   const offer = eligible[0];
   if (!offer) return { route: "filtered" };
 
-  const min = first(chips, "budget_min") as number | undefined, max = first(chips, "budget_max") as number | undefined;
+  const min = first(chips, "budget_min") as number | undefined,
+    max = first(chips, "budget_max") as number | undefined;
   const target = first(chips, "budget_target") as number | undefined;
   if ((min !== undefined && offer.price < min) || (max !== undefined && offer.price > max)) return { route: "filtered" };
   if (target !== undefined && Math.abs(offer.price - target) > R.budgetBand * target + 1e-6) return { route: "filtered" };
@@ -119,7 +143,8 @@ function route(p: ProductRecord, chips: Chip[], ctx: Ctx, intent: SearchResult["
   if (p.label === "review") return { route: "review", offer, eligible };
   if (p.label === "mixed" && intent !== "gift") return { route: "hidden" };
 
-  const wMin = first(chips, "weight_min") as number | undefined, wMax = first(chips, "weight_max") as number | undefined;
+  const wMin = first(chips, "weight_min") as number | undefined,
+    wMax = first(chips, "weight_max") as number | undefined;
   const wTarget = first(chips, "weight_target") as number | undefined;
   if (wMin !== undefined || wMax !== undefined || wTarget !== undefined) {
     if (a.weight_g === null) return { route: "weight_bucket", offer, eligible };
@@ -138,16 +163,30 @@ function route(p: ProductRecord, chips: Chip[], ctx: Ctx, intent: SearchResult["
   return { route: "result", offer, eligible };
 }
 
-function card(p: ProductRecord, offer: ProductRecord["offers"][number], eligible: ProductRecord["offers"], chips: Chip[], ctx: Ctx & { candidates: ProductRecord[] }, intent: SearchResult["intent"]): Card {
+function card(
+  p: ProductRecord,
+  offer: ProductRecord["offers"][number],
+  eligible: ProductRecord["offers"],
+  chips: Chip[],
+  ctx: Ctx & { candidates: ProductRecord[] },
+  intent: SearchResult["intent"],
+): Card {
   const comps = components(p, offer, chips, ctx);
   const weights = R.weights[intent];
   const list = (Object.keys(weights) as ComponentName[]).map((name) => ({ name, weight: weights[name], value: comps[name] }));
   const prices = eligible.map((o) => o.price);
   return {
-    id: p.id, title: p.title, image_url: p.image_url, label: p.label, reasons: p.reasons, weight_unknown: p.attrs.weight_g === null,
+    id: p.id,
+    title: p.title,
+    image_url: p.image_url,
+    label: p.label,
+    reasons: p.reasons,
+    weight_unknown: p.attrs.weight_g === null,
     offer: { ...offer, stale: isStale(offer, ctx.finishedAt, ctx.archive), premium_pct: premiumOf(p, offer) },
-    offer_count: eligible.length, price_range: [Math.min(...prices), Math.max(...prices)],
-    score: list.reduce((s, c) => s + c.weight * c.value, 0), components: list,
+    offer_count: eligible.length,
+    price_range: [Math.min(...prices), Math.max(...prices)],
+    score: list.reduce((s, c) => s + c.weight * c.value, 0),
+    components: list,
   };
 }
 
@@ -171,19 +210,31 @@ function explain(a: Card, b: Card): SearchResult["explanation"] {
 function rank(cards: Card[], chips: Chip[], products: Map<string, ProductRecord>): Card[] {
   const byOjrat = first(chips, "ojrat_sort") === "asc";
   const ojrat = (c: Card) => ojratOf(products.get(c.id)!, c.offer) ?? Infinity;
-  return cards.sort((x, y) =>
-    (byOjrat ? ojrat(x) - ojrat(y) : 0) || y.score - x.score || x.offer.price - y.offer.price || x.id.localeCompare(y.id)); // BR-65
+  return cards.sort((x, y) => (byOjrat ? ojrat(x) - ojrat(y) : 0) || y.score - x.score || x.offer.price - y.offer.price || x.id.localeCompare(y.id)); // BR-65
 }
 
 export function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): SearchResult {
   const intent = (first(chips, "intent") as SearchResult["intent"] | undefined) ?? "unknown";
   const byId = new Map(products.map((p) => [p.id, p]));
-  const out: SearchResult = { intent, results: [], review: [], weight_unknown_bucket: [], ojrat_unknown: [], sponsored: [], excluded_count: 0, explanation: null, relax: null };
+  const out: SearchResult = {
+    intent,
+    results: [],
+    review: [],
+    weight_unknown_bucket: [],
+    ojrat_unknown: [],
+    sponsored: [],
+    excluded_count: 0,
+    explanation: null,
+    relax: null,
+  };
   const routed = products.map((p) => ({ p, ...route(p, chips, ctx, intent) }));
   const candidates = routed.filter((r) => r.route === "result").map((r) => r.p);
   const full = { ...ctx, candidates };
   for (const r of routed) {
-    if (r.route === "excluded") { out.excluded_count++; continue; }
+    if (r.route === "excluded") {
+      out.excluded_count++;
+      continue;
+    }
     if (!r.offer || !r.eligible) continue;
     const c = card(r.p, r.offer, r.eligible, chips, full, intent);
     if (r.route === "result") out.results.push(c);
@@ -195,14 +246,29 @@ export function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): Sear
   for (const list of [out.results, out.review, out.weight_unknown_bucket, out.ojrat_unknown, out.sponsored]) rank(list, chips, byId);
   if (out.results.length >= 2) out.explanation = explain(out.results[0]!, out.results[1]!);
 
-  if (out.results.length === 0) { // BR-67
-    const filterChips = chips.map((c, i) => ({ c, i })).filter(({ c }) => c.role === "filter" || c.role === "filter_and_sort").filter(({ c }) => c.kind !== "intent");
+  if (out.results.length === 0) {
+    // BR-67
+    const filterChips = chips
+      .map((c, i) => ({ c, i }))
+      .filter(({ c }) => c.role === "filter" || c.role === "filter_and_sort")
+      .filter(({ c }) => c.kind !== "intent");
     // Most results brought back first; on a tie, the filter that alone removed the most (BR-67 wording), then chip order.
-    const scored = filterChips.map(({ c, i }) => ({
-      c, i,
-      back: products.filter((p) => route(p, chips.filter((_, j) => j !== i), ctx, intent).route === "result").length,
-      removed: products.filter((p) => route(p, [c], ctx, intent).route === "filtered").length,
-    })).sort((x, y) => y.back - x.back || y.removed - x.removed || x.i - y.i);
+    const scored = filterChips
+      .map(({ c, i }) => ({
+        c,
+        i,
+        back: products.filter(
+          (p) =>
+            route(
+              p,
+              chips.filter((_, j) => j !== i),
+              ctx,
+              intent,
+            ).route === "result",
+        ).length,
+        removed: products.filter((p) => route(p, [c], ctx, intent).route === "filtered").length,
+      }))
+      .sort((x, y) => y.back - x.back || y.removed - x.removed || x.i - y.i);
     const top = scored[0];
     out.relax = top ? { chip_index: top.i, kind: top.c.kind, results_if_removed: top.back } : null;
   }

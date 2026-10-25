@@ -10,17 +10,52 @@ const ctx = { finishedAt: FINISHED, archive: false, gLive: G };
 const hoursBefore = (h: number) => new Date(Date.parse(FINISHED) - h * 3_600_000).toISOString();
 
 let n = 0;
-function product(p: Omit<Partial<ProductRecord>, "offers" | "attrs"> & { attrs?: Partial<ProductRecord["attrs"]>; price?: number; weight?: number | null; offers?: Partial<OfferRow>[] }): ProductRecord {
+function product(
+  p: Omit<Partial<ProductRecord>, "offers" | "attrs"> & {
+    attrs?: Partial<ProductRecord["attrs"]>;
+    price?: number;
+    weight?: number | null;
+    offers?: Partial<OfferRow>[];
+  },
+): ProductRecord {
   const id = p.id ?? `p${++n}`;
   const weight = p.weight === undefined ? 1 : p.weight;
   const given: Partial<OfferRow>[] = p.offers ?? [{ price: p.price ?? 30_000_000 }];
   const offers = given.map((o, i): OfferRow => ({
-    id: `${id}:${i}`, product_id: id, source: "torob_details", shop: `shop-${id}-${i}`, city: "تهران", channel: "online",
-    title: "", price: 30_000_000, url: "u", torob_pay: false, price_unreliable: false, shop_score_pct: 50, fetched_at: hoursBefore(1), ...o,
+    id: `${id}:${i}`,
+    product_id: id,
+    source: "torob_details",
+    shop: `shop-${id}-${i}`,
+    city: "تهران",
+    channel: "online",
+    title: "",
+    price: 30_000_000,
+    url: "u",
+    torob_pay: false,
+    price_unreliable: false,
+    shop_score_pct: 50,
+    fetched_at: hoursBefore(1),
+    ...o,
   }));
   return {
-    id, title: p.title ?? "انگشتر طلا", image_url: null, label: p.label ?? "real", reasons: [], sponsored: p.sponsored ?? false,
-    attrs: { weight_g: weight, karat: 18, item_type: "انگشتر", audience: null, condition: null, gallery: null, style_tags: [], non_gold: false, declared_ojrat_pct: null, ...p.attrs },
+    id,
+    title: p.title ?? "انگشتر طلا",
+    image_url: null,
+    label: p.label ?? "real",
+    reasons: [],
+    sponsored: p.sponsored ?? false,
+    attrs: {
+      weight_g: weight,
+      karat: 18,
+      item_type: "انگشتر",
+      audience: null,
+      condition: null,
+      gallery: null,
+      style_tags: [],
+      non_gold: false,
+      declared_ojrat_pct: null,
+      ...p.attrs,
+    },
     offers: offers.map((o) => ({ ...o, g_at_fetch: G })),
   };
 }
@@ -33,11 +68,16 @@ test("AC-RK-01 (BR-60, BR-84): with a 20M budget nothing pricier is in the main 
 });
 
 test("AC-RK-02 (BR-61, BR-63): savings keeps mixed, review and weightless products out of the main list", () => {
-  const r = search([
-    product({ id: "ok" }), product({ id: "mixed", label: "mixed" }), product({ id: "rev", label: "review" }), product({ id: "noweight", weight: null }),
-  ], chips("انگشتر طلا برای پس انداز"), ctx);
+  const r = search(
+    [product({ id: "ok" }), product({ id: "mixed", label: "mixed" }), product({ id: "rev", label: "review" }), product({ id: "noweight", weight: null })],
+    chips("انگشتر طلا برای پس انداز"),
+    ctx,
+  );
   assert.deepEqual(ids(r), ["ok"]);
-  assert.deepEqual(r.review.map((x) => x.id), ["rev"]);
+  assert.deepEqual(
+    r.review.map((x) => x.id),
+    ["rev"],
+  );
 });
 
 test("BR-61: mixed products appear only for gifts; not-gold products are only counted", () => {
@@ -68,7 +108,10 @@ test("AC-RK-03 (BR-62, BR-66): the score is the intent weights times the compone
 test("AC-RK-04 (BR-64): a sponsored product is listed only under «آگهی»", () => {
   const r = search([product({ id: "ad", sponsored: true }), product({ id: "org" })], chips("انگشتر طلا"), ctx);
   assert.deepEqual(ids(r), ["org"]);
-  assert.deepEqual(r.sponsored.map((x) => x.id), ["ad"]);
+  assert.deepEqual(
+    r.sponsored.map((x) => x.id),
+    ["ad"],
+  );
 });
 
 test("AC-RK-05 (BR-65): equal scores ⇒ cheaper first; equal price ⇒ lower id", () => {
@@ -82,33 +125,54 @@ test("AC-RK-06 (BR-67): zero results name the filter whose removal brings the mo
   assert.equal(r.results.length, 0);
   assert.equal(r.relax?.kind, "item_type");
   assert.equal(r.relax?.results_if_removed, 1);
-  const bangles = [product({ id: "b1", price: 60_000_000, weight: 20, attrs: { item_type: "النگو" } }), product({ id: "b2", price: 70_000_000, weight: 20, attrs: { item_type: "النگو" } })];
+  const bangles = [
+    product({ id: "b1", price: 60_000_000, weight: 20, attrs: { item_type: "النگو" } }),
+    product({ id: "b2", price: 70_000_000, weight: 20, attrs: { item_type: "النگو" } }),
+  ];
   const r2 = search(bangles, chips("النگو ۲۰ گرمی زیر ۵ میلیون"), ctx);
   assert.equal(r2.relax?.kind, "budget_max");
   assert.equal(r2.relax?.results_if_removed, 2);
 });
 
 test("BR-54: a weight target is a ±10% band; weightless products go to their own section", () => {
-  const list = [product({ id: "in", weight: 2.2, price: 70_000_000 }), product({ id: "out", weight: 2.3, price: 70_000_000 }), product({ id: "none", weight: null })];
+  const list = [
+    product({ id: "in", weight: 2.2, price: 70_000_000 }),
+    product({ id: "out", weight: 2.3, price: 70_000_000 }),
+    product({ id: "none", weight: null }),
+  ];
   const r = search(list, chips("انگشتر ۲ گرمی"), ctx);
   assert.deepEqual(ids(r), ["in"]);
-  assert.deepEqual(r.weight_unknown_bucket.map((x) => x.id), ["none"]);
+  assert.deepEqual(
+    r.weight_unknown_bucket.map((x) => x.id),
+    ["none"],
+  );
 });
 
 test("BR-59: ojrat filters drop dearer products, park the uncheckable ones, and «کمترین اجرت» sorts by ojrat", () => {
   const list = [
-    product({ id: "low", price: 30_500_000 }), product({ id: "high", price: 40_000_000 }), product({ id: "mid", price: 32_000_000 }),
+    product({ id: "low", price: 30_500_000 }),
+    product({ id: "high", price: 40_000_000 }),
+    product({ id: "mid", price: 32_000_000 }),
     product({ id: "stones", price: 31_000_000, attrs: { non_gold: true } }),
   ];
   const r = search(list, chips("انگشتر کم اجرت"), ctx);
   assert.deepEqual(ids(r).sort(), ["low", "mid"]);
-  assert.deepEqual(r.ojrat_unknown.map((x) => x.id), ["stones"]);
+  assert.deepEqual(
+    r.ojrat_unknown.map((x) => x.id),
+    ["stones"],
+  );
   assert.deepEqual(ids(search(list, chips("انگشتر با کمترین اجرت"), ctx)), ["low", "mid"]);
 });
 
 test("BR-84: a city filter picks that city's offer; a product with none drops out", () => {
   const list = [
-    product({ id: "both", offers: [{ price: 30_000_000, city: "تهران" }, { price: 31_000_000, city: "اصفهان" }] }),
+    product({
+      id: "both",
+      offers: [
+        { price: 30_000_000, city: "تهران" },
+        { price: 31_000_000, city: "اصفهان" },
+      ],
+    }),
     product({ id: "tehran", offers: [{ price: 29_000_000, city: "تهران" }] }),
   ];
   const r = search(list, chips("انگشتر طلا در اصفهان"), ctx);
@@ -126,6 +190,13 @@ test("BR-70, BR-73: the top result is explained against the second with numbers 
 });
 
 test("BR-39: the set-aside list holds the not-gold products that pass the same filters", () => {
-  const list = [product({ id: "ok" }), product({ id: "fake", label: "not_gold" }), product({ id: "fake-bangle", label: "not_gold", attrs: { item_type: "النگو" } })];
-  assert.deepEqual(excludedFor(list, chips("انگشتر طلا"), ctx).map((p) => p.id), ["fake"]);
+  const list = [
+    product({ id: "ok" }),
+    product({ id: "fake", label: "not_gold" }),
+    product({ id: "fake-bangle", label: "not_gold", attrs: { item_type: "النگو" } }),
+  ];
+  assert.deepEqual(
+    excludedFor(list, chips("انگشتر طلا"), ctx).map((p) => p.id),
+    ["fake"],
+  );
 });

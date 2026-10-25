@@ -1,0 +1,20 @@
+# Generated or collected
+data/
+dist/
+node_modules/
+pnpm-lock.yaml
+.vercel/
+
+# Hand-written Persian docs and evidence keep their own layout
+docs/
+*.md
+*.csv
+*.jsonl
+
+# Private notes and one-off spikes
+.private/
+spikes/
+
+# Captured API responses stay byte for byte
+test/fixtures/
+.claude/

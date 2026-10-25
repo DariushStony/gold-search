@@ -38,9 +38,7 @@ export function eligibleOffers(offers: OfferRow[], f: OfferFilters, finishedAt: 
 
 // DM-08: fold the latest search card into the details offers.
 export function mergeCard(card: OfferRow, details: OfferRow[]): OfferRow[] {
-  const i = card.shop !== null
-    ? details.findIndex((d) => same(d.shop, card.shop))
-    : details.findIndex((d) => d.channel === "online" && d.price === card.price);
+  const i = card.shop !== null ? details.findIndex((d) => same(d.shop, card.shop)) : details.findIndex((d) => d.channel === "online" && d.price === card.price);
   if (i < 0) return [...details, card];
   const d = details[i]!;
   const cardNewer = Date.parse(card.fetched_at) > Date.parse(d.fetched_at);

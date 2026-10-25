@@ -20,7 +20,19 @@ const DETAILS_GAP_MS = 25_000;
 const JITTER_MS = 5_000;
 const GOLD_EVERY_DETAILS = 10; // keeps every offer within 60 min of a quote (DM-01)
 
-export const QUERIES = ["دستبند طلا", "انگشتر طلا", "گردنبند طلا", "گوشواره طلا", "النگو طلا", "زنجیر طلا", "پلاک طلا", "آویز طلا", "سرویس طلا", "طلای آب شده", "طلای دست دوم"];
+export const QUERIES = [
+  "دستبند طلا",
+  "انگشتر طلا",
+  "گردنبند طلا",
+  "گوشواره طلا",
+  "النگو طلا",
+  "زنجیر طلا",
+  "پلاک طلا",
+  "آویز طلا",
+  "سرویس طلا",
+  "طلای آب شده",
+  "طلای دست دوم",
+];
 
 export type HttpResponse = { status: number; contentType: string; json(): Promise<unknown>; text(): Promise<string> };
 export type Http = (url: string, init?: { method?: string; body?: string; headers?: Record<string, string> }) => Promise<HttpResponse>;
@@ -38,11 +50,13 @@ export type Summary = { requests: number; results: number; details_fetched: numb
 
 // Longest matching rule wins; Allow wins a tie (Google's reading of robots.txt).
 export function robotsAllows(robots: string, path: string): boolean {
-  let inStar = false, best = { len: -1, allow: true };
+  let inStar = false,
+    best = { len: -1, allow: true };
   for (const raw of robots.split("\n")) {
     const line = raw.replace(/#.*/, "").trim();
     const [k, ...rest] = line.split(":");
-    const key = k?.trim().toLowerCase(), value = rest.join(":").trim();
+    const key = k?.trim().toLowerCase(),
+      value = rest.join(":").trim();
     if (key === "user-agent") inStar = value === "*";
     else if (inStar && (key === "allow" || key === "disallow") && value && path.startsWith(value)) {
       if (value.length > best.len || (value.length === best.len && key === "allow")) best = { len: value.length, allow: key === "allow" };
@@ -89,7 +103,11 @@ export async function runCollector(deps: Deps, opts: Partial<Options> = {}): Pro
   const gold = async () => {
     const fetchedAt = () => deps.now().toISOString();
     try {
-      const res = await deps.http(UNION_URL, { method: "POST", body: "action=tablotala_timer", headers: { "User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded" } });
+      const res = await deps.http(UNION_URL, {
+        method: "POST",
+        body: "action=tablotala_timer",
+        headers: { "User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded" },
+      });
       await deps.write("gold-price.jsonl", { source: UNION_URL, unit: "toman", fetched_at: fetchedAt(), body: await res.json() });
     } catch (err) {
       await deps.write("runs.jsonl", { step: "gold_price", source: "union", kind: "network", note: String(err), fetched_at: fetchedAt() });
@@ -97,7 +115,12 @@ export async function runCollector(deps: Deps, opts: Partial<Options> = {}): Pro
     try {
       const res = await deps.http(TGJU_URL, { headers: { "User-Agent": UA, Accept: "application/json" } });
       const current = ((await res.json()) as { current?: Record<string, unknown> })?.current ?? {};
-      await deps.write("gold-price.jsonl", { source: TGJU_URL, unit: "rial", fetched_at: fetchedAt(), prices: Object.fromEntries(TGJU_KEYS.filter((k) => k in current).map((k) => [k, current[k]])) });
+      await deps.write("gold-price.jsonl", {
+        source: TGJU_URL,
+        unit: "rial",
+        fetched_at: fetchedAt(),
+        prices: Object.fromEntries(TGJU_KEYS.filter((k) => k in current).map((k) => [k, current[k]])),
+      });
     } catch (err) {
       await deps.write("runs.jsonl", { step: "gold_price", source: "tgju", kind: "network", note: String(err), fetched_at: fetchedAt() });
     }
@@ -115,13 +138,14 @@ export async function runCollector(deps: Deps, opts: Partial<Options> = {}): Pro
     return true;
   };
 
-  try { // BR-10: today's robots.txt must allow both paths
+  try {
+    // BR-10: today's robots.txt must allow both paths
     const robots = await (await deps.http(ROBOTS_URL, { headers: { "User-Agent": UA } })).text();
     if (!robotsAllows(robots, SEARCH_PATH) || !robotsAllows(robots, DETAILS_PATH)) {
       summary.stopped = "robots";
       return finish();
     }
-  } catch (err) {
+  } catch {
     summary.stopped = `network at robots.txt`;
     return finish();
   }

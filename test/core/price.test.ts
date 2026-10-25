@@ -2,8 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { goldValue, premiumPct, resaleValue, impliedOjratPct, breakevenG, requiredRisePct, vatRateFor, priceBreakdown } from "../../src/core/price.ts";
 
-const close = (actual: number, expected: number, tol: number) =>
-  assert.ok(Math.abs(actual - expected) <= tol, `expected ${expected} ± ${tol}, got ${actual}`);
+const close = (actual: number, expected: number, tol: number) => assert.ok(Math.abs(actual - expected) <= tol, `expected ${expected} ± ${tol}, got ${actual}`);
 
 test("AC-PM-01 (BR-40, BR-41): 1 g at G 27,000,000 priced 36,450,000 ⇒ gold value 27,000,000, premium 35%", () => {
   assert.equal(goldValue(1, 27_000_000, 18), 27_000_000);
@@ -19,7 +18,7 @@ test("AC-PM-02 (BR-42): resale of 1 g at G 27,000,000 is 26,640,000", () => {
 });
 
 test("AC-PM-03 (BR-43): price ratio 1.242 ⇒ implied ojrat 14.0% with p 7%, v 10%", () => {
-  close(impliedOjratPct(1.242, 0.10, 0.07), 14.0, 0.05);
+  close(impliedOjratPct(1.242, 0.1, 0.07), 14.0, 0.05);
 });
 
 test("AC-PM-05 (BR-45): 1 g priced 34,000,000 ⇒ G* 34,459,459 and 27.6% rise from G 27,000,000", () => {
@@ -28,14 +27,24 @@ test("AC-PM-05 (BR-45): 1 g priced 34,000,000 ⇒ G* 34,459,459 and 27.6% rise f
 });
 
 test("AC-PM-04 (BR-44): VAT for a fetch dated 1405 comes from config as 10%", () => {
-  assert.equal(vatRateFor(new Date("2026-10-22T06:45:00Z")), 0.10);
+  assert.equal(vatRateFor(new Date("2026-10-22T06:45:00Z")), 0.1);
 });
 
 test("BR-44: a year missing from config is an error, not a silent default", () => {
   assert.throws(() => vatRateFor(new Date("2031-06-01T00:00:00Z")), /VAT rate/);
 });
 
-const base = { price: 49_179_516, weight_g: 1.7, karat: 18, g_at_fetch: 27_017_000, g_live: 27_100_000, declared_ojrat_pct: null, non_gold: { has: false, declared_cost_toman: null }, vat: 0.10, profit: 0.07 };
+const base = {
+  price: 49_179_516,
+  weight_g: 1.7,
+  karat: 18,
+  g_at_fetch: 27_017_000,
+  g_live: 27_100_000,
+  declared_ojrat_pct: null,
+  non_gold: { has: false, declared_cost_toman: null },
+  vat: 0.1,
+  profit: 0.07,
+};
 
 test("AC-PM-08 (BR-48): premium uses G at fetch, resale and rise use the live G", () => {
   const b = priceBreakdown(base);

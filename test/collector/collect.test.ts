@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { robotsAllows, detailsQueue, runCollector, type Http, type Deps } from "../../src/collector/collect.ts";
 
-const ROBOTS = readFileSync(new URL("../../docs/evidence/torob-robots-2026-10-21.txt", import.meta.url), "utf8").split("## https://api.torob.com/robots.txt")[1]!;
+const ROBOTS = readFileSync(new URL("../../docs/evidence/torob-robots-2026-10-21.txt", import.meta.url), "utf8").split(
+  "## https://api.torob.com/robots.txt",
+)[1]!;
 
 test("BR-10: robots.txt of the day allows search and details and nothing else we use", () => {
   assert.equal(robotsAllows(ROBOTS, "/v4/base-product/search/"), true);
@@ -24,20 +26,31 @@ test("AC-DC-08 (BR-17, DM-10): never-fetched products first, then multi-shop by 
   ]);
   const q = detailsQueue(seen, index, 40);
   assert.equal(q.length, 40);
-  assert.deepEqual(q.slice(0, 30), Array.from({ length: 30 }, (_, i) => `new${i}`));
+  assert.deepEqual(
+    q.slice(0, 30),
+    Array.from({ length: 30 }, (_, i) => `new${i}`),
+  );
   assert.ok(q.slice(30).every((id) => id.startsWith("multi")));
   const ages = q.slice(30).map((id) => index.get(id)!);
   assert.deepEqual(ages, [...ages].sort());
 });
 
 type Call = { url: string; method: string };
-function fakeDeps(script: (url: string, n: number) => { status: number; type?: string; body?: unknown } | "network"): Deps & { calls: Call[]; events: string[]; rows: Record<string, object[]> } {
-  const calls: Call[] = [], events: string[] = [], rows: Record<string, object[]> = {};
-  let torobN = 0, t = Date.parse("2026-10-23T06:45:00Z");
+function fakeDeps(
+  script: (url: string, n: number) => { status: number; type?: string; body?: unknown } | "network",
+): Deps & { calls: Call[]; events: string[]; rows: Record<string, object[]> } {
+  const calls: Call[] = [],
+    events: string[] = [],
+    rows: Record<string, object[]> = {};
+  let torobN = 0,
+    t = Date.parse("2026-10-23T06:45:00Z");
   const http: Http = async (url, init) => {
     calls.push({ url, method: init?.method ?? "GET" });
     const isTorob = url.includes("api.torob.com/v4");
-    if (isTorob) { torobN++; events.push("torob"); }
+    if (isTorob) {
+      torobN++;
+      events.push("torob");
+    }
     if (url.endsWith("robots.txt")) return { status: 200, contentType: "text/plain", json: async () => ({}), text: async () => ROBOTS };
     if (!isTorob) return { status: 200, contentType: "application/json", json: async () => ({}), text: async () => "" };
     const r = script(url, torobN);
@@ -45,11 +58,19 @@ function fakeDeps(script: (url: string, n: number) => { status: number; type?: s
     return { status: r.status, contentType: r.type ?? "application/json", json: async () => r.body ?? {}, text: async () => "" };
   };
   return {
-    http, calls, events, rows,
-    sleep: async (ms) => { events.push(`sleep:${ms}`); t += ms; },
+    http,
+    calls,
+    events,
+    rows,
+    sleep: async (ms) => {
+      events.push(`sleep:${ms}`);
+      t += ms;
+    },
     now: () => new Date(t),
     random: () => 0.5,
-    write: async (file, row) => { (rows[file] ??= []).push(row); },
+    write: async (file, row) => {
+      (rows[file] ??= []).push(row);
+    },
     saveDetails: async () => {},
     detailsIndex: async () => new Map(),
   };
@@ -80,16 +101,18 @@ test("AC-DC-02 (BR-11): at least 10 s pass between any two Torob requests", asyn
   await runCollector(d, { queries: ["دستبند طلا", "انگشتر طلا"], detailsBudget: 3 });
   let since = Infinity;
   for (const e of d.events) {
-    if (e === "torob") { assert.ok(since >= 10_000, `gap ${since} ms`); since = 0; }
-    else since += Number(e.split(":")[1]);
+    if (e === "torob") {
+      assert.ok(since >= 10_000, `gap ${since} ms`);
+      since = 0;
+    } else since += Number(e.split(":")[1]);
   }
 });
 
 test("AC-DC-01 (BR-10): only allowed Torob paths are requested", async () => {
   const d = fakeDeps(() => ({ status: 200, body: page(24) }));
   await runCollector(d, { queries: ["دستبند طلا"], detailsBudget: 2 });
-  for (const c of d.calls.filter((c) => c.url.includes("api.torob.com/v4"))) {
-    assert.ok(robotsAllows(ROBOTS, new URL(c.url).pathname), c.url);
+  for (const call of d.calls.filter((c) => c.url.includes("api.torob.com/v4"))) {
+    assert.ok(robotsAllows(ROBOTS, new URL(call.url).pathname), call.url);
   }
 });
 

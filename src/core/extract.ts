@@ -75,7 +75,10 @@ function weightFromSpecs(specs: Record<string, string>): Found<number> | null {
     const inValue = v.match(/^وزن\s*:?\s*/); // e.g. key «پلاک طلا دوطرفه», value «وزن: ۰/۶۳۰سوت»
     if (inValue) v = v.slice(inValue[0].length);
     else if (!/وزن|weight/i.test(k) || cfg.weightSpecKeyIgnore.some((w) => k.includes(w))) continue;
-    const values = v.split(",").map(weightValue).filter((g) => Number.isFinite(g));
+    const values = v
+      .split(",")
+      .map(weightValue)
+      .filter((g) => Number.isFinite(g));
     const distinct = [...new Set(values)];
     if (distinct.length === 1 && inRange(distinct[0]!)) return { value: distinct[0]!, provenance: "spec", evidence: `${key}: ${raw}` };
   }
@@ -124,16 +127,16 @@ function ojratFromTitle(title: string): Found<number> | null {
 
 function firstFound<T>(text: string, entries: { value: T; patterns: string[] }[]): Found<T> | null {
   let best: { at: number; found: Found<T> } | null = null;
-  for (const e of entries) for (const p of e.patterns) {
-    const m = text.match(word(p));
-    if (m && m.index !== undefined && (!best || m.index < best.at)) best = { at: m.index, found: { value: e.value, provenance: "title", evidence: m[0] } };
-  }
+  for (const e of entries)
+    for (const p of e.patterns) {
+      const m = text.match(word(p));
+      if (m && m.index !== undefined && (!best || m.index < best.at)) best = { at: m.index, found: { value: e.value, provenance: "title", evidence: m[0] } };
+    }
   return best?.found ?? null;
 }
 
 function audienceFrom(text: string, provenance: Provenance): Found<"women" | "men" | "kids"> | null {
-  const hits = (Object.entries(cfg.audience) as ["women" | "men" | "kids", string[]][])
-    .filter(([, words]) => words.some((w) => word(w).test(text)));
+  const hits = (Object.entries(cfg.audience) as ["women" | "men" | "kids", string[]][]).filter(([, words]) => words.some((w) => word(w).test(text)));
   if (hits.length !== 1) return null; // none, or both women and men: unisex
   return { value: hits[0]![0], provenance, evidence: hits[0]![1].find((w) => word(w).test(text))! };
 }
@@ -166,8 +169,8 @@ export function extract(p: ProductText): Attributes {
 
   const titleWeights = weightsInText(title).filter((w) => inRange(w.grams));
   const distinctTitle = [...new Set(titleWeights.map((w) => w.grams))];
-  const fromTitle: Found<number> | null = distinctTitle.length === 1
-    ? { value: distinctTitle[0]!, provenance: "title", evidence: titleWeights[0]!.evidence } : null;
+  const fromTitle: Found<number> | null =
+    distinctTitle.length === 1 ? { value: distinctTitle[0]!, provenance: "title", evidence: titleWeights[0]!.evidence } : null;
   const fromSpec = weightFromSpecs(p.specs);
   const weight = fromSpec ?? fromTitle; // BR-20: specs before title
   const conflict = !!fromSpec && !!fromTitle && Math.abs(fromSpec.value - fromTitle.value) > cfg.weightConflictToleranceG;
@@ -175,8 +178,14 @@ export function extract(p: ProductText): Attributes {
   const titleKarat = karatFrom(title);
   const karat = karatFromSpecs(p.specs) ?? (titleKarat ? { value: titleKarat, provenance: "title" as const, evidence: `${titleKarat} عیار` } : null);
 
-  const gallery = firstFound(`${shop} ${title}`, cfg.galleries.map((g) => ({ value: g.name, patterns: g.patterns })));
-  const itemType = firstFound(title, cfg.itemTypes.map(([w, v]) => ({ value: v, patterns: [w] })));
+  const gallery = firstFound(
+    `${shop} ${title}`,
+    cfg.galleries.map((g) => ({ value: g.name, patterns: g.patterns })),
+  );
+  const itemType = firstFound(
+    title,
+    cfg.itemTypes.map(([w, v]) => ({ value: v, patterns: [w] })),
+  );
   const genderSpec = Object.entries(p.specs).find(([k]) => /جنسیت|مناسب/.test(normalize(k)));
   const audience = audienceFrom(title, "title") ?? (genderSpec ? audienceFrom(normalize(genderSpec[1]), "spec") : null);
   const used = cfg.usedWords.find((w) => word(w).test(title));
@@ -218,9 +227,10 @@ export function specsFromDetails(body: DetailsBody): Record<string, string> {
   for (const h of body.structural_specs?.headers ?? []) {
     for (const [k, v] of Object.entries(h.specs ?? {})) put(k, String(v)); // Torob sometimes sends a number
   }
-  for (const h of body.key_specs ?? []) for (const it of h.items ?? []) {
-    if (it.key) put(it.key, Array.isArray(it.value) ? it.value.join(", ") : (it.value ?? ""));
-  }
+  for (const h of body.key_specs ?? [])
+    for (const it of h.items ?? []) {
+      if (it.key) put(it.key, Array.isArray(it.value) ? it.value.join(", ") : (it.value ?? ""));
+    }
   return out;
 }
 

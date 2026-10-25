@@ -49,8 +49,7 @@ export function selectReference(union: Quote | null, tgju: Quote | null, now: Da
   const { unionStaleMinutes, marketOpenWindowMinutes, uncertainPct } = cfg.gold;
   const marketOpen = [union, tgju].some((q) => q !== null && ageMinutes(q, now) <= marketOpenWindowMinutes);
   const unionStale =
-    union !== null && tgju !== null && marketOpen &&
-    ageMinutes(union, now) > unionStaleMinutes && Date.parse(tgju.quoted_at) > Date.parse(union.quoted_at);
+    union !== null && tgju !== null && marketOpen && ageMinutes(union, now) > unionStaleMinutes && Date.parse(tgju.quoted_at) > Date.parse(union.quoted_at);
   const chosen = union && !unionStale ? union : tgju;
   if (!chosen) return null;
   const other = chosen === union ? tgju : union;

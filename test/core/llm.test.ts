@@ -13,29 +13,38 @@ test("numbersIn: digits, number words, and «و نیم» halves", () => {
 
 test("BR-55: the LLM fills only what the rules left, and every number must come from the text", () => {
   const rules = parseQuery(TEXT);
-  const { result, rejected } = mergeLlm(TEXT, rules, { chips: [
-    { kind: "budget_target", value: 1_500_000 },
-    { kind: "budget_max", value: 30_000_000 },
-    { kind: "item_type", value: "النگو" },
-  ], unparsed: null })!;
+  const { result, rejected } = mergeLlm(TEXT, rules, {
+    chips: [
+      { kind: "budget_target", value: 1_500_000 },
+      { kind: "budget_max", value: 30_000_000 },
+      { kind: "item_type", value: "النگو" },
+    ],
+    unparsed: null,
+  })!;
   assert.deepEqual(val(result, "budget_target"), [1_500_000]);
   assert.deepEqual(val(result, "budget_max"), []);
   assert.deepEqual(val(result, "item_type"), ["النگو"]);
   assert.equal(result.llm_used, true);
   assert.equal(result.unparsed, null);
-  assert.deepEqual(rejected.map((c) => c.kind), ["budget_max"]);
+  assert.deepEqual(
+    rejected.map((c) => c.kind),
+    ["budget_max"],
+  );
   assert.ok(result.chips.every((c) => c.origin === "text"));
 });
 
 test("BR-55: only defined chips and values pass; rules keep their own values", () => {
   const rules = parseQuery("۵۰ میلیون دارم یه سینه ریز طلا");
-  const { result, rejected } = mergeLlm("۵۰ میلیون دارم یه سینه ریز طلا", rules, { chips: [
-    { kind: "item_type", value: "سینه‌ریز" },
-    { kind: "color", value: "زرد" },
-    { kind: "item_type", value: "گردنبند" },
-    { kind: "budget_max", value: 60_000_000 },
-    { kind: "intent", value: "beauty" },
-  ], unparsed: "سینه ریز" })!;
+  const { result, rejected } = mergeLlm("۵۰ میلیون دارم یه سینه ریز طلا", rules, {
+    chips: [
+      { kind: "item_type", value: "سینه‌ریز" },
+      { kind: "color", value: "زرد" },
+      { kind: "item_type", value: "گردنبند" },
+      { kind: "budget_max", value: 60_000_000 },
+      { kind: "intent", value: "beauty" },
+    ],
+    unparsed: "سینه ریز",
+  })!;
   assert.deepEqual(val(result, "item_type"), ["گردنبند"]);
   assert.deepEqual(val(result, "budget_max"), [50_000_000]);
   assert.equal(result.intent, "beauty");
@@ -74,4 +83,3 @@ test("BR-55: making-charge words map to the BR-59 numbers even with a typo", () 
   assert.ok(result.chips.some((c) => c.kind === "ojrat_max" && c.value === 2));
   assert.doesNotMatch(parseQuery("ببین یه النگو حدود یک و نیم میلیون").unparsed ?? "", /ببین/);
 });
-

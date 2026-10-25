@@ -2,14 +2,17 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { extract } from "../../src/core/extract.ts";
 import { labelProduct } from "../../src/core/label.ts";
-import { config } from "../../src/core/config.ts";
 
 const G = 27_000_000;
 const label = (title: string, opts: { price?: number | null; specs?: Record<string, string>; offerTitles?: string[]; g?: number | null } = {}) => {
   const specs = opts.specs ?? {};
   return labelProduct({
-    title, specs, attributes: extract({ title, specs, shop: null }),
-    price: opts.price ?? null, g_at_fetch: opts.g === undefined ? G : opts.g, offer_titles: opts.offerTitles ?? [],
+    title,
+    specs,
+    attributes: extract({ title, specs, shop: null }),
+    price: opts.price ?? null,
+    g_at_fetch: opts.g === undefined ? G : opts.g,
+    offer_titles: opts.offerTitles ?? [],
   });
 };
 
@@ -102,13 +105,13 @@ test("AC-ML-09 (BR-3A, BR-37): no weight and a price under the gold value of 0.0
 });
 
 test("AC-ML-10 (BR-31): a BR-31 word in the material spec makes the product not gold", () => {
-  const r = label("دستبند طلا", { specs: { "جنس": "مس با آبکاری طلا" } });
+  const r = label("دستبند طلا", { specs: { جنس: "مس با آبکاری طلا" } });
   assert.equal(r.label, "not_gold");
   assert.deepEqual(r.reasons, ["در مشخصات آمده: آبکاری"]);
 });
 
 test("BR-31: other spec keys are not scanned", () => {
-  assert.equal(label("دستبند طلا ۱۸ عیار", { specs: { "توضیحات": "بدون آبکاری" } }).label, "real");
+  assert.equal(label("دستبند طلا ۱۸ عیار", { specs: { توضیحات: "بدون آبکاری" } }).label, "real");
 });
 
 test("PRD §12: without G at fetch time there is no ratio, so no review from price", () => {

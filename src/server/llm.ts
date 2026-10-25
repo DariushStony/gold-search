@@ -11,7 +11,12 @@ export function avalai(key: string, model = config.llm.model): Llm {
     const res = await fetch(`${config.llm.baseUrl}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, temperature: 0, messages, response_format: { type: "json_schema", json_schema: { name: "chips", strict: true, schema: LLM_SCHEMA } } }),
+      body: JSON.stringify({
+        model,
+        temperature: 0,
+        messages,
+        response_format: { type: "json_schema", json_schema: { name: "chips", strict: true, schema: LLM_SCHEMA } },
+      }),
       signal: AbortSignal.timeout(config.llm.timeoutMs),
     });
     if (!res.ok) throw new Error(`avalai ${res.status}`);

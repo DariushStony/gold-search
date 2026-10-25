@@ -8,12 +8,18 @@
   "scripts": {
     "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm test",
+    "lint": "oxlint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "demo": "node --env-file-if-exists=.env src/server/app.ts",
     "snapshot": "node src/pipeline/build-snapshot.ts"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
+    "oxlint": "1.89.0",
+    "prettier": "3.9.10",
     "typescript": "7.0.2"
-  }
+  },
+  "packageManager": "pnpm@12.9.1"
 }

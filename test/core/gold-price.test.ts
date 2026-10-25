@@ -7,7 +7,10 @@ const fixture = (name: string) => JSON.parse(readFileSync(new URL(`../fixtures/$
 const NOW = new Date("2026-10-23T08:00:00Z");
 const minutesAgo = (m: number) => new Date(NOW.getTime() - m * 60_000).toISOString();
 const quote = (source: Quote["source"], g_toman: number, quotedMinutesAgo: number): Quote => ({
-  source, g_toman, quoted_at: minutesAgo(quotedMinutesAgo), fetched_at: minutesAgo(0),
+  source,
+  g_toman,
+  quoted_at: minutesAgo(quotedMinutesAgo),
+  fetched_at: minutesAgo(0),
 });
 
 test("union board: 18k gram in toman, board time read as Tehran time", () => {

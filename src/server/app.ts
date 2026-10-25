@@ -20,20 +20,75 @@ const GOLD_TTL_MS = 120_000;
 
 // BR-100: round-trip cost of the other ways to hold gold, as published by each source.
 const SAVINGS_ROWS = [
-  { form: "used", round_trip_cost_pct: 8, source: "مجله‌ی دیجی‌کالا (۷ تا ۹٪)", source_url: "https://www.digikala.com/mag/where-to-buy-second-hand-gold/", url: null, as_of: "1404-08-19", own_product: false },
-  { form: "molten", round_trip_cost_pct: 4, source: "بانک اول (۴٪ یا بیشتر)", source_url: "https://bankavl.com/", url: null, as_of: "1405-05-13", own_product: false },
-  { form: "digital", round_trip_cost_pct: 1.5, source: "بانک اول (۱ تا ۲٪)", source_url: "https://bankavl.com/", url: null, as_of: "1405-05-13", own_product: false },
-  { form: "torob_gold", round_trip_cost_pct: 1, source: "ایران‌بروکر (خرید ۰٪، فروش ۱٪)", source_url: "https://iranbroker.net/gold_platform/torob-gold/", url: "https://torob.com/", as_of: "1404-05", own_product: true },
+  {
+    form: "used",
+    round_trip_cost_pct: 8,
+    source: "مجله‌ی دیجی‌کالا (۷ تا ۹٪)",
+    source_url: "https://www.digikala.com/mag/where-to-buy-second-hand-gold/",
+    url: null,
+    as_of: "1404-08-19",
+    own_product: false,
+  },
+  {
+    form: "molten",
+    round_trip_cost_pct: 4,
+    source: "بانک اول (۴٪ یا بیشتر)",
+    source_url: "https://bankavl.com/",
+    url: null,
+    as_of: "1405-05-13",
+    own_product: false,
+  },
+  {
+    form: "digital",
+    round_trip_cost_pct: 1.5,
+    source: "بانک اول (۱ تا ۲٪)",
+    source_url: "https://bankavl.com/",
+    url: null,
+    as_of: "1405-05-13",
+    own_product: false,
+  },
+  {
+    form: "torob_gold",
+    round_trip_cost_pct: 1,
+    source: "ایران‌بروکر (خرید ۰٪، فروش ۱٪)",
+    source_url: "https://iranbroker.net/gold_platform/torob-gold/",
+    url: "https://torob.com/",
+    as_of: "1404-05",
+    own_product: true,
+  },
 ] as const;
 
 let gold: { at: number; ref: Reference | null } = { at: 0, ref: null };
 async function goldPrice(): Promise<Reference | null> {
   if (Date.now() - gold.at < GOLD_TTL_MS) return gold.ref;
   const now = new Date().toISOString();
-  const get = async (fn: () => Promise<Quote | null>) => { try { return await fn(); } catch { return null; } };
+  const get = async (fn: () => Promise<Quote | null>) => {
+    try {
+      return await fn();
+    } catch {
+      return null;
+    }
+  };
   const [union, tgju] = await Promise.all([
-    get(async () => parseUnion(await (await fetch("https://www.estjt.ir/wp-admin/admin-ajax.php", { method: "POST", body: "action=tablotala_timer", headers: { "Content-Type": "application/x-www-form-urlencoded" }, signal: AbortSignal.timeout(8000) })).json(), now)),
-    get(async () => parseTgju(((await (await fetch("https://call1.tgju.org/ajax.json", { signal: AbortSignal.timeout(8000) })).json()) as { current?: unknown }).current, now)),
+    get(async () =>
+      parseUnion(
+        await (
+          await fetch("https://www.estjt.ir/wp-admin/admin-ajax.php", {
+            method: "POST",
+            body: "action=tablotala_timer",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            signal: AbortSignal.timeout(8000),
+          })
+        ).json(),
+        now,
+      ),
+    ),
+    get(async () =>
+      parseTgju(
+        ((await (await fetch("https://call1.tgju.org/ajax.json", { signal: AbortSignal.timeout(8000) })).json()) as { current?: unknown }).current,
+        now,
+      ),
+    ),
   ]);
   gold = { at: Date.now(), ref: selectReference(union, tgju, new Date()) };
   return gold.ref;
@@ -48,10 +103,31 @@ function breakdownFor(p: ProductRecord, o: ProductRecord["offers"][number], gLiv
   if (p.attrs.weight_g === null) return { breakdown: null, no_breakdown_reason: "weight_unknown" };
   if (o.g_at_fetch === null) return { breakdown: null, no_breakdown_reason: "no_gold_quote" };
   const vat = vatRateFor(new Date(o.fetched_at));
-  const b = priceBreakdown({ price: o.price, weight_g: p.attrs.weight_g, karat: p.attrs.karat ?? 18, g_at_fetch: o.g_at_fetch, g_live: gLive?.g_toman ?? null,
-    declared_ojrat_pct: p.attrs.declared_ojrat_pct, non_gold: { has: p.attrs.non_gold, declared_cost_toman: null }, vat, profit: config.price.profit });
+  const b = priceBreakdown({
+    price: o.price,
+    weight_g: p.attrs.weight_g,
+    karat: p.attrs.karat ?? 18,
+    g_at_fetch: o.g_at_fetch,
+    g_live: gLive?.g_toman ?? null,
+    declared_ojrat_pct: p.attrs.declared_ojrat_pct,
+    non_gold: { has: p.attrs.non_gold, declared_cost_toman: null },
+    vat,
+    profit: config.price.profit,
+  });
   return {
-    breakdown: { ...b, inputs: { weight_g: p.attrs.weight_g, karat: p.attrs.karat ?? 18, karat_assumed: p.attrs.karat === null, g_at_fetch: o.g_at_fetch, g_live: gLive?.g_toman ?? null, g_live_source: gLive?.source ?? null, vat, profit: config.price.profit } },
+    breakdown: {
+      ...b,
+      inputs: {
+        weight_g: p.attrs.weight_g,
+        karat: p.attrs.karat ?? 18,
+        karat_assumed: p.attrs.karat === null,
+        g_at_fetch: o.g_at_fetch,
+        g_live: gLive?.g_toman ?? null,
+        g_live_source: gLive?.source ?? null,
+        vat,
+        profit: config.price.profit,
+      },
+    },
     no_breakdown_reason: null,
   };
 }
@@ -59,9 +135,22 @@ function breakdownFor(p: ProductRecord, o: ProductRecord["offers"][number], gLiv
 function cardJson(c: Card, p: ProductRecord, gLive: Reference | null) {
   const { premium_pct: _p, g_at_fetch: _g, ...offer } = c.offer;
   return {
-    id: c.id, title: c.title, image_url: c.image_url, item_type: p.attrs.item_type, gallery: p.attrs.gallery, label: c.label, reasons: c.reasons,
-    weight_unknown: c.weight_unknown, weight_g: p.attrs.weight_g, sample: false, non_gold: p.attrs.non_gold,
-    offer: { ...offer, ...breakdownFor(p, c.offer, gLive) }, offer_count: c.offer_count, price_range: c.price_range, score: c.score, components: c.components,
+    id: c.id,
+    title: c.title,
+    image_url: c.image_url,
+    item_type: p.attrs.item_type,
+    gallery: p.attrs.gallery,
+    label: c.label,
+    reasons: c.reasons,
+    weight_unknown: c.weight_unknown,
+    weight_g: p.attrs.weight_g,
+    sample: false,
+    non_gold: p.attrs.non_gold,
+    offer: { ...offer, ...breakdownFor(p, c.offer, gLive) },
+    offer_count: c.offer_count,
+    price_range: c.price_range,
+    score: c.score,
+    components: c.components,
   };
 }
 
@@ -82,11 +171,21 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
   };
   const problem = (res: ServerResponse, status: number, type: string, detail: string) =>
     send(res, status, { type: `/problems/${type}`, title: type, status, detail }, "application/problem+json; charset=utf-8");
-  const readJson = (req: IncomingMessage) => new Promise<any>((resolve) => {
-    let raw = "";
-    req.on("data", (d) => { raw += d; if (raw.length > 100_000) req.destroy(); });
-    req.on("end", () => { try { resolve(JSON.parse(raw || "{}")); } catch { resolve(null); } });
-  });
+  const readJson = (req: IncomingMessage) =>
+    new Promise<any>((resolve) => {
+      let raw = "";
+      req.on("data", (d) => {
+        raw += d;
+        if (raw.length > 100_000) req.destroy();
+      });
+      req.on("end", () => {
+        try {
+          resolve(JSON.parse(raw || "{}"));
+        } catch {
+          resolve(null);
+        }
+      });
+    });
   // API §2: per IP, in memory only, with one budget for the search calls and another for status and events.
   const limited = (req: IncomingMessage, bucket: "search" | "light", perMin: number) => {
     const ip = `${bucket}:${req.socket.remoteAddress ?? "?"}`;
@@ -107,12 +206,20 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
     const url = new URL(req.url ?? "/", "http://local");
     try {
       if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) return send(res, 200, page(), "text/html; charset=utf-8");
-      if (url.pathname.startsWith("/api/") && (url.pathname === "/api/v1/status" || url.pathname === "/api/v1/events" ? limited(req, "light", 120) : limited(req, "search", 30))) {
+      if (
+        url.pathname.startsWith("/api/") &&
+        (url.pathname === "/api/v1/status" || url.pathname === "/api/v1/events" ? limited(req, "light", 120) : limited(req, "search", 30))
+      ) {
         return problem(res, 429, "rate-limited", "too many requests");
       }
       if (req.method === "GET" && url.pathname === "/api/v1/status") {
         const g = await livePrice();
-        return send(res, 200, { gold_price: g, snapshot: snapshotInfo(snap), snapshot_age_h: (Date.now() - Date.parse(snap.meta.finished_at)) / 3_600_000, gold_price_age_min: g ? (Date.now() - Date.parse(g.quoted_at)) / 60_000 : null });
+        return send(res, 200, {
+          gold_price: g,
+          snapshot: snapshotInfo(snap),
+          snapshot_age_h: (Date.now() - Date.parse(snap.meta.finished_at)) / 3_600_000,
+          gold_price_age_min: g ? (Date.now() - Date.parse(g.quoted_at)) / 60_000 : null,
+        });
       }
       if (req.method !== "POST") return problem(res, 404, "not-found", url.pathname);
       const body = await readJson(req);
@@ -133,35 +240,84 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
 
       if (url.pathname === "/api/v1/search") {
         const r = search(snap.products, body.chips, ctx);
-        const mode = body.chips.some((c: Chip) => c.kind === "form") ? (body.chips.some((c: Chip) => c.kind === "item_type") ? "both" : "non_jewelry") : "jewelry";
+        const mode = body.chips.some((c: Chip) => c.kind === "form")
+          ? body.chips.some((c: Chip) => c.kind === "item_type")
+            ? "both"
+            : "non_jewelry"
+          : "jewelry";
         const json = (list: Card[]) => list.map((c) => cardJson(c, byId.get(c.id)!, g));
         const results = mode === "non_jewelry" ? [] : json(r.results);
-        const premiums = results.map((c) => c.offer.breakdown?.partial_reason ? null : c.offer.breakdown?.premium_pct ?? null).filter((x): x is number => x !== null);
-        const savings = r.intent === "savings" || mode !== "jewelry" ? {
-          notice: mode === "jewelry" ? null : "non_jewelry_not_ranked",
-          rows: [{ form: "jewelry", round_trip_cost_pct: median(premiums), source: "این نتایج", source_url: null, url: null, as_of: info.finished_at.slice(0, 10), own_product: false }, ...SAVINGS_ROWS],
-        } : null;
+        const premiums = results
+          .map((c) => (c.offer.breakdown?.partial_reason ? null : (c.offer.breakdown?.premium_pct ?? null)))
+          .filter((x): x is number => x !== null);
+        const savings =
+          r.intent === "savings" || mode !== "jewelry"
+            ? {
+                notice: mode === "jewelry" ? null : "non_jewelry_not_ranked",
+                rows: [
+                  {
+                    form: "jewelry",
+                    round_trip_cost_pct: median(premiums),
+                    source: "این نتایج",
+                    source_url: null,
+                    url: null,
+                    as_of: info.finished_at.slice(0, 10),
+                    own_product: false,
+                  },
+                  ...SAVINGS_ROWS,
+                ],
+              }
+            : null;
         return send(res, 200, {
-          query_id: randomUUID(), snapshot: info, gold_price: g, intent: r.intent, suggest_intent: r.intent === "unknown", mode,
-          results, review: json(r.review), weight_unknown_bucket: json(r.weight_unknown_bucket), ojrat_unknown: json(r.ojrat_unknown), sponsored: json(r.sponsored),
-          excluded_count: r.excluded_count, explanation: mode === "non_jewelry" ? null : r.explanation, savings_card: savings, relax: r.relax,
+          query_id: randomUUID(),
+          snapshot: info,
+          gold_price: g,
+          intent: r.intent,
+          suggest_intent: r.intent === "unknown",
+          mode,
+          results,
+          review: json(r.review),
+          weight_unknown_bucket: json(r.weight_unknown_bucket),
+          ojrat_unknown: json(r.ojrat_unknown),
+          sponsored: json(r.sponsored),
+          excluded_count: r.excluded_count,
+          explanation: mode === "non_jewelry" ? null : r.explanation,
+          savings_card: savings,
+          relax: r.relax,
         });
       }
       if (url.pathname === "/api/v1/excluded") {
-        const items = excludedFor(snap.products, body.chips, ctx).map((p) => ({ id: p.id, title: p.title, price: p.offers[0]?.price ?? null, shop: p.offers[0]?.shop ?? null, reasons: p.reasons }));
+        const items = excludedFor(snap.products, body.chips, ctx).map((p) => ({
+          id: p.id,
+          title: p.title,
+          price: p.offers[0]?.price ?? null,
+          shop: p.offers[0]?.shop ?? null,
+          reasons: p.reasons,
+        }));
         return send(res, 200, { total: items.length, items: items.slice(0, 50) });
       }
       const m = url.pathname.match(/^\/api\/v1\/products\/([\w-]+)$/);
       if (m) {
         const p = byId.get(m[1]!);
-        const r = p && search([p], body.chips.filter((c: Chip) => c.level === "offer"), ctx);
+        const r =
+          p &&
+          search(
+            [p],
+            body.chips.filter((c: Chip) => c.level === "offer"),
+            ctx,
+          );
         const c = r && [...r.results, ...r.review, ...r.weight_unknown_bucket, ...r.ojrat_unknown, ...r.sponsored][0];
         if (!p || !c) return problem(res, 404, "not-found", m[1]!);
         const offers = eligibleOffers(p.offers, {}, ctx.finishedAt, ctx.archive) as ProductRecord["offers"];
         return send(res, 200, {
           ...cardJson(c, p, g),
-          offers: offers.map(({ g_at_fetch: _g, ...o }) => ({ ...o, stale: isStale(o, ctx.finishedAt, ctx.archive), ...breakdownFor(p, { ...o, g_at_fetch: _g }, g) })),
-          history: [], shop_avg: [],
+          offers: offers.map(({ g_at_fetch: _g, ...o }) => ({
+            ...o,
+            stale: isStale(o, ctx.finishedAt, ctx.archive),
+            ...breakdownFor(p, { ...o, g_at_fetch: _g }, g),
+          })),
+          history: [],
+          shop_avg: [],
         });
       }
       return problem(res, 404, "not-found", url.pathname);
@@ -177,5 +333,7 @@ if (import.meta.main) {
   const port = Number(process.argv[3] ?? 4321);
   const key = process.env.AVALAI_API_KEY;
   const model = process.env.AVALAI_MODEL || config.llm.model;
-  createApp(path, { llm: key ? avalai(key, model) : null }).listen(port, () => console.log(`demo: http://localhost:${port} (AI sentence reading: ${key ? model : "off, no AVALAI_API_KEY"})`));
+  createApp(path, { llm: key ? avalai(key, model) : null }).listen(port, () =>
+    console.log(`demo: http://localhost:${port} (AI sentence reading: ${key ? model : "off, no AVALAI_API_KEY"})`),
+  );
 }

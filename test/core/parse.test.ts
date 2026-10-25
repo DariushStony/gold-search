@@ -51,7 +51,10 @@ test("AC-QU-04 (BR-53): no intent cue ⇒ unknown with suggestions, never a bloc
   const used = parseQuery("زنجیر طلای کارکرده ارزون");
   assert.equal(one(used, "condition"), "used");
   assert.equal(used.intent, "unknown");
-  assert.equal(used.chips.some((c) => String(c.value).includes("ارزان")), false);
+  assert.equal(
+    used.chips.some((c) => String(c.value).includes("ارزان")),
+    false,
+  );
 });
 
 test("BR-53: savings and beauty cues", () => {
@@ -72,7 +75,10 @@ test("AC-QU-08 (BR-54, BR-58): «کارتیه» is a style, «سنگین» a sor
   const p = parseQuery("دستبند طلای کارتیه شیک و سنگین");
   assert.deepEqual(val(p, "style"), ["کارتیه"]);
   assert.equal(one(p, "weight_pref"), "heavy");
-  assert.equal(p.chips.some((c) => c.value === "شیک"), false);
+  assert.equal(
+    p.chips.some((c) => c.value === "شیک"),
+    false,
+  );
 });
 
 test("AC-QU-09 (BR-59): ojrat words become filters; «کمترین اجرت» also sorts", () => {
@@ -170,8 +176,16 @@ test("CR-04: words the rules did not read come back for the «متوجه نشد�
 });
 
 test("CR-04: the sample sentences and fully read sentences leave nothing unread", () => {
-  for (const s of ["۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم", "یه دستبند ظریف برای روز مادر تا ۲۰ تومن",
-    "زنجیر دو رنگ ایتالیایی مردانه", "یه انگشتر زیر ۳۰۰", "یه گردنبند برای تولد همسرم تا ۳۰ میلیون", "یه انگشتر طلا",
-    "سکه پارسیان یا طلای آب شده برای پس‌انداز", "النگو ۲۰ گرمی زیر ۵ میلیون", "دستبند طلا"])
+  for (const s of [
+    "۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم",
+    "یه دستبند ظریف برای روز مادر تا ۲۰ تومن",
+    "زنجیر دو رنگ ایتالیایی مردانه",
+    "یه انگشتر زیر ۳۰۰",
+    "یه گردنبند برای تولد همسرم تا ۳۰ میلیون",
+    "یه انگشتر طلا",
+    "سکه پارسیان یا طلای آب شده برای پس‌انداز",
+    "النگو ۲۰ گرمی زیر ۵ میلیون",
+    "دستبند طلا",
+  ])
     assert.equal(parseQuery(s).unparsed, null, s);
 });

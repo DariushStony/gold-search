@@ -47,8 +47,12 @@ export function labelProduct(i: LabelInput, cfg: Config = defaults): LabelResult
   const title = prep(i.title);
   const a = i.attributes;
   const weightUnknown = a.weight_g === null;
-  const result = (label: Label, reasons: string[], ratio: number | null = null): LabelResult =>
-    ({ label, reasons, price_ratio: ratio, weight_unknown: weightUnknown });
+  const result = (label: Label, reasons: string[], ratio: number | null = null): LabelResult => ({
+    label,
+    reasons,
+    price_ratio: ratio,
+    weight_unknown: weightUnknown,
+  });
 
   const notGold = notGoldWord(title, cfg); // BR-31
   if (notGold) return result("not_gold", [TX.inTitle(notGold)]);

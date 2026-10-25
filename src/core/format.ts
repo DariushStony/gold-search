@@ -16,13 +16,18 @@ export const formatPct = (pct: number): string => `٪${fixed(1).format(pct)}`;
 export const formatWeight = (grams: number): string => `${upTo3.format(grams)} گرم`;
 
 export function jalaliYear(date: Date): number {
-  const year = new Intl.DateTimeFormat("en-u-ca-persian", { timeZone: TZ, year: "numeric" })
-    .formatToParts(date).find((p) => p.type === "year")?.value;
+  const year = new Intl.DateTimeFormat("en-u-ca-persian", { timeZone: TZ, year: "numeric" }).formatToParts(date).find((p) => p.type === "year")?.value;
   return Number(year);
 }
 
 const persianParts = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-  timeZone: TZ, year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  timeZone: TZ,
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
 });
 
 export function formatTehranTime(iso: string, now: Date): string {
