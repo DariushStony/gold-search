@@ -3,21 +3,32 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=24",
+    "pnpm": ">=12"
   },
   "scripts": {
+    "prepare": "husky || true",
+    "demo": "node --env-file-if-exists=.env src/app/server.ts",
     "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
-    "demo": "node --env-file-if-exists=.env src/app/server.ts",
+    "knip": "knip --config configs/knip.json",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm knip && pnpm test",
+    "eval": "node eval/ev-mat.ts && node eval/ev-prm.ts && node eval/ev-ext.ts && node eval/ev-qry.ts",
     "snapshot": "node src/domains/collection/build-snapshot.ts",
-    "snapshot:release": "cp data/snapshots/latest.sqlite deploy/snapshot.sqlite && git add deploy/snapshot.sqlite && git -c user.name=\"Dariush Hadipour\" -c user.email=dariushhadi87@gmail.com commit -m \"Update the demo snapshot\""
+    "snapshot:release": "cp data/snapshots/latest.sqlite deploy/snapshot.sqlite && git add deploy/snapshot.sqlite && git -c user.name=\"Dariush Hadipour\" -c user.email=dariushhadi87@gmail.com commit -m \"data: update the demo snapshot\""
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@types/node": "26.6.5",
+    "husky": "9.1.7",
+    "knip": "6.43.0",
+    "lint-staged": "17.6.0",
     "oxlint": "1.89.0",
     "prettier": "3.9.10",
     "typescript": "7.0.2"

@@ -5,9 +5,114 @@
     "correctness": "error",
     "suspicious": "warn"
   },
-  "ignorePatterns": ["data/**", "dist/**", "spikes/**", ".private/**", ".vercel/**"],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules",
+    "**/coverage",
+    "data/**",
+    "spikes/**",
+    ".private/**"
+  ],
   "rules": {
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "object-shorthand": "warn",
+    "eqeqeq": ["error", "smart"],
+    "curly": ["error", "multi-line"],
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "prefer-arrow-callback": ["error", { "allowNamedFunctions": true }],
+    "func-names": ["error", "as-needed"],
+    "import/no-duplicates": "error",
+    "import/no-cycle": "error",
+    "import/no-self-import": "error",
+    "unicorn/filename-case": ["error", { "case": "kebabCase" }],
     "unicorn/no-array-sort": "off",
-    "unicorn/consistent-function-scoping": "off"
-  }
+    "unicorn/consistent-function-scoping": "off",
+    "typescript/no-explicit-any": "warn",
+    "typescript/ban-ts-comment": [
+      "warn",
+      { "ts-ignore": "allow-with-description", "minimumDescriptionLength": 10 }
+    ],
+    "typescript/consistent-type-imports": [
+      "error",
+      { "prefer": "type-imports", "fixStyle": "inline-type-imports" }
+    ],
+    "typescript/no-empty-function": [
+      "error",
+      { "allow": ["arrowFunctions", "constructors", "methods"] }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/domains/**", "src/shared/**", "src/core/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/app/**", "**/web/**"],
+                "message": "Only src/app wires the domains to HTTP and the page."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/shared/**", "src/core/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/domains/**", "**/app/**", "**/web/**"],
+                "message": "core and shared sit under the domains and must not import them."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/web/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/app/**", "**/core/**", "**/domains/**"],
+                "message": "The page runs in the browser: it may import src/shared only, and talks to the server over the API."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/app/server.ts",
+        "src/domains/collection/**",
+        "eval/**",
+        "scripts/**",
+        "configs/**"
+      ],
+      "rules": { "no-console": "off" }
+    },
+    {
+      "files": ["test/**", "eval/**", "src/domains/collection/**"],
+      "rules": { "typescript/no-explicit-any": "off" }
+    }
+  ]
 }

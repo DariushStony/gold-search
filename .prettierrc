@@ -1,8 +1,28 @@
 {
-  "printWidth": 160,
+  "printWidth": 90,
+  "tabWidth": 2,
+  "useTabs": false,
   "semi": true,
-  "singleQuote": false,
+  "singleQuote": true,
   "trailingComma": "all",
+  "bracketSpacing": true,
   "arrowParens": "always",
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": ["**/*.{ts,js,mjs}"],
+      "options": {
+        "plugins": ["@ianvs/prettier-plugin-sort-imports"],
+        "importOrder": [
+          "^node:",
+          "<THIRD_PARTY_MODULES>",
+          "/core/",
+          "/shared/",
+          "^[.][.]/",
+          "^[.]/"
+        ],
+        "importOrderParserPlugins": ["typescript"]
+      }
+    }
+  ]
 }

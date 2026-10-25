@@ -1,0 +1,8 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["src/domains/collection/collect.ts", "eval/*.ts", "test/**/*.test.ts"],
+  "project": ["src/**/*.ts", "eval/**/*.ts", "test/**/*.ts", "configs/*.js"],
+  "commitlint": { "config": ["configs/commitlint.config.js"] },
+  "lint-staged": { "config": ["configs/lintstagedrc.json"] },
+  "ignoreExportsUsedInFile": true
+}

@@ -1,25 +1,32 @@
-# Generated or collected
+.prettierignore
+
+# pnpm owns this file's formatting; prettier reformatting it makes every later
+# `pnpm install` produce a phantom diff.
+pnpm-lock.yaml
+
+# Generated or collected: raw Torob data, snapshots, events, build output.
 data/
 dist/
-node_modules/
-pnpm-lock.yaml
-.vercel/
+coverage/
 
-# Hand-written Persian docs and evidence keep their own layout
+# Hand-written Persian docs and evidence keep their own layout.
 docs/
 *.md
 *.csv
 *.jsonl
 
-# Private notes and one-off spikes
+# Private notes and one-off spikes.
 .private/
 spikes/
 
-# Captured API responses stay byte for byte
+# Captured API responses stay byte for byte.
 test/fixtures/
 
-# Local tool folders
+# Local tool folders (husky's own runtime included).
 .*/
 
-# The demo snapshot is binary
+# The demo snapshot is binary.
 deploy/
+
+# ...except CI, which is ours to format.
+!.github/
