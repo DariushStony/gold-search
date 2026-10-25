@@ -9,7 +9,7 @@ import { realDeps, runCollector, type Summary } from '../domains/collection/coll
 const SLOTS = [
   [10, 15],
   [18, 15],
-] as const; // Tehran time, as the owner's machine ran it
+] as const; // Tehran time
 const TEHRAN_OFFSET_MIN = 210; // UTC+3:30, no daylight saving since 2022
 const MIN_KEPT = 0.9; // a new snapshot must keep at least this share of the products
 
@@ -40,9 +40,11 @@ type Options = {
   now?: () => Date;
 };
 
-function nextSlot(now: Date): Date {
+// The slots of yesterday, today and tomorrow, in order.
+function slotsAround(now: Date): Date[] {
   const local = new Date(now.getTime() + TEHRAN_OFFSET_MIN * 60_000);
-  for (let day = 0; day < 2; day++) {
+  const out: Date[] = [];
+  for (let day = -1; day <= 1; day++) {
     for (const [h, m] of SLOTS) {
       const t = Date.UTC(
         local.getUTCFullYear(),
@@ -51,12 +53,17 @@ function nextSlot(now: Date): Date {
         h,
         m,
       );
-      const at = new Date(t - TEHRAN_OFFSET_MIN * 60_000);
-      if (at > now) return at;
+      out.push(new Date(t - TEHRAN_OFFSET_MIN * 60_000));
     }
   }
-  throw new Error('no slot in the next two days');
+  return out;
 }
+
+const nextSlot = (now: Date): Date => slotsAround(now).find((at) => at > now)!;
+
+// A slot passed after the served snapshot was built (a deploy or restart serves the one in the image), so a run is due.
+const missedSlot = (now: Date, builtAt: Date): boolean =>
+  slotsAround(now).some((at) => at <= now && at > builtAt);
 
 const safe = (iso: string) => iso.replace(/[:.]/g, '-');
 
@@ -130,4 +137,11 @@ function scheduleCollection(o: Options): () => CollectorStatus {
   return () => ({ running, next_run_at: next.toISOString(), last_run: last });
 }
 
-export { collectOnce, nextSlot, scheduleCollection, type CollectorStatus, type Served };
+export {
+  collectOnce,
+  missedSlot,
+  nextSlot,
+  scheduleCollection,
+  type CollectorStatus,
+  type Served,
+};

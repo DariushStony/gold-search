@@ -24,7 +24,12 @@ import {
   type Card,
   type ProductRecord,
 } from '../domains/ranking/rank.ts';
-import { scheduleCollection, type CollectorStatus, type Served } from './collector.ts';
+import {
+  missedSlot,
+  scheduleCollection,
+  type CollectorStatus,
+  type Served,
+} from './collector.ts';
 
 const ROOT = new URL('../../', import.meta.url).pathname;
 const TYPES: Record<string, string> = {
@@ -539,13 +544,15 @@ if (import.meta.main) {
     collector: () => collector?.() ?? null,
   });
   if (env.collect) {
-    // a restart serves the snapshot baked into the image; if that is old, refresh soon instead of at the next slot
-    const age = Date.now() - Date.parse(handler.served().snapshot.meta.finished_at);
+    // a restart serves the snapshot baked into the image; if a slot passed since it was built, run soon
+    const builtAt = new Date(handler.served().snapshot.meta.finished_at);
     collector = scheduleCollection({
       workDir: env.collectDir ?? join(tmpdir(), 'zarsanj'),
       served: handler.served,
       serve: handler.serve,
-      first: age > 12 * 3_600_000 ? new Date(Date.now() + 2 * 60_000) : undefined,
+      first: missedSlot(new Date(), builtAt)
+        ? new Date(Date.now() + 2 * 60_000)
+        : undefined,
     });
   }
   createServer(handler).listen(port, () => {

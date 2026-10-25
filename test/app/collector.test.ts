@@ -3,7 +3,12 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from '
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { collectOnce, nextSlot, type Served } from '../../src/app/collector.ts';
+import {
+  collectOnce,
+  missedSlot,
+  nextSlot,
+  type Served,
+} from '../../src/app/collector.ts';
 import { loadSnapshot } from '../../src/domains/catalog/snapshot.ts';
 import { buildSnapshot } from '../../src/domains/collection/build-snapshot.ts';
 
@@ -96,6 +101,16 @@ test('ADR-0013: runs at 10:15 and 18:15 Tehran time', () => {
     nextSlot(new Date('2026-10-25T20:40:00Z')).toISOString(),
     '2026-10-26T06:45:00.000Z',
   ); // after midnight Tehran
+});
+
+test('ADR-0013: a slot that passed after the served snapshot was built makes a run due at start', () => {
+  const now = new Date('2026-10-25T17:30:00Z'); // 21:00 Tehran, after the 18:15 slot
+  assert.equal(missedSlot(now, new Date('2026-10-25T07:31:00Z')), true); // built after 10:15, before 18:15
+  assert.equal(missedSlot(now, new Date('2026-10-25T15:20:00Z')), false); // built after 18:15
+  assert.equal(
+    missedSlot(new Date('2026-10-26T05:00:00Z'), new Date('2026-10-25T15:20:00Z')),
+    false,
+  ); // 08:30 Tehran
 });
 
 test('ADR-0013: a sound run is merged into the served snapshot and swapped in; its raw files are removed', async () => {
