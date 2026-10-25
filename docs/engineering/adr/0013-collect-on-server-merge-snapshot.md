@@ -54,3 +54,5 @@ Option 2.
 - Test: a snapshot built from raw days 1–2, then merged with day 3, equals one built from days 1–3.
 - Test: a run that stopped at robots.txt builds nothing; a snapshot with under 90% of the products is not swapped.
 - After deploy: the first scheduled run appears in `GET /status` with `swapped: true`, and the snapshot's run id changes.
+
+Confirmed on 2026-10-25: the first server run (17:24 to 17:38 UTC) made 43 requests, read all 500 search cards and 21 details pages, then met HTTP 490 on the details endpoint and stopped. It swapped in a snapshot of 730 products (694 before), and search served card prices fetched at 17:26 UTC.
