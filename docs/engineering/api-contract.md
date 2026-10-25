@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.10 |
+| Version | 0.11 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -174,6 +174,7 @@ type ParseResponse = {
   chips: Chip[];
   intent: Intent | "unknown";        // read-only, derived from the intent chip
   suggest_intent: boolean;           // BR-53: show three optional intent chips; never blocks
+  intent_options: Intent[] | null;   // CR-14: the sentence states both gift and savings; offer only these, never blocks
   ask: { kind: "budget_unit"; span: [number, number] } | null;   // BR-52: the only blocking question
   mode: "jewelry" | "non_jewelry" | "both";                      // BR-57, from form chips
   llm_used: boolean;                 // BR-55
@@ -315,7 +316,7 @@ One example per operation. Product and prices are real Torob data from the 2026-
     { "kind": "budget_max", "role": "filter", "level": "product", "value": 60000000, "origin": "text", "span": [0, 14] },
     { "kind": "ojrat_max", "role": "filter", "level": "product", "value": 10, "origin": "text", "span": [23, 30] },
     { "kind": "intent", "role": "filter_and_sort", "level": "product", "value": "savings", "origin": "text", "span": [44, 56] } ],
-  "intent": "savings", "suggest_intent": false, "ask": null, "mode": "jewelry", "llm_used": false, "unparsed": null }
+  "intent": "savings", "suggest_intent": false, "intent_options": null, "ask": null, "mode": "jewelry", "llm_used": false, "unparsed": null }
 ```
 
 **`POST /parse`** `{ "text": "یه انگشتر زیر ۳۰۰" }` → `200` with `"ask": { "kind": "budget_unit", "span": [10, 17] }` and no budget chip. Then `{ "text": "یه انگشتر زیر ۳۰۰", "answers": { "budget_unit": "million" } }` → the `budget_max` chip `300000000` with `"origin": "user"`.
@@ -392,5 +393,6 @@ Notes on the example:
 | 0.6 | 2026-10-24 | CR-05: optional `llm` flag on chips the LLM added |
 | 0.7 | 2026-10-25 | CR-07: resale and rise at the fetch-time G, new `resale_loss_pct` |
 | 0.10 | 2026-10-25 | CR-12: `price_sort` and `premium_sort` chips |
+| 0.11 | 2026-10-25 | CR-14: `intent_options` on the `/parse` response; the LLM adds no intent while it is set |
 | 0.9 | 2026-10-25 | CR-10: `no_split_reason`; `parts` is never negative |
 | 0.8 | 2026-10-25 | CR-09: `shop_stars` and `shop_months` replace `shop_score_pct`; weight 0 in `components` for a style or weight the sentence did not ask for |

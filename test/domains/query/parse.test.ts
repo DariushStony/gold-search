@@ -260,3 +260,34 @@ test('CR-04: the sample sentences and fully read sentences leave nothing unread'
     assert.equal(parseQuery(s).unparsed, null, s);
   }
 });
+
+test('CR-14 (BR-5A): «پارتنر» is a recipient with no implied audience, and «خودم» after a recipient is not a second one', () => {
+  const p = parseQuery('گردنبند برای پارتنرم تا ۳۰ میلیون');
+  assert.deepEqual(val(p, 'recipient'), ['پارتنر']);
+  assert.equal(p.intent, 'gift');
+  assert.deepEqual(val(p, 'audience'), []);
+  assert.deepEqual(val(parseQuery('یه انگشتر برای مامان خودم'), 'recipient'), ['مادر']);
+  assert.deepEqual(val(parseQuery('یه انگشتر برای خودم'), 'recipient'), ['خودم']);
+});
+
+test('CR-14 (BR-53): a sentence that states both gift and savings leaves the choice to the user', () => {
+  const p = parseQuery('یه طلای دست دوم برای پس‌انداز و هدیه به پارتنر خودم');
+  assert.equal(p.intent, 'unknown');
+  assert.deepEqual(val(p, 'intent'), []);
+  assert.deepEqual(p.intent_options, ['gift', 'savings']);
+  assert.equal(p.suggest_intent, true);
+  assert.equal(p.ask, null);
+  assert.deepEqual(val(p, 'recipient'), ['پارتنر']);
+  assert.deepEqual(val(p, 'condition'), ['used']);
+  assert.equal(p.unparsed, null);
+  assert.deepEqual(parseQuery('کادو تولد همسرم یه سکه که سرمایه باشه').intent_options, [
+    'gift',
+    'savings',
+  ]);
+  for (const t of [
+    'یه دستبند ظریف برای روز مادر تا ۲۰ تومن',
+    '۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم',
+  ]) {
+    assert.equal(parseQuery(t).intent_options, null, t);
+  }
+});

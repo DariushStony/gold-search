@@ -95,3 +95,19 @@ test('BR-55: making-charge words map to the BR-59 numbers even with a typo', () 
     /ببین/,
   );
 });
+
+test('CR-14: when the sentence states two purposes, an intent from the model is dropped', () => {
+  const text = 'یه طلای دست دوم برای پس‌انداز و هدیه به پارتنر عزیزم';
+  const rules = parseQuery(text);
+  const { result, rejected } = mergeLlm(text, rules, {
+    chips: [{ kind: 'intent', value: 'gift' }],
+    unparsed: null,
+  })!;
+  assert.equal(result.intent, 'unknown');
+  assert.deepEqual(result.intent_options, ['gift', 'savings']);
+  assert.equal(result.suggest_intent, true);
+  assert.deepEqual(
+    rejected.map((c) => c.kind),
+    ['intent'],
+  );
+});

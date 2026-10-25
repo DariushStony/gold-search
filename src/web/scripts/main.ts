@@ -41,6 +41,7 @@ async function parse() {
   st.text = text;
   st.chips = p.chips;
   st.llm = p.llm_used;
+  st.intentOptions = p.intent_options;
   // CR-04: say which part of the sentence no rule read, so a missing chip is not a mystery.
   const u = toPersianDigits(p.unparsed ?? '');
   const cut = u.lastIndexOf(' ', 70);

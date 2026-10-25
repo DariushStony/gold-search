@@ -10,7 +10,8 @@ const st: {
   answers: Answers;
   last: SearchResponse | null;
   llm: boolean;
-} = { text: '', chips: [], answers: {}, last: null, llm: false };
+  intentOptions: string[] | null;
+} = { text: '', chips: [], answers: {}, last: null, llm: false, intentOptions: null };
 
 // A chip the user set by hand (filter panel, sort control, intent buttons) is the same shape as one read from
 // the sentence, so the server treats both alike (API contract §3).

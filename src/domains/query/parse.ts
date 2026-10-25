@@ -9,6 +9,7 @@ type ParsedQuery = {
   chips: Chip[];
   intent: Intent | 'unknown';
   suggest_intent: boolean;
+  intent_options: Intent[] | null; // CR-14: the sentence states two purposes; the page asks which one orders the list
   ask: { kind: 'budget_unit' } | null;
   mode: 'jewelry' | 'non_jewelry' | 'both';
   llm_used: boolean;
@@ -342,6 +343,8 @@ function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
     }
     add('recipient', v);
     impliedAudience ??= aud;
+    // «پارتنر خودم»، «مامان خودم»: «خودم» here says whose, it is not a second recipient
+    t = t.replace(new RegExp(`(${word(w).source})\\s*خودم(?![${FA}])`), '$1');
   }
   if (/برای\s*خودم|خودم\s*(?:بخوام|میخوام)/.test(t)) add('recipient', 'خودم');
   const stated = (Object.entries(cfg.audience) as [string, string[]][]).find(([, ws]) =>
@@ -381,11 +384,18 @@ function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
     items >= 2 ||
     /چه\s*مدل/.test(t) ||
     (!ojratOrUsed && chips.some((c) => c.kind === 'style'));
+  // CR-14: a gift that should also hold its value states two purposes; picking one would drop the other in silence.
+  const savingsStated = cfg.savingsWords.some((w) => t.includes(w));
+  const giftStated = giftWord || occasions.length > 0;
+  const intentOptions: Intent[] | null =
+    giftStated && savingsStated ? ['gift', 'savings'] : null;
   let intent: ParsedQuery['intent'] = 'unknown';
-  if (giftWord || occasions.length > 0) intent = 'gift';
-  else if (savings) intent = 'savings';
-  else if (recipients.some((r) => r !== 'خودم')) intent = 'gift';
-  else if (beauty) intent = 'beauty';
+  if (!intentOptions) {
+    if (giftStated) intent = 'gift';
+    else if (savings) intent = 'savings';
+    else if (recipients.some((r) => r !== 'خودم')) intent = 'gift';
+    else if (beauty) intent = 'beauty';
+  }
   if (intent !== 'unknown') add('intent', intent);
 
   const jewelry = chips.some((c) => c.kind === 'item_type') || jewelryNamed;
@@ -394,6 +404,7 @@ function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
     chips,
     intent,
     suggest_intent: intent === 'unknown',
+    intent_options: intentOptions,
     ask,
     mode,
     llm_used: false,

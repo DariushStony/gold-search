@@ -3,7 +3,7 @@ import { $, esc } from './dom.ts';
 import { count, gram, pct, toman, when } from './fmt.ts';
 import { gapLine, premiumText, resaleLine, REVIEW_NO_RESALE } from './math-text.ts';
 import { st, track } from './state.ts';
-import { ERR, FORM, KIND, LABEL } from './text.ts';
+import { ERR, FORM, KIND, LABEL, VAL } from './text.ts';
 import type { Breakdown, ErrorCode, ResultCard, SearchResponse } from './types.ts';
 
 function showError(code: ErrorCode) {
@@ -103,6 +103,16 @@ const section = (title: string, list: ResultCard[]) =>
         .join('')}</div>`
     : '';
 
+const intentName = (i: string) => VAL[i] ?? esc(i);
+const intentButton = (i: string) =>
+  `<button type="button" data-intent="${esc(i)}">${intentName(i)}</button>`;
+
+// CR-14: when the sentence named two purposes, ask only about those two, by name.
+const intentQuestion = (options: string[] | null) =>
+  options?.length === 2
+    ? `جمله‌ی شما هم «${intentName(options[0]!)}» دارد هم «${intentName(options[1]!)}». نتیجه‌ها برای کدام مرتب شوند؟ ${options.map(intentButton).join('')}`
+    : `برای چه می‌خرید؟ ${['gift', 'beauty', 'savings'].map(intentButton).join('')}`;
+
 let latest = 0;
 
 async function run() {
@@ -123,9 +133,7 @@ async function run() {
   if (mine !== latest) return; // an older answer arriving after a newer search must not overwrite it
   st.last = r;
   $('suggest').hidden = !r.suggest_intent;
-  $('suggest').innerHTML = r.suggest_intent
-    ? `برای چه می‌خرید؟ <button type="button" data-intent="gift">هدیه</button><button type="button" data-intent="beauty">زیبایی</button><button type="button" data-intent="savings">پس‌انداز</button>`
-    : '';
+  $('suggest').innerHTML = r.suggest_intent ? intentQuestion(st.intentOptions) : '';
   $('count').textContent = `${count(r.results.length)} نتیجه`;
   $('showEx').hidden = !r.excluded_count;
   $('showEx').textContent = `${count(r.excluded_count)} مورد غیرطلا کنار گذاشته شد`;

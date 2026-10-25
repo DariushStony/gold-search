@@ -127,7 +127,9 @@ function mergeLlm(
   const rejected: { kind: string; value: unknown }[] = [];
   for (const c of raw.chips) {
     const kind = c.kind as ChipKind;
-    if (!KINDS.includes(kind) || !valid(kind, c.value, nums, text)) {
+    // CR-14: when the sentence states two purposes the user picks one, so the model may not pick for them
+    const userDecides = kind === 'intent' && rules.intent_options !== null;
+    if (!KINDS.includes(kind) || userDecides || !valid(kind, c.value, nums, text)) {
       rejected.push(c);
       continue;
     }

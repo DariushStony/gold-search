@@ -7,6 +7,7 @@ type ParseResponse = {
   chips: Chip[];
   unparsed: string | null;
   ask: unknown;
+  intent_options: string[] | null;
   llm_used: boolean;
 };
 
