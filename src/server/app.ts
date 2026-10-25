@@ -156,13 +156,26 @@ function cardJson(c: Card, p: ProductRecord, gLive: Reference | null) {
 
 const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]! : null);
 
-export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promise<Reference | null>; eventsFile?: string; llm?: Llm | null } = {}) {
+type Deps = {
+  goldPrice?: () => Promise<Reference | null>;
+  eventsFile?: string | null; // null: write events to the log (a read-only host such as Vercel)
+  llm?: Llm | null;
+  trustProxy?: boolean; // behind Vercel every request comes from its proxy; the client is the first X-Forwarded-For entry
+  log?: (line: string) => void;
+};
+
+export function createApp(snapshotPath: string, deps: Deps = {}) {
+  return createServer(createHandler(snapshotPath, deps));
+}
+
+export function createHandler(snapshotPath: string, deps: Deps = {}) {
   const snap = loadSnapshot(snapshotPath);
-  const livePrice = deps.goldPrice ?? goldPrice;
+  const livePrice = async () => (await (deps.goldPrice ?? goldPrice)()) ?? snap.gold;
   const byId = new Map(snap.products.map((p) => [p.id, p]));
   const page = () => readFileSync(join(ROOT, "web/index.html"), "utf8");
   const hits = new Map<string, number[]>();
-  const eventsFile = deps.eventsFile ?? join(ROOT, "data/events/events.jsonl");
+  const eventsFile = deps.eventsFile === undefined ? join(ROOT, "data/events/events.jsonl") : deps.eventsFile;
+  const log = deps.log ?? ((line: string) => console.log(line));
   const parse = parser(deps.llm ?? null);
 
   const send = (res: ServerResponse, status: number, body: unknown, type = "application/json; charset=utf-8") => {
@@ -188,7 +201,12 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
     });
   // API §2: per IP, in memory only, with one budget for the search calls and another for status and events.
   const limited = (req: IncomingMessage, bucket: "search" | "light", perMin: number) => {
-    const ip = `${bucket}:${req.socket.remoteAddress ?? "?"}`;
+    const forwarded = deps.trustProxy
+      ? String(req.headers["x-forwarded-for"] ?? "")
+          .split(",")[0]!
+          .trim()
+      : "";
+    const ip = `${bucket}:${forwarded || req.socket.remoteAddress || "?"}`;
     const now = Date.now();
     const recent = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
     recent.push(now);
@@ -202,7 +220,7 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
   };
   const validChips = (chips: unknown): chips is Chip[] => Array.isArray(chips) && chips.every((c) => c && typeof c.kind === "string");
 
-  return createServer(async (req, res) => {
+  return async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://local");
     try {
       if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) return send(res, 200, page(), "text/html; charset=utf-8");
@@ -230,8 +248,12 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
         return send(res, 200, await parse(body.text, body.answers ?? {}));
       }
       if (url.pathname === "/api/v1/events") {
-        mkdirSync(dirname(eventsFile), { recursive: true });
-        appendFileSync(eventsFile, JSON.stringify({ ...body, pipeline_version: snap.meta.pipeline_version }) + "\n"); // BR-111: the client sends no personal data
+        const line = JSON.stringify({ ...body, pipeline_version: snap.meta.pipeline_version }); // BR-111: the client sends no personal data
+        if (eventsFile === null) log(line);
+        else {
+          mkdirSync(dirname(eventsFile), { recursive: true });
+          appendFileSync(eventsFile, line + "\n");
+        }
         return send(res, 202, {});
       }
       if (!validChips(body.chips)) return problem(res, 422, "invalid-request", "chips: array required");
@@ -325,7 +347,7 @@ export function createApp(snapshotPath: string, deps: { goldPrice?: () => Promis
       console.error(err);
       return problem(res, 500, "internal", "unexpected error");
     }
-  });
+  };
 }
 
 if (import.meta.main) {

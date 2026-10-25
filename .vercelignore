@@ -1,0 +1,17 @@
+# Allowlist: upload only what the deploy needs. Vercel does not read .gitignore,
+# so without this the key in .env, raw data and videos would be uploaded.
+/*
+!api
+!src
+!web
+!public
+!package.json
+!pnpm-lock.yaml
+!tsconfig.json
+!tsconfig.build.json
+!vercel.json
+!data
+data/*
+!data/snapshots
+data/snapshots/*
+!data/snapshots/latest.sqlite

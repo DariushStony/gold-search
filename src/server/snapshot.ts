@@ -2,9 +2,11 @@
 import { DatabaseSync } from "node:sqlite";
 import type { ProductRecord } from "../core/rank.ts";
 import type { Label } from "../core/label.ts";
+import { selectReference, type Quote, type Reference } from "../core/gold-price.ts";
 
 export type SnapshotMeta = { schema_version: number; run_id: string; started_at: string; finished_at: string; pipeline_version: string };
-export type Snapshot = { meta: SnapshotMeta; products: ProductRecord[] };
+// gold: the newest quotes the snapshot holds, for when the live sources cannot be reached (a host abroad).
+export type Snapshot = { meta: SnapshotMeta; products: ProductRecord[]; gold: Reference | null };
 
 type Row = Record<string, unknown>;
 
@@ -67,7 +69,12 @@ export function loadSnapshot(path: string): Snapshot {
         offers: offers.get(id) ?? [],
       });
     }
-    return { meta, products };
+    const latest = (source: string) =>
+      (db
+        .prepare("SELECT source, value_toman AS g_toman, quoted_at, fetched_at FROM gold_quote WHERE source = ? ORDER BY quoted_at DESC LIMIT 1")
+        .get(source) as Quote | undefined) ?? null;
+    const gold = selectReference(latest("union"), latest("tgju"), new Date());
+    return { meta, products, gold };
   } finally {
     db.close();
   }

@@ -6,6 +6,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
@@ -13,7 +14,8 @@
     "format:check": "prettier --check .",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "demo": "node --env-file-if-exists=.env src/server/app.ts",
-    "snapshot": "node src/pipeline/build-snapshot.ts"
+    "snapshot": "node src/pipeline/build-snapshot.ts",
+    "deploy": "pnpm dlx vercel@latest deploy --prod"
   },
   "devDependencies": {
     "@types/node": "26.6.5",

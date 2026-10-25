@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AddressInfo } from "node:net";
 import { buildSnapshot } from "../../src/pipeline/build-snapshot.ts";
-import { createApp } from "../../src/server/app.ts";
+import { createServer } from "node:http";
+import { createApp, createHandler } from "../../src/server/app.ts";
 
 const RUN = "2026-10-23T06:56:00.000Z";
 
@@ -193,6 +194,27 @@ test("BR-55, BR-73, NFR-05: /parse asks the LLM only about unread words, falls b
     const down = await parse("یه دستبند حدود یک و نیم میلیون");
     assert.equal(down.llm_used, false);
     assert.ok(down.unparsed);
+  } finally {
+    server.close();
+  }
+});
+
+test("Vercel: behind the proxy each client has its own budget, events go to the log, and the snapshot's gold price stands in", async () => {
+  const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
+  buildSnapshot({ rawDir: rawFixture(), outPath: out });
+  const logged: string[] = [];
+  const server = createServer(createHandler(out, { goldPrice: async () => null, eventsFile: null, trustProxy: true, log: (l) => logged.push(l) })).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
+  const post = (path: string, body: unknown, ip: string) =>
+    fetch(base + path, { method: "POST", body: JSON.stringify(body), headers: { "x-forwarded-for": `${ip}, 10.0.0.1` } });
+  try {
+    const status = await (await fetch(base + "/status")).json();
+    assert.equal(status.gold_price.g_toman, 27_017_000); // the fixture's tgju quote, since the live fetch failed
+    for (let i = 0; i < 30; i++) assert.equal((await post("/parse", { text: "النگو" }, "1.1.1.1")).status, 200);
+    assert.equal((await post("/parse", { text: "النگو" }, "1.1.1.1")).status, 429);
+    assert.equal((await post("/parse", { text: "النگو" }, "2.2.2.2")).status, 200);
+    assert.equal((await post("/events", { event: "query_submitted" }, "3.3.3.3")).status, 202);
+    assert.ok(logged.some((l) => l.includes('"event":"query_submitted"')));
   } finally {
     server.close();
   }
