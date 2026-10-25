@@ -1,0 +1,6 @@
+# Allowlist: only what the image needs. Keeps .env, raw data and videos out of the build context.
+*
+!package.json
+!src
+!web
+!deploy/snapshot.sqlite

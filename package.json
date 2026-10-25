@@ -6,7 +6,6 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
     "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
@@ -15,7 +14,7 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "demo": "node --env-file-if-exists=.env src/server/app.ts",
     "snapshot": "node src/pipeline/build-snapshot.ts",
-    "deploy": "pnpm dlx vercel@latest deploy --prod"
+    "snapshot:release": "cp data/snapshots/latest.sqlite deploy/snapshot.sqlite && git add deploy/snapshot.sqlite && git -c user.name=\"Dariush Hadipour\" -c user.email=dariushhadi87@gmail.com commit -m \"Update the demo snapshot\""
   },
   "devDependencies": {
     "@types/node": "26.6.5",

@@ -199,7 +199,7 @@ test("BR-55, BR-73, NFR-05: /parse asks the LLM only about unread words, falls b
   }
 });
 
-test("Vercel: behind the proxy each client has its own budget, events go to the log, and the snapshot's gold price stands in", async () => {
+test("ADR-0012: behind the proxy each client has its own budget, events go to the log, and the snapshot's gold price stands in", async () => {
   const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
   buildSnapshot({ rawDir: rawFixture(), outPath: out });
   const logged: string[] = [];

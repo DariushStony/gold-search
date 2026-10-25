@@ -1,6 +1,6 @@
 # ADR-0011: Demo on Vercel, deployed from the owner's machine with the snapshot inside
 
-- Status: accepted (2026-10-25), first deploy pending the owner's Vercel login
+- Status: superseded by ADR-0012 (2026-10-25): the owner chose Hamravesh before the first deploy
 - Date: 2026-10-25
 - Deciders: Dariush Hadipour
 - Related: ADR-0004 (Liara, still the fallback), ADR-0005, ADR-0010; BR-16, BR-111; NFR-06

@@ -158,9 +158,9 @@ const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math
 
 type Deps = {
   goldPrice?: () => Promise<Reference | null>;
-  eventsFile?: string | null; // null: write events to the log (a read-only host such as Vercel)
+  eventsFile?: string | null; // null: write events to the log (a container with no disk, ADR-0012)
   llm?: Llm | null;
-  trustProxy?: boolean; // behind Vercel every request comes from its proxy; the client is the first X-Forwarded-For entry
+  trustProxy?: boolean; // behind the host's ingress every request comes from its proxy; the client is the first X-Forwarded-For entry
   log?: (line: string) => void;
 };
 
@@ -350,12 +350,16 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
   };
 }
 
+// A container host (Hamravesh, ADR-0012) sets these through the environment; local runs may pass the path and port as arguments.
 if (import.meta.main) {
-  const path = process.argv[2] ?? join(ROOT, "data/snapshots/latest.sqlite");
-  const port = Number(process.argv[3] ?? 4321);
-  const key = process.env.AVALAI_API_KEY;
-  const model = process.env.AVALAI_MODEL || config.llm.model;
-  createApp(path, { llm: key ? avalai(key, model) : null }).listen(port, () =>
-    console.log(`demo: http://localhost:${port} (AI sentence reading: ${key ? model : "off, no AVALAI_API_KEY"})`),
-  );
+  const env = process.env;
+  const path = process.argv[2] ?? env.SNAPSHOT_PATH ?? join(ROOT, "data/snapshots/latest.sqlite");
+  const port = Number(process.argv[3] ?? env.PORT ?? 4321);
+  const key = env.AVALAI_API_KEY;
+  const model = env.AVALAI_MODEL || config.llm.model;
+  createApp(path, {
+    llm: key ? avalai(key, model) : null,
+    eventsFile: env.EVENTS_FILE === "-" ? null : env.EVENTS_FILE, // "-": events to stdout, for a container without a disk
+    trustProxy: env.TRUST_PROXY === "1",
+  }).listen(port, () => console.log(`demo: http://localhost:${port} (AI sentence reading: ${key ? model : "off, no AVALAI_API_KEY"})`));
 }
