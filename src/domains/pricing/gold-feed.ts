@@ -3,14 +3,14 @@
 import { selectReference, type Quote, type Reference } from './gold-price.ts';
 
 type Source = 'union' | 'tgju';
-export type GoldFeedOptions = {
+type GoldFeedOptions = {
   sources: Record<Source, () => Promise<Quote | null>>;
   ttlMs: number; // a refresh starts once the last one is this old
   firstWaitMs: number; // with nothing cached yet, a request waits this long for the first answer
   log?: (line: string) => void;
 };
 
-export function createGoldFeed(o: GoldFeedOptions): () => Promise<Reference | null> {
+function createGoldFeed(o: GoldFeedOptions): () => Promise<Reference | null> {
   const latest: Partial<Record<Source, Quote>> = {}; // the last good quote per source survives a failed refresh
   const lastFailure = new Map<Source, string>();
   const log = o.log ?? ((line: string) => console.error(line));
@@ -54,3 +54,5 @@ export function createGoldFeed(o: GoldFeedOptions): () => Promise<Reference | nu
     return ref;
   };
 }
+
+export { createGoldFeed };

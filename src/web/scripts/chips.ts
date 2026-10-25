@@ -15,7 +15,7 @@ function chipValue(c: Chip): string {
 const source = (c: Chip) =>
   c.origin === 'user' ? 'انتخاب شما' : c.llm ? 'از جمله‌ی شما، با AI' : 'از جمله‌ی شما';
 
-export function renderChips() {
+function renderChips() {
   $('chips').innerHTML = st.chips
     .map((c, i) => {
       const role = c.role === 'sort' ? 'sort' : c.role === 'info' ? 'info' : '';
@@ -25,3 +25,5 @@ export function renderChips() {
     })
     .join('');
 }
+
+export { renderChips };

@@ -1,13 +1,13 @@
 import { config as defaults, type Config } from '../../core/config.ts';
 
-export type Source = 'union' | 'tgju';
-export type Quote = {
+type Source = 'union' | 'tgju';
+type Quote = {
   source: Source;
   g_toman: number;
   quoted_at: string;
   fetched_at: string;
 };
-export type Reference = {
+type Reference = {
   g_toman: number;
   source: Source;
   quoted_at: string;
@@ -30,7 +30,7 @@ function tehranToIso(stamp: unknown): string | null {
 }
 
 // POST estjt.ir/wp-admin/admin-ajax.php action=tablotala_timer; values in toman.
-export function parseUnion(body: unknown, fetchedAt: string): Quote | null {
+function parseUnion(body: unknown, fetchedAt: string): Quote | null {
   const data = (body as { success?: boolean; data?: Record<string, unknown> })?.data;
   if (!(body as { success?: boolean })?.success || !data) return null;
   const value = (data.IRG18 as { value?: unknown } | undefined)?.value;
@@ -40,7 +40,7 @@ export function parseUnion(body: unknown, fetchedAt: string): Quote | null {
 }
 
 // The `current` map of call1.tgju.org/ajax.json; prices in rial with commas.
-export function parseTgju(prices: unknown, fetchedAt: string): Quote | null {
+function parseTgju(prices: unknown, fetchedAt: string): Quote | null {
   const g = (prices as Record<string, { p?: unknown; ts?: unknown }> | undefined)
     ?.geram18;
   const rial = typeof g?.p === 'string' ? Number(g.p.replaceAll(',', '')) : NaN;
@@ -57,7 +57,7 @@ export function parseTgju(prices: unknown, fetchedAt: string): Quote | null {
 const ageMinutes = (q: Quote, now: Date) =>
   (now.getTime() - Date.parse(q.quoted_at)) / 60_000;
 
-export function selectReference(
+function selectReference(
   union: Quote | null,
   tgju: Quote | null,
   now: Date,
@@ -92,3 +92,5 @@ export function selectReference(
     market_open: marketOpen,
   };
 }
+
+export { parseUnion, parseTgju, selectReference, type Quote, type Reference };

@@ -4,7 +4,7 @@ import { selectReference, type Quote, type Reference } from '../pricing/gold-pri
 import type { ProductRecord } from '../ranking/rank.ts';
 import type { Label } from './label.ts';
 
-export type SnapshotMeta = {
+type SnapshotMeta = {
   schema_version: number;
   run_id: string;
   started_at: string;
@@ -12,7 +12,7 @@ export type SnapshotMeta = {
   pipeline_version: string;
 };
 // gold: the newest quotes the snapshot holds, for when the live sources cannot be reached (a host abroad).
-export type Snapshot = {
+type Snapshot = {
   meta: SnapshotMeta;
   products: ProductRecord[];
   gold: Reference | null;
@@ -20,7 +20,7 @@ export type Snapshot = {
 
 type Row = Record<string, unknown>;
 
-export function loadSnapshot(path: string): Snapshot {
+function loadSnapshot(path: string): Snapshot {
   const db = new DatabaseSync(path, { readOnly: true });
   try {
     const meta = {
@@ -118,3 +118,5 @@ export function loadSnapshot(path: string): Snapshot {
     db.close();
   }
 }
+
+export { loadSnapshot, type Snapshot };

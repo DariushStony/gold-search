@@ -3,7 +3,7 @@ import type { Chip, SearchResponse } from './types.ts';
 
 type Answers = { budget_unit?: 'thousand' | 'million' };
 
-export const st: {
+const st: {
   text: string;
   chips: Chip[];
   answers: Answers;
@@ -22,7 +22,7 @@ const session = (() => {
 })();
 
 // Tracking plan events; a failed send never bothers the user.
-export const track = (name: string, props: Record<string, unknown>) =>
+const track = (name: string, props: Record<string, unknown>) =>
   post('/events', {
     event_id: crypto.randomUUID(),
     name,
@@ -33,5 +33,6 @@ export const track = (name: string, props: Record<string, unknown>) =>
     props,
   }).catch(() => {});
 
-export const rankOf = (id: string) =>
-  1 + (st.last?.results.findIndex((c) => c.id === id) ?? 0);
+const rankOf = (id: string) => 1 + (st.last?.results.findIndex((c) => c.id === id) ?? 0);
+
+export { st, track, rankOf };

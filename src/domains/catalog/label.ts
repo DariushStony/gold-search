@@ -4,14 +4,14 @@ import { normalize } from '../../shared/text.ts';
 import { goldValue } from '../pricing/price.ts';
 import type { Attributes } from './extract.ts';
 
-export type Label = 'real' | 'mixed' | 'not_gold' | 'review';
-export type LabelResult = {
+type Label = 'real' | 'mixed' | 'not_gold' | 'review';
+type LabelResult = {
   label: Label;
   reasons: string[];
   price_ratio: number | null;
   weight_unknown: boolean;
 };
-export type LabelInput = {
+type LabelInput = {
   title: string;
   specs: Record<string, string>;
   attributes: Attributes;
@@ -52,7 +52,7 @@ function mixedWord(text: string, cfg: Config): string | null {
   return null;
 }
 
-export function labelProduct(i: LabelInput, cfg: Config = defaults): LabelResult {
+function labelProduct(i: LabelInput, cfg: Config = defaults): LabelResult {
   const title = prep(i.title);
   const a = i.attributes;
   const weightUnknown = a.weight_g === null;
@@ -113,3 +113,5 @@ export function labelProduct(i: LabelInput, cfg: Config = defaults): LabelResult
   if (reasons.length === 0) reasons.push(TX.consistentGold);
   return result('real', reasons, ratio);
 }
+
+export { labelProduct, type Label };

@@ -206,7 +206,7 @@ type Deps = {
   webDir?: string; // the built page and its assets (pnpm build:web)
 };
 
-export function createApp(snapshotPath: string, deps: Deps = {}) {
+function createApp(snapshotPath: string, deps: Deps = {}) {
   return createServer(createHandler(snapshotPath, deps));
 }
 
@@ -218,7 +218,7 @@ type RequestBody = {
   snapshot_id?: unknown;
 } & Record<string, unknown>;
 
-export function createHandler(snapshotPath: string, deps: Deps = {}) {
+function createHandler(snapshotPath: string, deps: Deps = {}) {
   const snap = loadSnapshot(snapshotPath);
   const livePrice = async () => (await (deps.goldPrice ?? goldPrice)()) ?? snap.gold;
   const byId = new Map(snap.products.map((p) => [p.id, p]));
@@ -509,3 +509,5 @@ if (import.meta.main) {
     ),
   );
 }
+
+export { createApp, createHandler };

@@ -4,9 +4,9 @@ import { normalize } from '../../shared/text.ts';
 import { buildMessages, LLM_SCHEMA, mergeLlm } from './llm.ts';
 import { parseQuery, type Answers, type ParsedQuery } from './parse.ts';
 
-export type Llm = (messages: ReturnType<typeof buildMessages>) => Promise<unknown>;
+type Llm = (messages: ReturnType<typeof buildMessages>) => Promise<unknown>;
 
-export function avalai(key: string, model = config.llm.model): Llm {
+function avalai(key: string, model = config.llm.model): Llm {
   return async (messages) => {
     const res = await fetch(`${config.llm.baseUrl}/chat/completions`, {
       method: 'POST',
@@ -30,7 +30,7 @@ export function avalai(key: string, model = config.llm.model): Llm {
 
 // Rules first; the LLM only sees requests the rules left words in (BR-55) and never blocks an answer (BR-73).
 // Answers are cached by normalised text so the same request gives the same chips (NFR-05).
-export function parser(llm: Llm | null) {
+function parser(llm: Llm | null) {
   const cache = new Map<string, ParsedQuery>();
   return async (text: string, answers: Answers = {}): Promise<ParsedQuery> => {
     const rules = parseQuery(text, answers);
@@ -50,3 +50,5 @@ export function parser(llm: Llm | null) {
     }
   };
 }
+
+export { avalai, parser, type Llm };

@@ -1,7 +1,7 @@
 import { config } from '../../core/config.ts';
 import { normalize } from '../../shared/text.ts';
 
-export type OfferRow = {
+type OfferRow = {
   id: string;
   product_id: string;
   source: 'torob_search' | 'torob_details';
@@ -18,7 +18,7 @@ export type OfferRow = {
   fetched_at: string;
 };
 
-export type OfferFilters = {
+type OfferFilters = {
   shop?: string;
   city?: string;
   in_person?: boolean;
@@ -30,11 +30,11 @@ const ageHours = (o: OfferRow, finishedAt: string) =>
 const same = (a: string | null, b: string | null) =>
   a !== null && b !== null && normalize(a) === normalize(b);
 
-export const isStale = (o: OfferRow, finishedAt: string, archive: boolean) =>
+const isStale = (o: OfferRow, finishedAt: string, archive: boolean) =>
   !archive && ageHours(o, finishedAt) > config.offers.staleHours; // BR-14
 
 // BR-84: offers that may represent the product under the given filters, cheapest first, newer first on ties.
-export function eligibleOffers(
+function eligibleOffers(
   offers: OfferRow[],
   f: OfferFilters,
   finishedAt: string,
@@ -53,7 +53,7 @@ export function eligibleOffers(
 }
 
 // DM-08: fold the latest search card into the details offers.
-export function mergeCard(card: OfferRow, details: OfferRow[]): OfferRow[] {
+function mergeCard(card: OfferRow, details: OfferRow[]): OfferRow[] {
   const i =
     card.shop !== null
       ? details.findIndex((d) => same(d.shop, card.shop))
@@ -64,3 +64,5 @@ export function mergeCard(card: OfferRow, details: OfferRow[]): OfferRow[] {
   const merged = cardNewer ? { ...d, price: card.price, fetched_at: card.fetched_at } : d;
   return details.map((x, j) => (j === i ? merged : x));
 }
+
+export { isStale, eligibleOffers, mergeCard, type OfferRow, type OfferFilters };

@@ -7,12 +7,12 @@ import { rankOf, st, track } from './state.ts';
 import { LABEL } from './text.ts';
 import type { ProductResponse } from './types.ts';
 
-export function closeSheet() {
+function closeSheet() {
   $('sheet').classList.remove('open');
   $('bg').style.display = 'none';
 }
 
-export async function openSheet(id: string) {
+async function openSheet(id: string) {
   let d: ProductResponse;
   try {
     d = await post<ProductResponse>(`/products/${encodeURIComponent(id)}`, {
@@ -71,3 +71,5 @@ export async function openSheet(id: string) {
   $('x').addEventListener('click', closeSheet);
   $('x').focus();
 }
+
+export { closeSheet, openSheet };

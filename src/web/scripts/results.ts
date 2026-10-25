@@ -6,7 +6,7 @@ import { st, track } from './state.ts';
 import { ERR, FORM, KIND, LABEL } from './text.ts';
 import type { Breakdown, ErrorCode, ResultCard, SearchResponse } from './types.ts';
 
-export function showError(code: ErrorCode) {
+function showError(code: ErrorCode) {
   $('results').innerHTML =
     `<div class="empty">${ERR[code] ?? 'مشکلی پیش آمد. دوباره امتحان کنید.'}</div>`;
   $('count').textContent = '';
@@ -34,7 +34,7 @@ function strip(b: Breakdown, price: number) {
   <div class="strip-key">${key}</div>`;
 }
 
-export const noBreakdown = (reason: ResultCard['offer']['no_breakdown_reason']) =>
+const noBreakdown = (reason: ResultCard['offer']['no_breakdown_reason']) =>
   reason === 'no_gold_quote'
     ? 'قیمت طلای زمان دریافت در دسترس نیست'
     : 'وزن اعلام نشده و نمی‌شود حساب کرد';
@@ -97,7 +97,7 @@ const section = (title: string, list: ResultCard[]) =>
         .join('')}</div>`
     : '';
 
-export async function run() {
+async function run() {
   $('results').innerHTML = `<p class="loading">در حال جست‌وجو</p>`;
   let r: SearchResponse;
   try {
@@ -150,9 +150,11 @@ export async function run() {
   });
 }
 
-export function clearResults() {
+function clearResults() {
   for (const id of ['results', 'savings', 'sections']) $(id).innerHTML = '';
   $('count').textContent = '';
   $('showEx').hidden = true;
   $('suggest').hidden = true;
 }
+
+export { showError, noBreakdown, run, clearResults };

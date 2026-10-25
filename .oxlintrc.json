@@ -14,7 +14,12 @@
     ".private/**"
   ],
   "rules": {
-    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
     "object-shorthand": "warn",
     "eqeqeq": ["error", "smart"],
     "curly": ["error", "multi-line"],
@@ -29,26 +34,47 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "prefer-arrow-callback": ["error", { "allowNamedFunctions": true }],
+    "prefer-arrow-callback": [
+      "error",
+      {
+        "allowNamedFunctions": true
+      }
+    ],
     "func-names": ["error", "as-needed"],
     "import/no-duplicates": "error",
     "import/no-cycle": "error",
     "import/no-self-import": "error",
-    "unicorn/filename-case": ["error", { "case": "kebabCase" }],
+    "import/exports-last": "error",
+    "import/group-exports": "error",
+    "import/no-default-export": "error",
+    "unicorn/filename-case": [
+      "error",
+      {
+        "case": "kebabCase"
+      }
+    ],
     "unicorn/no-array-sort": "off",
     "unicorn/consistent-function-scoping": "off",
     "typescript/no-explicit-any": "warn",
     "typescript/ban-ts-comment": [
       "warn",
-      { "ts-ignore": "allow-with-description", "minimumDescriptionLength": 10 }
+      {
+        "ts-ignore": "allow-with-description",
+        "minimumDescriptionLength": 10
+      }
     ],
     "typescript/consistent-type-imports": [
       "error",
-      { "prefer": "type-imports", "fixStyle": "inline-type-imports" }
+      {
+        "prefer": "type-imports",
+        "fixStyle": "inline-type-imports"
+      }
     ],
     "typescript/no-empty-function": [
       "error",
-      { "allow": ["arrowFunctions", "constructors", "methods"] }
+      {
+        "allow": ["arrowFunctions", "constructors", "methods"]
+      }
     ]
   },
   "overrides": [
@@ -108,11 +134,21 @@
         "scripts/**",
         "configs/**"
       ],
-      "rules": { "no-console": "off" }
+      "rules": {
+        "no-console": "off"
+      }
     },
     {
       "files": ["test/**", "eval/**", "src/domains/collection/**"],
-      "rules": { "typescript/no-explicit-any": "off" }
+      "rules": {
+        "typescript/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["configs/**"],
+      "rules": {
+        "import/no-default-export": "off"
+      }
     }
   ]
 }

@@ -3,7 +3,7 @@ import { $ } from './dom.ts';
 import { toman, when } from './fmt.ts';
 import type { StatusResponse } from './types.ts';
 
-export async function loadStatus() {
+async function loadStatus() {
   try {
     const s = await get<StatusResponse>('/status');
     const g = s.gold_price;
@@ -30,3 +30,5 @@ export async function loadStatus() {
     $('rate').textContent = 'قیمت طلا در دسترس نیست';
   }
 }
+
+export { loadStatus };

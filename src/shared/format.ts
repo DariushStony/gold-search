@@ -9,7 +9,7 @@ const fixed = (digits: number) =>
 const whole = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 });
 const upTo3 = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 3 });
 
-export function formatToman(toman: number, opts: { full?: boolean } = {}): string {
+function formatToman(toman: number, opts: { full?: boolean } = {}): string {
   if (opts.full) return `${whole.format(toman)} تومان`;
   if (Math.abs(toman) >= 1_000_000) {
     return `${fixed(1).format(toman / 1_000_000)} میلیون تومان`;
@@ -17,13 +17,13 @@ export function formatToman(toman: number, opts: { full?: boolean } = {}): strin
   return `${whole.format(toman / 1000)} هزار تومان`;
 }
 
-export const formatNumber = (n: number): string => whole.format(n);
+const formatNumber = (n: number): string => whole.format(n);
 
-export const formatPct = (pct: number): string => `٪${fixed(1).format(pct)}`;
+const formatPct = (pct: number): string => `٪${fixed(1).format(pct)}`;
 
-export const formatWeight = (grams: number): string => `${upTo3.format(grams)} گرم`;
+const formatWeight = (grams: number): string => `${upTo3.format(grams)} گرم`;
 
-export function jalaliYear(date: Date): number {
+function jalaliYear(date: Date): number {
   const year = new Intl.DateTimeFormat('en-u-ca-persian', {
     timeZone: TZ,
     year: 'numeric',
@@ -43,7 +43,7 @@ const persianParts = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
   hourCycle: 'h23',
 });
 
-export function formatTehranTime(iso: string, now: Date): string {
+function formatTehranTime(iso: string, now: Date): string {
   const date = new Date(iso);
   const part = (type: Intl.DateTimeFormatPartTypes) =>
     persianParts.formatToParts(date).find((p) => p.type === type)?.value ?? '';
@@ -53,3 +53,12 @@ export function formatTehranTime(iso: string, now: Date): string {
       : `${part('day')} ${part('month')} ${part('year')}`;
   return `${day}، ${part('hour')}:${part('minute')}`;
 }
+
+export {
+  formatToman,
+  formatNumber,
+  formatPct,
+  formatWeight,
+  jalaliYear,
+  formatTehranTime,
+};

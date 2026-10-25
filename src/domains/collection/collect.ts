@@ -25,7 +25,7 @@ const DETAILS_GAP_MS = 25_000;
 const JITTER_MS = 5_000;
 const GOLD_EVERY_DETAILS = 10; // keeps every offer within 60 min of a quote (DM-01)
 
-export const QUERIES = [
+const QUERIES = [
   'دستبند طلا',
   'انگشتر طلا',
   'گردنبند طلا',
@@ -39,17 +39,17 @@ export const QUERIES = [
   'طلای دست دوم',
 ];
 
-export type HttpResponse = {
+type HttpResponse = {
   status: number;
   contentType: string;
   json(): Promise<unknown>;
   text(): Promise<string>;
 };
-export type Http = (
+type Http = (
   url: string,
   init?: { method?: string; body?: string; headers?: Record<string, string> },
 ) => Promise<HttpResponse>;
-export type Deps = {
+type Deps = {
   http: Http;
   sleep: (ms: number) => Promise<void>;
   now: () => Date;
@@ -61,13 +61,13 @@ export type Deps = {
   saveDetails: (key: string, record: object) => Promise<void>;
   detailsIndex: () => Promise<Map<string, string>>; // product key → fetched_at of its details page
 };
-export type Options = {
+type Options = {
   queries: string[];
   pagesPerQuery: number;
   pageSize: number;
   detailsBudget: number;
 };
-export type Summary = {
+type Summary = {
   requests: number;
   results: number;
   details_fetched: number;
@@ -75,7 +75,7 @@ export type Summary = {
 };
 
 // Longest matching rule wins; Allow wins a tie (Google's reading of robots.txt).
-export function robotsAllows(robots: string, path: string): boolean {
+function robotsAllows(robots: string, path: string): boolean {
   let inStar = false,
     best = { len: -1, allow: true };
   for (const raw of robots.split('\n')) {
@@ -99,7 +99,7 @@ export function robotsAllows(robots: string, path: string): boolean {
 }
 
 // BR-17, DM-10: never-fetched first, then multi-shop cards with the oldest details, then the rest, oldest first.
-export function detailsQueue(
+function detailsQueue(
   seen: { id: string; multiShop: boolean }[],
   index: Map<string, string>,
   budget: number,
@@ -117,10 +117,7 @@ type Fetched =
   | { kind: 'ok'; body: unknown }
   | { kind: 'challenged' | 'non_json' | 'network' | 'error'; note: string };
 
-export async function runCollector(
-  deps: Deps,
-  opts: Partial<Options> = {},
-): Promise<Summary> {
+async function runCollector(deps: Deps, opts: Partial<Options> = {}): Promise<Summary> {
   const o: Options = {
     queries: QUERIES,
     pagesPerQuery: 2,
@@ -370,3 +367,15 @@ if (import.meta.main) {
   );
   console.log(JSON.stringify({ runId, ...summary }));
 }
+
+export {
+  QUERIES,
+  robotsAllows,
+  detailsQueue,
+  runCollector,
+  type HttpResponse,
+  type Http,
+  type Deps,
+  type Options,
+  type Summary,
+};

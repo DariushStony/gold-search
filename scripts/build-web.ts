@@ -47,7 +47,7 @@ const options: esbuild.BuildOptions = {
   plugins: [writeHtml],
 };
 
-export async function watchWeb() {
+async function watchWeb() {
   const ctx = await esbuild.context(options);
   await ctx.watch();
 }
@@ -56,3 +56,5 @@ if (import.meta.main) {
   if (process.argv.includes('--watch')) await watchWeb();
   else await esbuild.build(options);
 }
+
+export { watchWeb };

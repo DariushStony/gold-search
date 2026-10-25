@@ -1,5 +1,5 @@
 // Every setting the app reads from the environment, in one place; .env.example lists them with their defaults.
-export type Env = {
+type Env = {
   port: number;
   snapshotPath: string | undefined;
   webDir: string | undefined; // the built page (pnpm build:web); default dist/web
@@ -9,7 +9,7 @@ export type Env = {
   trustProxy: boolean;
 };
 
-export function readEnv(env: NodeJS.ProcessEnv = process.env): Env {
+function readEnv(env: NodeJS.ProcessEnv = process.env): Env {
   return {
     port: Number(env.PORT || 4321),
     snapshotPath: env.SNAPSHOT_PATH || undefined,
@@ -20,3 +20,5 @@ export function readEnv(env: NodeJS.ProcessEnv = process.env): Env {
     trustProxy: env.TRUST_PROXY === '1',
   };
 }
+
+export { readEnv };

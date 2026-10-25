@@ -12,7 +12,7 @@ import {
 import { goldValue, impliedOjratPct, vatRateFor } from '../pricing/price.ts';
 import type { Chip, ChipKind } from '../query/parse.ts';
 
-export type ProductRecord = {
+type ProductRecord = {
   id: string;
   title: string;
   image_url: string | null;
@@ -32,9 +32,9 @@ export type ProductRecord = {
   };
   offers: (OfferRow & { g_at_fetch: number | null })[];
 };
-export type Ctx = { finishedAt: string; archive: boolean; gLive: number | null };
-export type ComponentName = keyof typeof config.rank.weights.gift;
-export type Card = {
+type Ctx = { finishedAt: string; archive: boolean; gLive: number | null };
+type ComponentName = keyof typeof config.rank.weights.gift;
+type Card = {
   id: string;
   title: string;
   image_url: string | null;
@@ -47,7 +47,7 @@ export type Card = {
   score: number;
   components: { name: ComponentName; weight: number; value: number }[];
 };
-export type SearchResult = {
+type SearchResult = {
   intent: 'gift' | 'beauty' | 'savings' | 'unknown';
   results: Card[];
   review: Card[];
@@ -105,7 +105,7 @@ function ojratOf(p: ProductRecord, o: ProductRecord['offers'][number]): number |
   return impliedOjratPct(ratio, vatRateFor(new Date(o.fetched_at)), config.price.profit);
 }
 
-export function components(
+function components(
   p: ProductRecord,
   o: ProductRecord['offers'][number],
   chips: Chip[],
@@ -377,7 +377,7 @@ function rank(
   ); // BR-65
 }
 
-export function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): SearchResult {
+function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): SearchResult {
   const intent =
     (first(chips, 'intent') as SearchResult['intent'] | undefined) ?? 'unknown';
   const byId = new Map(products.map((p) => [p.id, p]));
@@ -455,7 +455,7 @@ export function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): Sear
 }
 
 // BR-39: the not-gold products a search set aside, for «{n} مورد غیرطلا کنار گذاشته شد».
-export function excludedFor(
+function excludedFor(
   products: ProductRecord[],
   chips: Chip[],
   ctx: Ctx,
@@ -464,3 +464,5 @@ export function excludedFor(
     (first(chips, 'intent') as SearchResult['intent'] | undefined) ?? 'unknown';
   return products.filter((p) => route(p, chips, ctx, intent).route === 'excluded');
 }
+
+export { components, search, excludedFor, type ProductRecord, type Card };

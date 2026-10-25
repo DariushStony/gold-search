@@ -1,16 +1,16 @@
 import { config } from '../../core/config.ts';
 import { normalize } from '../../shared/text.ts';
 
-export type Provenance = 'spec' | 'title' | 'llm';
-export type Found<T> = { value: T; provenance: Provenance; evidence: string };
-export type NonGoldKind = 'stones' | 'cord' | 'beads' | 'declared';
-export type ProductText = {
+type Provenance = 'spec' | 'title' | 'llm';
+type Found<T> = { value: T; provenance: Provenance; evidence: string };
+type NonGoldKind = 'stones' | 'cord' | 'beads' | 'declared';
+type ProductText = {
   title: string;
   specs: Record<string, string>;
   shop: string | null;
 };
 
-export type Attributes = {
+type Attributes = {
   weight_g: Found<number> | null;
   weight_conflict: boolean;
   karat: Found<number> | null;
@@ -214,7 +214,7 @@ function nonGoldFrom(
   return { kind: null, cost: null };
 }
 
-export function extract(p: ProductText): Attributes {
+function extract(p: ProductText): Attributes {
   const title = normalize(p.title);
   const shop = normalize(p.shop ?? '');
 
@@ -293,7 +293,7 @@ type DetailsBody = {
   key_specs?: { items?: { key?: string; value?: string | string[] }[] }[];
 };
 
-export function specsFromDetails(body: DetailsBody): Record<string, string> {
+function specsFromDetails(body: DetailsBody): Record<string, string> {
   const out: Record<string, string> = {};
   const put = (k: string, v: string) => {
     if (out[k] === undefined) out[k] = v;
@@ -313,8 +313,10 @@ export function specsFromDetails(body: DetailsBody): Record<string, string> {
 }
 
 // BR-29: an LLM value survives only if the same number is written in the text.
-export function acceptLlmNumber(value: number, text: string): boolean {
+function acceptLlmNumber(value: number, text: string): boolean {
   return [...normalize(text).matchAll(/\d+(?:\.\d+)?/g)].some(
     (m) => Math.abs(Number(m[0]) - value) < 1e-9,
   );
 }
+
+export { extract, specsFromDetails, acceptLlmNumber, type Attributes };

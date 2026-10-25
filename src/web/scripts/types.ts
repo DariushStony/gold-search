@@ -1,7 +1,7 @@
 // The API shapes the page reads (docs/engineering/api-contract.md); only the fields it uses.
-export type Label = 'real' | 'mixed' | 'not_gold' | 'review';
+type Label = 'real' | 'mixed' | 'not_gold' | 'review';
 
-export type Chip = {
+type Chip = {
   kind: string;
   value: string | number | boolean;
   role: 'filter' | 'sort' | 'filter_and_sort' | 'info';
@@ -10,14 +10,14 @@ export type Chip = {
   llm?: true;
 };
 
-export type ParseResponse = {
+type ParseResponse = {
   chips: Chip[];
   unparsed: string | null;
   ask: unknown;
   llm_used: boolean;
 };
 
-export type Breakdown = {
+type Breakdown = {
   gold_value: number;
   premium_pct: number;
   parts: { gold: number; ojrat: number; profit: number; vat: number } | null;
@@ -38,7 +38,7 @@ export type Breakdown = {
   };
 };
 
-export type Offer = {
+type Offer = {
   shop: string | null;
   city: string | null;
   channel: 'online' | 'in_person';
@@ -51,7 +51,7 @@ export type Offer = {
   no_breakdown_reason: 'weight_unknown' | 'no_gold_quote' | null;
 };
 
-export type ResultCard = {
+type ResultCard = {
   id: string;
   title: string;
   image_url: string | null;
@@ -62,7 +62,7 @@ export type ResultCard = {
   offer_count: number;
 };
 
-export type SearchResponse = {
+type SearchResponse = {
   query_id: string;
   snapshot: { id: string; archive_mode: boolean };
   intent: string;
@@ -88,9 +88,9 @@ export type SearchResponse = {
   relax: { chip_index: number; kind: string; results_if_removed: number } | null;
 };
 
-export type ProductResponse = ResultCard & { offers: Offer[] };
+type ProductResponse = ResultCard & { offers: Offer[] };
 
-export type StatusResponse = {
+type StatusResponse = {
   gold_price: {
     g_toman: number;
     source: 'union' | 'tgju';
@@ -101,4 +101,15 @@ export type StatusResponse = {
   snapshot: { archive_mode: boolean; finished_at: string } | null;
 };
 
-export type ErrorCode = number | 'offline';
+type ErrorCode = number | 'offline';
+
+export {
+  type Chip,
+  type ParseResponse,
+  type Breakdown,
+  type ResultCard,
+  type SearchResponse,
+  type ProductResponse,
+  type StatusResponse,
+  type ErrorCode,
+};

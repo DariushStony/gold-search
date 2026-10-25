@@ -1,5 +1,5 @@
 // UI texts the core emits, with their content-guide ids (docs/design/content-guide.md).
-export const TX = {
+const TX = {
   inTitle: (word: string) => `در عنوان آمده: ${word}`, // TX-09
   belowGoldValue: 'قیمت کمتر از ارزش طلای این وزن', // TX-10
   weightOrUnitError: 'احتمال خطای وزن یا واحد', // TX-11
@@ -11,3 +11,5 @@ export const TX = {
   inSpecs: (word: string) => `در مشخصات آمده: ${word}`, // TX-94, BR-31
   noGoldPrice: 'قیمت طلای آن زمان برای سنجیدن قیمت در دست نبود', // TX-104, CR-09
 } as const;
+
+export { TX };

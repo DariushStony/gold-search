@@ -33,7 +33,7 @@ configs/        commitlint، knip، lint-staged
 scripts/        build و dev صفحه
 ```
 
-مرزها را oxlint نگه می‌دارد: `core` و `shared` هیچ domainی را import نمی‌کنند، صفحه فقط `shared` را import می‌کند و import چرخه‌ای ممنوع است. صفحه و سرور عدد و زمان را با یک کد قالب می‌زنند.
+مرزها را oxlint نگه می‌دارد: `core` و `shared` هیچ domainی را import نمی‌کنند، صفحه فقط `shared` را import می‌کند و import چرخه‌ای ممنوع است. هر فایل فقط چیزی را export می‌کند که فایل دیگری لازم دارد، در یک `export { a, b }` با نام در انتهای فایل (oxlint و knip این را می‌سنجند). صفحه و سرور عدد و زمان را با یک کد قالب می‌زنند.
 
 ## AI کجاست و چطور کنترل می‌شود
 

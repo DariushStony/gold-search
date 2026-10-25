@@ -25,7 +25,7 @@ function apply(choice: Choice) {
   }
 }
 
-export function initTheme() {
+function initTheme() {
   apply(saved());
   media.addEventListener('change', () => apply(saved()));
   document.addEventListener('click', (e) => {
@@ -41,3 +41,5 @@ export function initTheme() {
     apply(choice);
   });
 }
+
+export { initTheme };

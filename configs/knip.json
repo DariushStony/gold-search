@@ -21,5 +21,5 @@
   "lint-staged": {
     "config": ["configs/lintstagedrc.json"]
   },
-  "ignoreExportsUsedInFile": true
+  "ignoreExportsUsedInFile": false
 }

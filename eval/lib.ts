@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-export const ROOT = new URL('../', import.meta.url).pathname;
+const ROOT = new URL('../', import.meta.url).pathname;
 
-export function readCsv(path: string): Record<string, string>[] {
+function readCsv(path: string): Record<string, string>[] {
   const text = readFileSync(path, 'utf8');
   const rows: string[][] = [];
   let row: string[] = [],
@@ -37,12 +37,12 @@ export function readCsv(path: string): Record<string, string>[] {
     .map((r) => Object.fromEntries(header!.map((h, i) => [h, r[i] ?? ''])));
 }
 
-export function details(key: string): { body: any; fetched_at: string } | null {
+function details(key: string): { body: any; fetched_at: string } | null {
   const path = `${ROOT}data/raw/details/${key}.json`;
   return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null;
 }
 
-export function wilson(k: number, n: number, z = 1.96): [number, number] {
+function wilson(k: number, n: number, z = 1.96): [number, number] {
   if (n === 0) return [0, 0];
   const p = k / n,
     d = 1 + (z * z) / n;
@@ -52,7 +52,7 @@ export function wilson(k: number, n: number, z = 1.96): [number, number] {
 }
 
 // Eval plan §2: the test split is scored only on release tags.
-export function splitFromArgs(): 'tune' | 'test' {
+function splitFromArgs(): 'tune' | 'test' {
   const split = process.argv.includes('--split=test') ? 'test' : 'tune';
   if (split === 'test' && !process.argv.includes('--release')) {
     throw new Error(
@@ -62,13 +62,10 @@ export function splitFromArgs(): 'tune' | 'test' {
   return split;
 }
 
-export const pct = (x: number) => x.toFixed(1);
+const pct = (x: number) => x.toFixed(1);
 
 // AvalAI's per-model limits differ by account level (gpt-4.1-mini: 500 a minute at level 1); a short gap keeps evals polite.
-export function throttled<A extends unknown[], R>(
-  fn: (...a: A) => Promise<R>,
-  gapMs = 300,
-) {
+function throttled<A extends unknown[], R>(fn: (...a: A) => Promise<R>, gapMs = 300) {
   let next = 0;
   return async (...a: A): Promise<R> => {
     const wait = next - Date.now();
@@ -77,3 +74,5 @@ export function throttled<A extends unknown[], R>(
     return fn(...a);
   };
 }
+
+export { ROOT, readCsv, details, wilson, splitFromArgs, pct, throttled };

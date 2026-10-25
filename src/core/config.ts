@@ -1,7 +1,7 @@
 // Every threshold, rate and word list the rules use (NFR-12). Values marked
 // "design choice" in the PRD are tuned on the tune split only (eval plan §2);
 // each change is logged in docs/product/decisions.md.
-export const config = {
+const config = {
   gold: {
     unionStaleMinutes: 10, // BR-03
     marketOpenWindowMinutes: 30, // A-01 operational definition (D-28)
@@ -462,4 +462,6 @@ export const config = {
   },
 };
 
-export type Config = typeof config;
+type Config = typeof config;
+
+export { config, type Config };

@@ -3,7 +3,7 @@
 import { config } from '../../core/config.ts';
 import { normalize } from '../../shared/text.ts';
 
-export type ChipKind =
+type ChipKind =
   | 'intent'
   | 'item_type'
   | 'form'
@@ -27,7 +27,7 @@ export type ChipKind =
   | 'in_person'
   | 'city'
   | 'occasion';
-export type Chip = {
+type Chip = {
   kind: ChipKind;
   role: 'filter' | 'filter_and_sort' | 'sort' | 'info';
   level: 'product' | 'offer';
@@ -35,8 +35,8 @@ export type Chip = {
   origin: 'text' | 'user';
   llm?: true; // read by the LLM, not the rules (BR-55); the page marks it
 };
-export type Intent = 'gift' | 'beauty' | 'savings';
-export type ParsedQuery = {
+type Intent = 'gift' | 'beauty' | 'savings';
+type ParsedQuery = {
   chips: Chip[];
   intent: Intent | 'unknown';
   suggest_intent: boolean;
@@ -45,12 +45,12 @@ export type ParsedQuery = {
   llm_used: boolean;
   unparsed: string | null; // CR-04: words no rule read, shown as «متوجه نشدم»
 };
-export type Answers = { budget_unit?: 'thousand' | 'million' };
+type Answers = { budget_unit?: 'thousand' | 'million' };
 
 const cfg = config.parse;
 
 // API contract §3: role and level are fixed per kind.
-export const ROLE: Record<ChipKind, [Chip['role'], Chip['level']]> = {
+const ROLE: Record<ChipKind, [Chip['role'], Chip['level']]> = {
   intent: ['filter_and_sort', 'product'],
   item_type: ['filter', 'product'],
   form: ['filter', 'product'],
@@ -84,7 +84,7 @@ const word = (w: string) =>
   );
 const has = (t: string, w: string) => word(w).test(t);
 
-export const NUMBER_WORDS: Record<string, number> = {
+const NUMBER_WORDS: Record<string, number> = {
   یک: 1,
   دو: 2,
   سه: 3,
@@ -295,7 +295,7 @@ function firstMatches(t: string, list: [string, string][]): string[] {
   return [...new Set(hits.map((h) => h.v))];
 }
 
-export function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
+function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
   const full = prep(text);
   let t = full;
   const chips: Chip[] = [];
@@ -458,3 +458,13 @@ export function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
     unparsed: unread(t),
   };
 }
+
+export {
+  ROLE,
+  NUMBER_WORDS,
+  parseQuery,
+  type ChipKind,
+  type Chip,
+  type ParsedQuery,
+  type Answers,
+};

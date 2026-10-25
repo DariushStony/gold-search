@@ -23,8 +23,8 @@ import {
 } from '../pricing/gold-price.ts';
 import { priceBreakdown, vatRateFor } from '../pricing/price.ts';
 
-export const SCHEMA_VERSION = 2;
-export const PIPELINE_VERSION = '0.2.0';
+const SCHEMA_VERSION = 2;
+const PIPELINE_VERSION = '0.2.0';
 const QUOTE_WINDOW_MS = 60 * 60_000; // DM-01
 // CR-09: the label check may use an older quote. Its bands (0.9 and 2.5 times the gold value) are far wider than gold's
 // moves over a few days: G at fetch and G today were 2.7% to 3.5% apart in the 2026-10-25 snapshot (CR-07).
@@ -109,7 +109,7 @@ function quoteAt(
 
 // CR-09: Torob prints a star only for shops it has scored. Marketplaces, new shops and in-person listings carry a
 // default score of 5 without one, and shop_score_percentile is 0 on every offer collected so far.
-export function shopRating(info: { score?: unknown; score_text?: unknown } | undefined): {
+function shopRating(info: { score?: unknown; score_text?: unknown } | undefined): {
   stars: number | null;
   months: number | null;
 } {
@@ -226,13 +226,7 @@ function attributeRows(
 const tehranDay = (iso: string) =>
   new Date(Date.parse(iso) + 210 * 60_000).toISOString().slice(0, 10);
 
-export function buildSnapshot({
-  rawDir,
-  outPath,
-}: {
-  rawDir: string;
-  outPath: string;
-}): void {
+function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: string }): void {
   const quotes = loadQuotes(rawDir);
   const runs = dayDirs(rawDir)
     .flatMap((d) => readJsonl(join(rawDir, d, 'runs.jsonl')))
@@ -431,3 +425,5 @@ if (import.meta.main) {
   buildSnapshot({ rawDir: raw, outPath: out });
   console.log(`snapshot written: ${out}`);
 }
+
+export { SCHEMA_VERSION, PIPELINE_VERSION, shopRating, buildSnapshot };
