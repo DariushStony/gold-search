@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.11 |
+| Version | 0.12 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -209,7 +209,8 @@ type SearchResponse = {
     rows: { form: "jewelry" | "used" | "molten" | "digital" | "torob_gold"; round_trip_cost_pct: number | null;
             source: string; source_url: string | null; url: string | null; as_of: string; own_product: boolean }[];
   } | null;                          // BR-100–BR-102, BR-121; present for savings intent or mode ≠ jewelry
-  relax: { chip_index: number; kind: ChipKind; results_if_removed: number } | null;   // BR-67: index into the request's chips
+  relax: { chip_index: number; kind: ChipKind; results_if_removed: number;
+           none_in_snapshot: boolean } | null;   // BR-67: index into the request's chips; CR-15: true when this filter alone keeps no product
 };
 ```
 
@@ -394,5 +395,6 @@ Notes on the example:
 | 0.7 | 2026-10-25 | CR-07: resale and rise at the fetch-time G, new `resale_loss_pct` |
 | 0.10 | 2026-10-25 | CR-12: `price_sort` and `premium_sort` chips |
 | 0.11 | 2026-10-25 | CR-14: `intent_options` on the `/parse` response; the LLM adds no intent while it is set |
+| 0.12 | 2026-10-25 | CR-15: `relax.none_in_snapshot` |
 | 0.9 | 2026-10-25 | CR-10: `no_split_reason`; `parts` is never negative |
 | 0.8 | 2026-10-25 | CR-09: `shop_stars` and `shop_months` replace `shop_score_pct`; weight 0 in `components` for a style or weight the sentence did not ask for |

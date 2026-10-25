@@ -56,7 +56,12 @@ type SearchResult = {
   sponsored: Card[];
   excluded_count: number;
   explanation: { text: string; numbers: number[]; template: boolean } | null;
-  relax: { chip_index: number; kind: ChipKind; results_if_removed: number } | null;
+  relax: {
+    chip_index: number;
+    kind: ChipKind;
+    results_if_removed: number;
+    none_in_snapshot: boolean; // CR-15: this filter alone keeps nothing, so the data has no such product
+  } | null;
 };
 
 const R = config.rank;
@@ -461,11 +466,18 @@ function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): SearchResul
         ).length,
         removed: products.filter((p) => route(p, [c], ctx, intent).route === 'filtered')
           .length,
+        alone: products.filter((p) => route(p, [c], ctx, intent).route === 'result')
+          .length,
       }))
       .sort((x, y) => y.back - x.back || y.removed - x.removed || x.i - y.i);
     const top = scored[0];
     out.relax = top
-      ? { chip_index: top.i, kind: top.c.kind, results_if_removed: top.back }
+      ? {
+          chip_index: top.i,
+          kind: top.c.kind,
+          results_if_removed: top.back,
+          none_in_snapshot: top.alone === 0,
+        }
       : null;
   }
   return out;

@@ -81,7 +81,12 @@ type SearchResponse = {
       own_product: boolean;
     }[];
   } | null;
-  relax: { chip_index: number; kind: string; results_if_removed: number } | null;
+  relax: {
+    chip_index: number;
+    kind: string;
+    results_if_removed: number;
+    none_in_snapshot: boolean;
+  } | null;
 };
 
 type ProductResponse = ResultCard & { offers: Offer[] };

@@ -409,3 +409,17 @@ test('CR-12: with an explicit sort the «چرا اولی؟» line is not built, 
     null,
   );
 });
+
+test('CR-15 (BR-67): a filter nothing in the data meets says so, unlike one that only clashes with the others', () => {
+  const list = [
+    product({ id: 'n1', price: 30_000_000, attrs: { item_type: 'النگو' } }),
+    product({ id: 'n2', price: 4_000_000, weight: 0.1, attrs: { item_type: 'انگشتر' } }),
+  ];
+  const used = search(list, chips('النگو دست دوم'), ctx);
+  assert.equal(used.results.length, 0);
+  assert.equal(used.relax?.kind, 'condition');
+  assert.equal(used.relax?.none_in_snapshot, true);
+  const clash = search(list, chips('النگو زیر ۵ میلیون'), ctx);
+  assert.equal(clash.results.length, 0);
+  assert.equal(clash.relax?.none_in_snapshot, false);
+});

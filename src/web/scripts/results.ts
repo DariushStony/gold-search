@@ -1,4 +1,5 @@
 import { errorCode, post } from './api.ts';
+import { chipName } from './chips.ts';
 import { $, esc } from './dom.ts';
 import { count, gram, pct, toman, when } from './fmt.ts';
 import { gapLine, premiumText, resaleLine, REVIEW_NO_RESALE } from './math-text.ts';
@@ -113,6 +114,17 @@ const intentQuestion = (options: string[] | null) =>
     ? `جمله‌ی شما هم «${intentName(options[0]!)}» دارد هم «${intentName(options[1]!)}». نتیجه‌ها برای کدام مرتب شوند؟ ${options.map(intentButton).join('')}`
     : `برای چه می‌خرید؟ ${['gift', 'beauty', 'savings'].map(intentButton).join('')}`;
 
+// BR-67, CR-15: name the filter as its chip reads, and say so when the collected data has no such product at all.
+function relaxState(x: NonNullable<SearchResponse['relax']>) {
+  const chip = st.chips[x.chip_index];
+  const name = chip ? chipName(chip) : esc(KIND[x.kind] ?? x.kind);
+  const back = `برداشتنش ${count(x.results_if_removed)} نتیجه برمی‌گرداند.`;
+  const text = x.none_in_snapshot
+    ? `در داده‌ای که از ترب جمع شده هیچ کالایی با «${name}» نیست. ${back}`
+    : `با «${name}» چیزی پیدا نشد. ${back}`;
+  return `<div class="state"><p>${text}</p><button type="button" data-relax="${x.chip_index}">برداشتن «${name}»</button></div>`;
+}
+
 let latest = 0;
 
 async function run() {
@@ -144,7 +156,7 @@ async function run() {
     r.results.slice(0, 24).map(card).join('');
   if (!r.results.length && r.mode !== 'non_jewelry') {
     html = r.relax
-      ? `<div class="state"><p>با «${esc(KIND[r.relax.kind])}» چیزی پیدا نشد. برداشتنش ${count(r.relax.results_if_removed)} نتیجه برمی‌گرداند.</p><button type="button" data-relax="${r.relax.chip_index}">برداشتن «${esc(KIND[r.relax.kind])}»</button></div>`
+      ? relaxState(r.relax)
       : `<div class="state"><p>هیچ طلای واقعی برای این جست‌وجو پیدا نشد. یکی از فیلترها را بردارید یا جمله را عوض کنید.</p></div>`;
   }
   $('results').innerHTML = html;

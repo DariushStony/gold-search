@@ -20,14 +20,21 @@ function chipValue(c: Chip): string {
 const source = (c: Chip) =>
   c.origin === 'user' ? 'انتخاب شما' : c.llm ? 'از جمله‌ی شما، با AI' : 'از جمله‌ی شما';
 
+// A chip whose value says it all («دست‌دوم») is named by the value alone, not «وضعیت: دست‌دوم».
+const VALUE_ONLY = new Set(['condition']);
+const chipName = (c: Chip) => {
+  const value = chipValue(c);
+  if (VALUE_ONLY.has(c.kind) && value) return esc(value);
+  return `${KIND[c.kind] ?? c.kind}${value ? ': ' + esc(value) : ''}`;
+};
+
 function renderChips() {
   const shown = st.chips.map((c, i) => ({ c, i })).filter(({ c }) => !shownInSortOnly(c));
   $('chips').innerHTML =
     shown
       .map(({ c, i }) => {
         const role = c.role === 'sort' ? 'sort' : c.role === 'info' ? 'info' : '';
-        const value = chipValue(c);
-        const name = `${KIND[c.kind] ?? c.kind}${value ? ': ' + esc(value) : ''}`;
+        const name = chipName(c);
         return `<span class="chip ${role}">${name} <small>${source(c)}</small><button type="button" aria-label="حذف ${name}" data-rm="${i}">×</button></span>`;
       })
       .join('') +
@@ -36,4 +43,4 @@ function renderChips() {
       : '');
 }
 
-export { renderChips };
+export { chipName, renderChips };
