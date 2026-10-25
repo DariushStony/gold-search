@@ -11,7 +11,7 @@
 
 > Three layers. **Raw** is what the collector fetched, untouched. **Snapshot** is what the pipeline derives from all raw files up to one run; it is immutable and versioned. **Live** is what the server keeps between snapshots (gold price, events). Money is integer toman, weight is grams, percentages are numbers (34.2 = 34.2%), times are ISO 8601 UTC.
 
-## 1. Raw layer (git-ignored `data/raw/` on the owner's machine, or a temporary folder on the server for one run, ADR-0013)
+## 1. Raw layer (a temporary folder on the server, for one run, ADR-0013)
 
 | File | One row per | Key fields | Source |
 |---|---|---|---|
@@ -29,7 +29,7 @@ Raw files are never edited. A pipeline bug is fixed by re-deriving the snapshot.
 - The search card's price equals the cheapest in-stock online offer for 83.6% of 280 products, and is within 1% for 95.7%.
 - Spec keys seen include «وزن», «عیار», «اجرت», «اجرت ساخت», «سود», «جنس», «متعلقات» and «جنسیت», so declared ojrat and profit can come from specs.
 
-## 2. Snapshot layer (one SQLite file per run, published to the server)
+## 2. Snapshot layer (one SQLite file per run, built on the server)
 
 `snapshot-<run_id>.sqlite`, schema version in `meta.schema_version` (starts at 1; 2 from CR-09, when `shop_stars` and `shop_months` replaced `shop_score_pct`; 3 from CR-17, when the snapshot started carrying its inputs).
 

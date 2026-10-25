@@ -35,7 +35,7 @@ Option 2.
 
 - **The snapshot carries its inputs (schema v3).** Two new tables: `source_card`, every search card seen, and `source_details`, the newest details page per product, trimmed to the fields the pipeline reads (specs and the shops' offers). Gold quotes are already in `gold_quote`. These are the same facts the snapshot already publishes in `product` and `offer`, not the raw API responses.
 - **Merge.** A build takes the inputs of a base snapshot plus a raw directory: cards are joined, the newer details page wins, quotes are joined, and the newest finished run becomes the snapshot's run. Building from a base plus new raw gives the same snapshot as building from all the raw at once, and a test holds that.
-- **Schedule.** In production (`NODE_ENV=production`, unless `COLLECT=off`) the server runs the collector at 10:15 and 18:15 Tehran time into a temporary directory, builds a new snapshot from the served one plus that run, and swaps it in memory. Runs never overlap. If the snapshot it starts with is older than 12 hours, as after a deploy, the first run starts two minutes after the server does.
+- **Schedule.** In production (`NODE_ENV=production`, unless `COLLECT=off`) the server runs the collector at 10:15 and 18:15 Tehran time into a temporary directory, builds a new snapshot from the served one plus that run, and swaps it in memory. Runs never overlap. If a slot passed after the snapshot it starts with was built, as after a deploy, the first run starts two minutes after the server does.
 - **Swap rules.** A run that stopped before any search page (robots.txt, network, a wall at the first request) builds nothing. A new snapshot replaces the served one only if it loads and keeps at least 90% of its products. Otherwise the served one stays and the reason is reported.
 - **Visibility.** `GET /status` reports the last run (start, end, requests, details fetched, why it stopped, whether it swapped) and the next one.
 - **Page.** A product opened after a swap may carry the old snapshot id. The page then asks again without it instead of failing silently.
@@ -43,7 +43,7 @@ Option 2.
 ## Consequences
 
 - Good: the live site refreshes twice a day with no one involved, and every card price is fresh after each run.
-- Good: `pnpm snapshot:release` still works, and a push bakes the newest owner-side snapshot into the image.
+- Good: nothing runs on the owner's machine any more. Its scheduled job and `pnpm snapshot:release` were removed on 2026-10-25; the committed `deploy/snapshot.sqlite` stays as the seed every restart merges into.
 - Bad: a restart or deploy goes back to the snapshot in the image until the next run. Card prices recover in one run; details pages refill at 40 per run.
 - Bad: the snapshot grows with `source_card` (about 550 rows per run) and `source_details` (one row per product). On 2026-10-25 it went from 2.0 MB to 7.5 MB, and it grows by a few hundred KB a day.
 - Bad: sustained collection from the datacenter is untested. A single request worked; a full run is about 60 requests over 45 minutes. A wall stops the run and keeps the served snapshot.

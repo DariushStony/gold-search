@@ -29,7 +29,7 @@
 
 - **Scheme: none.** Every operation is public, with no accounts and no personal data (PRD §14). There is no credential, so no credential lifetime.
 - **Per-operation access:** every operation in §4 is open to anyone. Only `POST /events` writes, and it only appends.
-- Snapshots are not published over this API; they arrive over FTPS to the host disk (TDD §8).
+- Snapshots are not published over this API; the server builds and swaps them itself twice a day (ADR-0013, TDD §8).
 - Rate limit per IP, in memory, never stored: 30 requests/min on `/parse`, `/search`, `/products` and `/excluded`; 120/min on `/status` and `/events`. Over the limit → `429` `rate-limited`.
 - Every response sends `X-Robots-Tag: noindex`, which keeps the demo out of search results (ADR-0004).
 

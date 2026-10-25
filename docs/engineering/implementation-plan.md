@@ -25,7 +25,7 @@
 | E-10a | Web app: search, chips and results (SC-01, SC-02) | BR-39, BR-51, BR-56, BR-64, BR-66, BR-120 | M | M5 | E-06, E-07 |
 | E-10b | Web app: detail, excluded and methodology (SC-03 – SC-05) | BR-38, BR-46, BR-121, BR-122 | M | M6 | E-08, E-09, E-11 |
 | E-11 | Evaluation harness and datasets EV-MAT, EV-EXT, EV-PRM, EV-QRY, EV-RNK, EV-MCH | PRD §4.3; eval plan | M | M2 → M7 | E-01 |
-| E-12 | Hosting on Liara (ADR-0004), snapshot upload over FTPS and the server-side watcher (TDD §8), noindex header, archive mode, uptime check on `GET /status` | BR-16, NFR-06, NFR-13 | S | M7 | E-10a |
+| E-12 | Hosting, noindex header, archive mode, uptime check on `GET /status`. Done on Hamravesh Darkube (ADR-0012), with collection and the snapshot swap on the server (ADR-0013) instead of FTPS and a watcher | BR-16, NFR-06, NFR-13 | S | M7 | E-10a |
 
 Every MVP BR in PRD §11 belongs to at least one epic (checked by script). The UI epics E-10a and E-10b repeat rules whose visible part they build. BR-81–BR-83 (Torob ↔ Digikala matching) are after the MVP (D-24) and have no epic.
 
