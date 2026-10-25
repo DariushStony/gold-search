@@ -1,0 +1,257 @@
+main {
+  padding-block: 8px 24px;
+}
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+  margin: 4px 0 12px;
+  flex-wrap: wrap;
+}
+.summary button {
+  background: none;
+  border: none;
+  color: var(--brand-ink);
+  padding: 4px 0;
+  text-decoration: underline;
+}
+
+/* One column of side-by-side cards on a phone; on wider screens Torob's grid of upright cards. */
+.grid {
+  display: grid;
+  gap: 12px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.card:hover {
+  border-color: var(--gold-line);
+  box-shadow: var(--shadow);
+}
+.card img,
+.card .noimg {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: var(--radius-m);
+}
+.card .noimg {
+  background: var(--field);
+}
+.title {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0;
+}
+.meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 0 8px;
+}
+.badge.real {
+  color: var(--real);
+  background: color-mix(in srgb, var(--real) 12%, transparent);
+}
+.badge.mixed {
+  color: var(--mixed);
+  background: color-mix(in srgb, var(--mixed) 14%, transparent);
+}
+.badge.notgold {
+  color: var(--notgold);
+  background: color-mix(in srgb, var(--notgold) 14%, transparent);
+}
+.badge.review {
+  color: var(--review);
+  background: color-mix(in srgb, var(--review) 12%, transparent);
+}
+.badge.flag {
+  color: var(--muted);
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
+  font-weight: 500;
+}
+.price-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-top: 8px;
+}
+.price {
+  font-weight: 800;
+  font-size: 18px;
+  white-space: nowrap;
+}
+.premium {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.premium b {
+  color: var(--gold-ink);
+}
+.fine {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* The invoice strip: how much of the price is gold. */
+.strip {
+  display: flex;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 10px 0 4px;
+  background: var(--tax);
+}
+.strip span {
+  display: block;
+  height: 100%;
+}
+.strip .g {
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+}
+.strip .o {
+  background: var(--ojrat);
+}
+.strip .p {
+  background: var(--profit);
+}
+.strip .t {
+  background: var(--tax);
+}
+.strip-key {
+  display: flex;
+  gap: 4px 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+.strip-key i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-inline-end: 4px;
+  vertical-align: middle;
+}
+.resale {
+  font-size: 13px;
+  margin-top: 6px;
+}
+.resale.gap {
+  color: var(--gold-ink);
+  background: var(--gold-soft);
+  border-radius: var(--radius-s);
+  padding: 4px 10px;
+}
+
+.why {
+  grid-column: 1 / -1;
+  border-inline-start: 3px solid var(--gold);
+  background: var(--gold-soft);
+  border-radius: var(--radius-s);
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.section-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 24px 0 10px;
+}
+.savings {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 14px;
+  margin: 18px 0;
+}
+.savings table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.savings td,
+.savings th {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: start;
+}
+.savings a {
+  display: inline-block;
+  padding-block: 4px;
+}
+.savings .own {
+  color: var(--brand-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.empty {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 16px;
+}
+.empty button {
+  margin-top: 8px;
+  background: var(--brand);
+  color: var(--on-brand);
+  border: none;
+  border-radius: var(--radius-s);
+  padding: 8px 14px;
+}
+.loading {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (min-width: 720px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    padding: 14px;
+  }
+  .card img,
+  .card .noimg {
+    width: 100%;
+    height: 180px;
+  }
+}
+@media (min-width: 1080px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

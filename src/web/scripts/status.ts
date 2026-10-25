@@ -7,9 +7,20 @@ export async function loadStatus() {
   try {
     const s = await get<StatusResponse>('/status');
     const g = s.gold_price;
-    $('rate').innerHTML = g
-      ? `طلای ۱۸ عیار: <b>${toman(g.g_toman, true)}</b>، ${g.source === 'union' ? 'اتحادیه‌ی طلای تهران' : 'tgju (منبع جایگزین)'}، ${when(g.quoted_at)}${g.uncertain ? '، دو منبع قیمت با هم فرق دارند' : ''}${g.market_open ? '' : '، قیمت پایان بازار'}`
-      : 'قیمت طلا در دسترس نیست';
+    if (g) {
+      $('g-price').textContent = toman(g.g_toman, true);
+      $('g-label').classList.toggle('closed', !g.market_open);
+      $('rate').textContent = [
+        g.source === 'union' ? 'اتحادیه‌ی طلای تهران' : 'tgju (منبع جایگزین)',
+        when(g.quoted_at),
+        g.uncertain ? 'دو منبع قیمت با هم فرق دارند' : '',
+        g.market_open ? '' : 'قیمت پایان بازار',
+      ]
+        .filter(Boolean)
+        .join('، ');
+    } else {
+      $('rate').textContent = 'قیمت طلا در دسترس نیست';
+    }
     if (s.snapshot?.archive_mode) {
       $('archive').hidden = false;
       $('archive').textContent =

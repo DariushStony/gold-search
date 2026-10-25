@@ -337,6 +337,8 @@ test('the page and its assets: a hashed asset is cached for a year, the page nev
     assert.match(js.headers.get('content-type') ?? '', /text\/javascript/);
     assert.equal(js.headers.get('cache-control'), 'public, max-age=31536000, immutable');
     assert.equal((await fetch(base + '/assets/missing.js')).status, 404);
+    const robots = await fetch(base + '/robots.txt');
+    assert.equal(await robots.text(), 'User-agent: *\nDisallow: /\n');
     assert.equal((await fetch(base + '/assets/..%2Fpackage.json')).status, 404);
   } finally {
     server.close();

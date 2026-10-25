@@ -316,6 +316,17 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
       if (read && (url.pathname === '/' || url.pathname === '/index.html')) {
         return sendFile(res, 'index.html', 'no-cache');
       }
+      if (read && url.pathname === '/robots.txt') {
+        return send(
+          res,
+          200,
+          'User-agent: *\nDisallow: /\n',
+          'text/plain; charset=utf-8',
+        ); // a private demo
+      }
+      if (read && url.pathname === '/favicon.ico') {
+        return sendFile(res, 'assets/favicon.svg', 'public, max-age=86400');
+      }
       const asset =
         read && url.pathname.match(/^\/assets\/([\w-]+\.(?:js|css|map|svg|png))$/);
       if (asset) {

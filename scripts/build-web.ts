@@ -1,8 +1,8 @@
-// Bundles the page: src/web/scripts/main.ts to app.js and src/web/styles/main.css to app.css, then writes
-// index.html with a content hash on each asset URL, so browsers may cache the assets for a year.
+// Bundles the page: src/web/scripts/main.ts to app.js and src/web/styles/main.css to app.css, copies
+// src/web/static (favicon), then writes index.html with a content hash on each asset URL, so browsers may cache the assets for a year.
 // Run: node scripts/build-web.ts [--watch]
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as esbuild from 'esbuild';
 
@@ -21,6 +21,7 @@ const writeHtml: esbuild.Plugin = {
   setup(build) {
     build.onEnd((result) => {
       if (result.errors.length) return;
+      cpSync(join(SRC, 'static'), join(OUT, 'assets'), { recursive: true });
       const html = readFileSync(join(SRC, 'index.html'), 'utf8').replace(
         /"\/assets\/([\w.-]+)"/g,
         (_m, file: string) => `"/assets/${file}?v=${hash(`assets/${file}`)}"`,

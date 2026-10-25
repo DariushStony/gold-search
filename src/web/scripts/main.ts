@@ -6,6 +6,7 @@ import { closeSheet, openSheet } from './sheet.ts';
 import { st, track } from './state.ts';
 import { loadStatus } from './status.ts';
 import { SAMPLES } from './text.ts';
+import { initTheme } from './theme.ts';
 import type { ErrorCode, ParseResponse } from './types.ts';
 
 const toPersianDigits = (s: string) => s.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]!);
@@ -98,6 +99,10 @@ function onClick(e: MouseEvent) {
     return run();
   }
   if (t.id === 'showEx') return toggleExcluded();
+  if (t.closest('#go-search')) {
+    clearTimeout(timer);
+    return parse();
+  }
   const card = t.closest<HTMLElement>('.card');
   if (card?.dataset.id) return openSheet(card.dataset.id);
 }
@@ -124,4 +129,5 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && t.classList?.contains('card')) t.click();
 });
 $('bg').addEventListener('click', closeSheet);
+initTheme();
 void loadStatus();

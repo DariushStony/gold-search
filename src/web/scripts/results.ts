@@ -66,8 +66,9 @@ function card(c: ResultCard, i: number) {
           : strip(b, o.price)) +
       `<div class="resale num">${c.label === 'review' ? REVIEW_NO_RESALE : resaleLine(b)}</div>`;
   return `<article class="card" tabindex="0" data-id="${esc(c.id)}" data-i="${i}">
-    ${c.image_url ? `<img src="${esc(c.image_url)}" alt="" loading="lazy">` : '<div></div>'}
-    <div><p class="title">${esc(c.title)}<span class="badge ${cls}">${text}</span>${flags}</p>
+    ${c.image_url ? `<img src="${esc(c.image_url)}" alt="${esc(c.title)}" loading="lazy">` : '<div class="noimg"></div>'}
+    <div><p class="title">${esc(c.title)}</p>
+      <div class="badges"><span class="badge ${cls}">${text}</span>${flags}</div>
       <div class="meta num">${esc(meta)}</div>
       <div class="price-row"><span><span class="price num">${toman(o.price)}</span> <span class="fine num">قیمت ${when(o.fetched_at)}</span></span>${b && !b.partial_reason ? `<span class="premium num">${premiumText(b)}</span>` : ''}</div>
       ${math}</div></article>`;
@@ -90,11 +91,10 @@ function savingsCard(s: NonNullable<SearchResponse['savings_card']>) {
 
 const section = (title: string, list: ResultCard[]) =>
   list.length
-    ? `<div class="section-title">${title}</div>` +
-      list
+    ? `<div class="section-title">${title}</div><div class="grid">${list
         .slice(0, 10)
         .map((c) => card(c, -1))
-        .join('')
+        .join('')}</div>`
     : '';
 
 export async function run() {

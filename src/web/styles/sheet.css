@@ -1,0 +1,106 @@
+/* Details: a bottom sheet on a phone, a side panel at the far edge on wider screens. */
+.sheet-bg {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  display: none;
+  z-index: 10;
+}
+.sheet {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  max-height: 88vh;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: 18px 18px 0 0;
+  padding: 18px 16px 24px;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  z-index: 11;
+  overscroll-behavior: contain;
+}
+.sheet.open {
+  transform: none;
+}
+.sheet h2 {
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 0 0 4px;
+  padding-inline-end: 40px;
+}
+.close {
+  position: absolute;
+  inset-inline-end: 12px;
+  top: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--field);
+  border: none;
+  font-size: 20px;
+  color: var(--muted);
+}
+.bd {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 10px 0;
+}
+.bd td {
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.bd td:last-child {
+  text-align: left;
+}
+.note {
+  font-size: 13px;
+  color: var(--gold-ink);
+  background: var(--gold-soft);
+  border-radius: var(--radius-s);
+  padding: 8px 12px;
+}
+.inputs {
+  font-size: 12px;
+  color: var(--muted);
+}
+.cta {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--brand);
+  color: var(--on-brand);
+  border: none;
+  border-radius: var(--radius-s);
+  padding: 12px;
+  margin-top: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.cta:hover {
+  filter: brightness(1.06);
+}
+
+@media (min-width: 720px) {
+  .sheet {
+    inset-block: 0;
+    inset-inline-start: auto;
+    width: min(480px, 92vw);
+    max-height: none;
+    border-radius: 0;
+    border-inline-start: 1px solid var(--line);
+    padding: 24px 22px;
+    transform: translateX(-100%);
+  }
+  .sheet.open {
+    transform: none;
+  }
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding-block: 16px 40px;
+  font-size: 12px;
+  color: var(--muted);
+}

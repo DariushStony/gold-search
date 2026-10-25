@@ -1,2 +1,6 @@
 @import './tokens.css';
-@import './app.css';
+@import './base.css';
+@import './header.css';
+@import './controls.css';
+@import './results.css';
+@import './sheet.css';
