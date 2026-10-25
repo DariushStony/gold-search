@@ -3,21 +3,21 @@
 // Run: node src/domains/collection/collect.ts
 import { appendFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import {
+  DETAILS_PATH,
+  fetchHttp,
+  QUERIES,
+  ROBOTS_URL,
+  SEARCH_PATH,
+  TOROB_API,
+  TOROB_HEADERS,
+  UA,
+  type Http,
+} from './torob-http.ts';
 
-const TOROB_API = 'https://api.torob.com';
-const ROBOTS_URL = `${TOROB_API}/robots.txt`;
-const SEARCH_PATH = '/v4/base-product/search/';
-const DETAILS_PATH = '/v4/base-product/details/';
 const UNION_URL = 'https://www.estjt.ir/wp-admin/admin-ajax.php';
 const TGJU_URL = 'https://call1.tgju.org/ajax.json';
 const TGJU_KEYS = ['geram18', 'geram24', 'mesghal', 'sekee', 'gold_740k'];
-const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
-const TOROB_HEADERS = {
-  Accept: 'application/json',
-  Referer: 'https://torob.com/',
-  Origin: 'https://torob.com',
-};
 
 // BR-11 and TC-03: Torob walls fast clients with HTTP 490 and needs minutes of silence to clear.
 const SEARCH_GAP_MS = 10_000;
@@ -25,30 +25,6 @@ const DETAILS_GAP_MS = 25_000;
 const JITTER_MS = 5_000;
 const GOLD_EVERY_DETAILS = 10; // keeps every offer within 60 min of a quote (DM-01)
 
-const QUERIES = [
-  'دستبند طلا',
-  'انگشتر طلا',
-  'گردنبند طلا',
-  'گوشواره طلا',
-  'النگو طلا',
-  'زنجیر طلا',
-  'پلاک طلا',
-  'آویز طلا',
-  'سرویس طلا',
-  'طلای آب شده',
-  'طلای دست دوم',
-];
-
-type HttpResponse = {
-  status: number;
-  contentType: string;
-  json(): Promise<unknown>;
-  text(): Promise<string>;
-};
-type Http = (
-  url: string,
-  init?: { method?: string; body?: string; headers?: Record<string, string> },
-) => Promise<HttpResponse>;
 type Deps = {
   http: Http;
   sleep: (ms: number) => Promise<void>;
@@ -318,20 +294,7 @@ function realDeps(root: string, runId: string): Deps {
   const day = join(root, 'data/raw', runId.slice(0, 10));
   const detailsDir = join(root, 'data/raw/details');
   return {
-    http: async (url, init) => {
-      const res = await fetch(url, {
-        method: init?.method ?? 'GET',
-        body: init?.body,
-        headers: init?.headers,
-        signal: AbortSignal.timeout(20_000),
-      });
-      return {
-        status: res.status,
-        contentType: res.headers.get('content-type') ?? '',
-        json: () => res.json(),
-        text: () => res.text(),
-      };
-    },
+    http: fetchHttp,
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
     now: () => new Date(),
     random: Math.random,
@@ -369,12 +332,9 @@ if (import.meta.main) {
 }
 
 export {
-  QUERIES,
   robotsAllows,
   detailsQueue,
   runCollector,
-  type HttpResponse,
-  type Http,
   type Deps,
   type Options,
   type Summary,

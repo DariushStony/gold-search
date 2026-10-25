@@ -273,6 +273,7 @@ test("ADR-0012: behind the proxy each client has its own budget, events go to th
   try {
     const status = await (await fetch(base + '/status')).json();
     assert.equal(status.gold_price.g_toman, 27_017_000); // the fixture's tgju quote, since the live fetch failed
+    assert.equal(status.torob_probe, null); // CR-16: no check ran in this process
     for (let i = 0; i < 30; i++) {
       assert.equal((await post('/parse', { text: 'النگو' }, '1.1.1.1')).status, 200);
     }

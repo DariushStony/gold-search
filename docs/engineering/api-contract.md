@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.12 |
+| Version | 0.13 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -156,6 +156,12 @@ type StatusResponse = {
   snapshot: SnapshotInfo | null;       // null before the first publish
   snapshot_age_h: number | null;
   gold_price_age_min: number | null;
+  torob_probe: {                       // CR-16: the one search request made at server start; null until it ends
+    checked_at: string; ms: number;
+    outcome: "ok" | "challenged" | "non_json" | "error" | "network";
+    http_status: number | null; results: number | null; total_count: number | null;
+    note: string | null;               // content type and the first words of a refusal, or the network error
+  } | null;
 };
 ```
 
@@ -396,5 +402,6 @@ Notes on the example:
 | 0.10 | 2026-10-25 | CR-12: `price_sort` and `premium_sort` chips |
 | 0.11 | 2026-10-25 | CR-14: `intent_options` on the `/parse` response; the LLM adds no intent while it is set |
 | 0.12 | 2026-10-25 | CR-15: `relax.none_in_snapshot` |
+| 0.13 | 2026-10-25 | CR-16: `torob_probe` on `/status` |
 | 0.9 | 2026-10-25 | CR-10: `no_split_reason`; `parts` is never negative |
 | 0.8 | 2026-10-25 | CR-09: `shop_stars` and `shop_months` replace `shop_score_pct`; weight 0 in `components` for a style or weight the sentence did not ask for |

@@ -10,6 +10,8 @@ import { readEnv } from '../core/env.ts';
 import type { Chip } from '../shared/chips.ts';
 import { eligibleOffers, isStale } from '../domains/catalog/offers.ts';
 import { loadSnapshot, type Snapshot } from '../domains/catalog/snapshot.ts';
+import { probeTorob, type TorobProbe } from '../domains/collection/probe.ts';
+import { fetchHttp } from '../domains/collection/torob-http.ts';
 import { createGoldFeed } from '../domains/pricing/gold-feed.ts';
 import { parseTgju, parseUnion, type Reference } from '../domains/pricing/gold-price.ts';
 import { priceBreakdown, vatRateFor } from '../domains/pricing/price.ts';
@@ -205,6 +207,7 @@ type Deps = {
   trustProxy?: boolean; // behind the host's ingress every request comes from its proxy; the client is the first X-Forwarded-For entry
   log?: (line: string) => void;
   webDir?: string; // the built page and its assets (pnpm build:web)
+  torobProbe?: () => TorobProbe | null; // CR-16: the one-request check made at server start
 };
 
 function createApp(snapshotPath: string, deps: Deps = {}) {
@@ -364,6 +367,7 @@ function createHandler(snapshotPath: string, deps: Deps = {}) {
           snapshot: snapshotInfo(snap),
           snapshot_age_h: (Date.now() - Date.parse(snap.meta.finished_at)) / 3_600_000,
           gold_price_age_min: g ? (Date.now() - Date.parse(g.quoted_at)) / 60_000 : null,
+          torob_probe: deps.torobProbe?.() ?? null,
         });
       }
       if (req.method !== 'POST') return problem(res, 404, 'not-found', url.pathname);
@@ -511,16 +515,23 @@ if (import.meta.main) {
   const port = Number(process.argv[3] ?? env.port);
   const key = env.avalaiKey;
   const model = env.avalaiModel ?? config.llm.model;
+  // CR-16: one request per start tells whether this host can reach Torob, before collection moves here
+  let probe: TorobProbe | null = null;
   createApp(path, {
     llm: key ? avalai(key, model) : null,
     eventsFile: env.eventsFile,
     trustProxy: env.trustProxy,
     webDir: env.webDir,
-  }).listen(port, () =>
+    torobProbe: () => probe,
+  }).listen(port, () => {
     console.log(
       `demo: http://localhost:${port} (AI sentence reading: ${key ? model : 'off, no AVALAI_API_KEY'})`,
-    ),
-  );
+    );
+    void probeTorob(fetchHttp).then((p) => {
+      probe = p;
+      console.log(`torob probe: ${JSON.stringify(p)}`);
+    });
+  });
 }
 
 export { createApp, createHandler };

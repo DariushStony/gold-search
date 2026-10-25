@@ -6,8 +6,8 @@ import {
   robotsAllows,
   runCollector,
   type Deps,
-  type Http,
 } from '../../../src/domains/collection/collect.ts';
+import type { Http } from '../../../src/domains/collection/torob-http.ts';
 
 const ROBOTS = readFileSync(
   new URL('../../../docs/evidence/torob-robots-2026-10-21.txt', import.meta.url),
