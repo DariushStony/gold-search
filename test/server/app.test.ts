@@ -219,3 +219,19 @@ test("ADR-0012: behind the proxy each client has its own budget, events go to th
     server.close();
   }
 });
+
+test("HEAD answers like GET without a body, so uptime checks see 200", async () => {
+  const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
+  buildSnapshot({ rawDir: rawFixture(), outPath: out });
+  const server = createApp(out, { goldPrice: async () => G, eventsFile: null, log: () => {} }).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  try {
+    const page = await fetch(base + "/", { method: "HEAD" });
+    assert.equal(page.status, 200);
+    assert.match(page.headers.get("content-type") ?? "", /text\/html/);
+    assert.equal(await page.text(), "");
+    assert.equal((await fetch(base + "/api/v1/status", { method: "HEAD" })).status, 200);
+  } finally {
+    server.close();
+  }
+});

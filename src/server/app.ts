@@ -11,7 +11,8 @@ import { avalai, parser, type Llm } from "./llm.ts";
 import { search, excludedFor, type Card, type ProductRecord } from "../core/rank.ts";
 import { eligibleOffers, isStale } from "../core/offers.ts";
 import { priceBreakdown, vatRateFor } from "../core/price.ts";
-import { parseTgju, parseUnion, selectReference, type Quote, type Reference } from "../core/gold-price.ts";
+import { parseTgju, parseUnion, type Reference } from "../core/gold-price.ts";
+import { createGoldFeed } from "./gold-feed.ts";
 import { config } from "../core/config.ts";
 
 const ROOT = new URL("../../", import.meta.url).pathname;
@@ -58,41 +59,32 @@ const SAVINGS_ROWS = [
   },
 ] as const;
 
-let gold: { at: number; ref: Reference | null } = { at: 0, ref: null };
-async function goldPrice(): Promise<Reference | null> {
-  if (Date.now() - gold.at < GOLD_TTL_MS) return gold.ref;
-  const now = new Date().toISOString();
-  const get = async (fn: () => Promise<Quote | null>) => {
-    try {
-      return await fn();
-    } catch {
-      return null;
-    }
-  };
-  const [union, tgju] = await Promise.all([
-    get(async () =>
-      parseUnion(
-        await (
-          await fetch("https://www.estjt.ir/wp-admin/admin-ajax.php", {
-            method: "POST",
-            body: "action=tablotala_timer",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            signal: AbortSignal.timeout(8000),
-          })
-        ).json(),
-        now,
-      ),
-    ),
-    get(async () =>
-      parseTgju(
-        ((await (await fetch("https://call1.tgju.org/ajax.json", { signal: AbortSignal.timeout(8000) })).json()) as { current?: unknown }).current,
-        now,
-      ),
-    ),
-  ]);
-  gold = { at: Date.now(), ref: selectReference(union, tgju, new Date()) };
-  return gold.ref;
+// A source that answers with an error page or a bot check is a failure with a reason, not a silent null.
+// 25 s because the union board took 10 to 12 s to answer on 2026-10-25; the feed waits in the background.
+async function fetchJson(url: string, init: RequestInit = {}): Promise<unknown> {
+  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(25_000) });
+  const type = res.headers.get("content-type") ?? "";
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!type.includes("json")) throw new Error(`not JSON (${type || "no content type"})`);
+  return res.json();
 }
+
+const goldPrice = createGoldFeed({
+  sources: {
+    union: async () =>
+      parseUnion(
+        await fetchJson("https://www.estjt.ir/wp-admin/admin-ajax.php", {
+          method: "POST",
+          body: "action=tablotala_timer",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        }),
+        new Date().toISOString(),
+      ),
+    tgju: async () => parseTgju(((await fetchJson("https://call1.tgju.org/ajax.json")) as { current?: unknown }).current, new Date().toISOString()),
+  },
+  ttlMs: GOLD_TTL_MS,
+  firstWaitMs: 3000,
+});
 
 function snapshotInfo(s: Snapshot) {
   const ageH = (Date.now() - Date.parse(s.meta.finished_at)) / 3_600_000;
@@ -222,15 +214,16 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
 
   return async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://local");
+    const read = req.method === "GET" || req.method === "HEAD"; // Node drops the body of a HEAD response itself
     try {
-      if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) return send(res, 200, page(), "text/html; charset=utf-8");
+      if (read && (url.pathname === "/" || url.pathname === "/index.html")) return send(res, 200, page(), "text/html; charset=utf-8");
       if (
         url.pathname.startsWith("/api/") &&
         (url.pathname === "/api/v1/status" || url.pathname === "/api/v1/events" ? limited(req, "light", 120) : limited(req, "search", 30))
       ) {
         return problem(res, 429, "rate-limited", "too many requests");
       }
-      if (req.method === "GET" && url.pathname === "/api/v1/status") {
+      if (read && url.pathname === "/api/v1/status") {
         const g = await livePrice();
         return send(res, 200, {
           gold_price: g,
