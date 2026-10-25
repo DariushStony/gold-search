@@ -1,6 +1,14 @@
-# Allowlist: only what the image needs. Keeps .env, raw data and videos out of the build context.
+# Allowlist: only what the build needs. Keeps .env, raw data, videos and private notes out of the context.
 *
 !package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.json
+!.oxlintrc.json
+!configs
+!scripts
+!eval
 !src
-!web
+!test
+!docs/evidence/torob-robots-2026-10-21.txt
 !deploy/snapshot.sqlite
