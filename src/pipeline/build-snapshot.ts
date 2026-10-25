@@ -262,7 +262,6 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
         weight_g: attrs.weight_g.value,
         karat: attrs.karat?.value ?? 18,
         g_at_fetch: q.g,
-        g_live: null,
         declared_ojrat_pct: attrs.declared_ojrat_pct?.value ?? null,
         non_gold: { has: !!attrs.non_gold, declared_cost_toman: attrs.non_gold_cost_toman?.value ?? null },
         vat,

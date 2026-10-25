@@ -11,7 +11,7 @@ export const resaleValue = (weightG: number, g: number, karat: number) => (weigh
 export const impliedOjratPct = (ratio: number, vat: number, profit: number) => ((ratio + vat) / ((1 + vat) * (1 + profit)) - 1) * 100;
 
 export const breakevenG = (price: number, weightG: number, karat: number) => price / (weightG * (karat / 18) * resaleBasis); // BR-45
-export const requiredRisePct = (gStar: number, gLive: number) => (gStar / gLive - 1) * 100; // BR-45
+export const requiredRisePct = (gStar: number, g: number) => (gStar / g - 1) * 100; // BR-45
 
 export function vatRateFor(fetchedAt: Date): number {
   const year = jalaliYear(fetchedAt);
@@ -25,7 +25,6 @@ export type BreakdownInput = {
   weight_g: number;
   karat: number;
   g_at_fetch: number;
-  g_live: number | null;
   declared_ojrat_pct: number | null;
   non_gold: { has: boolean; declared_cost_toman: number | null };
   vat: number;
@@ -39,8 +38,9 @@ export type PriceBreakdown = {
   declared_ojrat_pct: number | null;
   parts: { gold: number; ojrat: number; profit: number; vat: number } | null;
   breakeven_g: number;
-  resale_value: number | null;
-  required_rise_pct: number | null;
+  resale_value: number;
+  resale_loss_pct: number; // buying and selling at once, so it holds whatever gold has done since
+  required_rise_pct: number;
   vat_overcharge: boolean;
   partial_reason: "non_gold_parts" | null;
 };
@@ -67,6 +67,7 @@ export function priceBreakdown(i: BreakdownInput): PriceBreakdown {
   }
 
   const gStar = breakevenG(i.price, i.weight_g, i.karat);
+  const resale = resaleValue(i.weight_g, i.g_at_fetch, i.karat);
   return {
     gold_value: gold,
     premium_pct: premiumPct(goldPrice, gold),
@@ -74,8 +75,10 @@ export function priceBreakdown(i: BreakdownInput): PriceBreakdown {
     declared_ojrat_pct: i.declared_ojrat_pct,
     parts,
     breakeven_g: Math.round(gStar),
-    resale_value: i.g_live === null ? null : Math.round(resaleValue(i.weight_g, i.g_live, i.karat)),
-    required_rise_pct: i.g_live === null ? null : requiredRisePct(gStar, i.g_live),
+    // CR-07: every number uses the G from when the price was fetched; mixing an old price with today's G misled.
+    resale_value: Math.round(resale),
+    resale_loss_pct: (1 - resale / i.price) * 100,
+    required_rise_pct: requiredRisePct(gStar, i.g_at_fetch),
     vat_overcharge: vatOvercharge,
     partial_reason: partial ? "non_gold_parts" : null,
   };

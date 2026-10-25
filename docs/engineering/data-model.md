@@ -88,7 +88,7 @@ Indexes: `offer(product_id)`, `attribute(product_id, name)`, `history(product_id
 | Product | `product` |
 | Attributes | `attribute` (one row per name) |
 | MaterialLabel | `label` |
-| PriceBreakdown | `breakdown` (fetch-time parts) + live fields per request |
+| PriceBreakdown | `breakdown`: every number at the G from when the price was fetched, including resale, loss and rise (CR-07); today's G is only an input shown for context |
 | Match | not stored; after the MVP (D-24) |
 | Query, RankedResult | query-time objects (§5) |
 | Run | `meta` (snapshot) and `runs.jsonl` (raw) |

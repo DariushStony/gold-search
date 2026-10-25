@@ -39,26 +39,20 @@ const base = {
   weight_g: 1.7,
   karat: 18,
   g_at_fetch: 27_017_000,
-  g_live: 27_100_000,
   declared_ojrat_pct: null,
   non_gold: { has: false, declared_cost_toman: null },
   vat: 0.1,
   profit: 0.07,
 };
 
-test("AC-PM-08 (BR-48): premium uses G at fetch, resale and rise use the live G", () => {
+test("CR-07 (BR-42, BR-45, BR-48): the premium, the resale, the loss and the rise all use the G from when the price was fetched", () => {
   const b = priceBreakdown(base);
   assert.equal(b.gold_value, 45_928_900);
   assert.equal(Number(b.premium_pct.toFixed(1)), 7.1);
-  assert.equal(b.resale_value, 45_455_733);
-  assert.equal(Number(b.required_rise_pct!.toFixed(1)), 8.2);
-});
-
-test("PRD §12: without a live G, resale and rise are null but the premium stays", () => {
-  const b = priceBreakdown({ ...base, g_live: null });
-  assert.equal(b.resale_value, null);
-  assert.equal(b.required_rise_pct, null);
-  assert.equal(Number(b.premium_pct.toFixed(1)), 7.1);
+  assert.equal(b.resale_value, 45_316_515); // 1.7 g × 27,017,000 × 740/750
+  assert.equal(Number(b.resale_loss_pct.toFixed(1)), 7.9); // (49,179,516 − 45,316,515) ÷ 49,179,516
+  assert.equal(b.breakeven_g, 29_320_061);
+  assert.equal(Number(b.required_rise_pct.toFixed(1)), 8.5); // 29,320,061 ÷ 27,017,000 − 1
 });
 
 test("parts sum to the price: gold, implied ojrat, 7% profit, 10% VAT on ojrat + profit", () => {

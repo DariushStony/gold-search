@@ -140,7 +140,7 @@ test("demo server: parse, search and product detail follow the API contract", as
       ["ring"],
     );
     assert.equal(s.results[0].offer.breakdown.gold_value, 45_928_900);
-    assert.equal(s.results[0].offer.breakdown.resale_value, 45_316_515); // 1.7 g × 27,017,000 × 740/750, live G
+    assert.equal(s.results[0].offer.breakdown.resale_value, 45_316_515); // 1.7 g × 27,017,000 × 740/750, the G at fetch (CR-07)
     assert.equal(s.excluded_count, 1);
     assert.ok(s.savings_card.rows.length >= 5);
     const detail = await (await post("/products/ring", { chips: parsed.chips, snapshot_id: s.snapshot.id })).json();
@@ -231,6 +231,22 @@ test("HEAD answers like GET without a body, so uptime checks see 200", async () 
     assert.match(page.headers.get("content-type") ?? "", /text\/html/);
     assert.equal(await page.text(), "");
     assert.equal((await fetch(base + "/api/v1/status", { method: "HEAD" })).status, 200);
+  } finally {
+    server.close();
+  }
+});
+
+test("CR-07: a gold price that moved since the fetch changes no breakdown number; today's G is shown only as an input", async () => {
+  const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
+  buildSnapshot({ rawDir: rawFixture(), outPath: out });
+  const server = createApp(out, { goldPrice: async () => ({ ...G, g_toman: 30_000_000 }), eventsFile: null, log: () => {} }).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
+  try {
+    const chips = (await (await fetch(base + "/parse", { method: "POST", body: JSON.stringify({ text: "النگو طلا برای پس انداز" }) })).json()).chips;
+    const b = (await (await fetch(base + "/search", { method: "POST", body: JSON.stringify({ chips }) })).json()).results[0].offer.breakdown;
+    assert.equal(b.resale_value, 45_316_515); // at the fetch-time G of 27,017,000, not today's 30,000,000
+    assert.equal(Number(b.resale_loss_pct.toFixed(1)), 7.5); // 1 − 45,316,515 ÷ 49,000,000, the representative offer
+    assert.equal(b.inputs.g_live, 30_000_000);
   } finally {
     server.close();
   }

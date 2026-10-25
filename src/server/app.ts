@@ -100,7 +100,6 @@ function breakdownFor(p: ProductRecord, o: ProductRecord["offers"][number], gLiv
     weight_g: p.attrs.weight_g,
     karat: p.attrs.karat ?? 18,
     g_at_fetch: o.g_at_fetch,
-    g_live: gLive?.g_toman ?? null,
     declared_ojrat_pct: p.attrs.declared_ojrat_pct,
     non_gold: { has: p.attrs.non_gold, declared_cost_toman: null },
     vat,
@@ -114,7 +113,7 @@ function breakdownFor(p: ProductRecord, o: ProductRecord["offers"][number], gLiv
         karat: p.attrs.karat ?? 18,
         karat_assumed: p.attrs.karat === null,
         g_at_fetch: o.g_at_fetch,
-        g_live: gLive?.g_toman ?? null,
+        g_live: gLive?.g_toman ?? null, // shown for context only; no number above uses it (CR-07)
         g_live_source: gLive?.source ?? null,
         vat,
         profit: config.price.profit,

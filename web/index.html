@@ -820,12 +820,13 @@
         const math = !b
           ? `<div class="resale">${o.no_breakdown_reason === "no_gold_quote" ? "قیمت طلای زمان دریافت در دسترس نیست" : "وزن اعلام نشده و نمی‌شود حساب کرد"}</div>`
           : (b.parts ? strip(b) : `<div class="resale">قطعه‌ی غیرطلا دارد و مقایسه با ارزش طلا کامل نیست</div>`) +
-            (b.resale_value != null ? `<div class="resale num">اگر امروز بفروشید: ${toman(b.resale_value)} (برآورد)</div>` : "");
+            // CR-07: a percentage, so it holds whatever gold has done since the price was fetched.
+            `<div class="resale num">اگر بخرید و همین الان بفروشید، حدود ${pct(b.resale_loss_pct)} کمتر برمی‌گردد (برآورد)</div>`;
         return `<article class="card" tabindex="0" data-id="${esc(c.id)}" data-i="${i}">
     ${c.image_url ? `<img src="${esc(c.image_url)}" alt="" loading="lazy">` : "<div></div>"}
     <div><p class="title">${esc(c.title)}<span class="badge ${cls}">${text}</span>${flags}</p>
       <div class="meta num">${esc(meta)}</div>
-      <div class="price-row"><span class="price num">${toman(o.price)}</span>${b && !b.partial_reason ? `<span class="premium num"><b>${pct(b.premium_pct)}</b> بالاتر از ارزش طلا</span>` : ""}</div>
+      <div class="price-row"><span><span class="price num">${toman(o.price)}</span> <span class="fine num">قیمت ${when(o.fetched_at)}</span></span>${b && !b.partial_reason ? `<span class="premium num"><b>${pct(b.premium_pct)}</b> بالاتر از ارزش طلا</span>` : ""}</div>
       ${math}</div></article>`;
       }
 
@@ -851,14 +852,11 @@
     <div class="meta">${LABEL[d.label][1]}${d.reasons?.length ? "، " + esc(d.reasons.join("، ")) : ""}</div>
     ${
       rows.length
-        ? `<table class="bd num">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${toman(v)}</td></tr>`).join("")}
-      ${
-        b.resale_value != null
-          ? `<tr><td>اگر امروز بفروشید (برآورد)</td><td>${toman(b.resale_value)}</td></tr>
-      <tr><td>قیمت سربه‌سر طلا</td><td>${toman(b.breakeven_g, true)}، یعنی ${pct(b.required_rise_pct)} رشد</td></tr>`
-          : `<tr><td colspan="2">قیمت طلا در دسترس نیست</td></tr>`
-      }</table>
-      <div class="inputs num">ورودی‌های این عدد: وزن ${gram(b.inputs.weight_g)}، عیار ${f0.format(b.inputs.karat)}${b.inputs.karat_assumed ? " (عیار فرض‌شده)" : ""}، قیمت طلای زمان دریافت ${toman(b.inputs.g_at_fetch, true)}${b.inputs.g_live ? `، قیمت طلای امروز ${toman(b.inputs.g_live, true)}` : ""}، سود ${pct(b.inputs.profit * 100)} و مالیات ${pct(b.inputs.vat * 100)} روی اجرت و سود</div>`
+        ? `<p class="fine num">همه‌ی مبلغ‌های این جدول با قیمت فروشگاه و قیمت طلای ${when(d.offer.fetched_at)} حساب شده‌اند.</p>
+      <table class="bd num">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${toman(v)}</td></tr>`).join("")}
+      <tr><td>اگر بخرید و همین الان بفروشید (برآورد)</td><td>${toman(b.resale_value)}، یعنی ${pct(b.resale_loss_pct)} کمتر</td></tr>
+      <tr><td>قیمت سربه‌سر طلا</td><td>${toman(b.breakeven_g, true)}، یعنی ${pct(b.required_rise_pct)} رشد</td></tr></table>
+      <div class="inputs num">ورودی‌های این عدد: وزن ${gram(b.inputs.weight_g)}، عیار ${f0.format(b.inputs.karat)}${b.inputs.karat_assumed ? " (عیار فرض‌شده)" : ""}، قیمت طلا در ${when(d.offer.fetched_at)}: ${toman(b.inputs.g_at_fetch, true)}${b.inputs.g_live ? ` (قیمت طلای امروز ${toman(b.inputs.g_live, true)}، فقط برای مقایسه)` : ""}، سود ${pct(b.inputs.profit * 100)} و مالیات ${pct(b.inputs.vat * 100)} روی اجرت و سود</div>`
         : `<p>${d.offer.no_breakdown_reason === "no_gold_quote" ? "قیمت طلای زمان دریافت در دسترس نیست" : "وزن اعلام نشده و نمی‌شود حساب کرد"}</p>`
     }
     <div class="section-title">فروشگاه‌ها</div>

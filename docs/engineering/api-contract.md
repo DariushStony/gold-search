@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.6 |
+| Version | 0.7 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-24 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -92,8 +92,9 @@ type Breakdown = {                     // one per offer (BR-48)
   declared_ojrat_pct: number | null;   // BR-24
   parts: { gold: number; ojrat: number; profit: number; vat: number } | null;   // toman; sum = offer price; null when partial_reason is set
   breakeven_g: number;                 // BR-45; does not depend on G
-  resale_value: number | null;         // live: BR-42 at the request-time G; null without a live G
-  required_rise_pct: number | null;    // live: breakeven_g ÷ live G − 1 (BR-45); null without a live G
+  resale_value: number;                // BR-42 at the same G as the price (CR-07)
+  resale_loss_pct: number;             // CR-07: 1 − resale ÷ price, buying and selling at once; holds whatever gold has done since
+  required_rise_pct: number;           // breakeven_g ÷ the same G − 1 (BR-45, CR-07)
   vat_overcharge: boolean;             // BR-47
   partial_reason: "non_gold_parts" | null;   // BR-2A
   inputs: {
@@ -331,7 +332,7 @@ One example per operation. Product and prices are real Torob data from the 2026-
       "stale": false, "torob_pay": false, "shop_score_pct": 71, "no_breakdown_reason": null,
       "breakdown": { "gold_value": 45928900, "premium_pct": 7.1, "implied_ojrat_pct": -0.5, "declared_ojrat_pct": null,
         "parts": { "gold": 45928900, "ojrat": -242914, "profit": 3198019, "vat": 295511 },
-        "breakeven_g": 29320061, "resale_value": 45455733, "required_rise_pct": 8.2, "vat_overcharge": false, "partial_reason": null,
+        "breakeven_g": 29320061, "resale_value": 45316515, "resale_loss_pct": 7.9, "required_rise_pct": 8.5, "vat_overcharge": false, "partial_reason": null,
         "inputs": { "weight_g": 1.7, "weight_source": "spec", "weight_conflict": false, "karat": 18, "karat_assumed": false,
           "g_at_fetch": { "toman": 27017000, "source": "union", "quoted_at": "2026-10-22T06:40:00Z" },
           "g_live": { "toman": 27100000, "source": "union", "quoted_at": "2026-10-23T08:00:00Z" }, "vat": 10, "profit": 7 } } },
@@ -385,3 +386,4 @@ Notes on the example:
 | 0.4 | 2026-10-23 | Freeze review fixes: product detail is `POST /products/{id}` with chips (offer filters and score match the card); `GET /status` replaces `/gold-price` and `/healthz` and carries the snapshot state for the archive banner; methodology is a static page, not an endpoint; role and level fixed per chip kind; `origin` is text or user; budget question blocks only in the client (no 422); `partial_reason` only for non-gold parts; `parts`, `no_breakdown_reason`, `weight_conflict`, `sample`, `weight_unknown_bucket`; savings rows with `source_url` and `url`; `relax` names the chip and the results it would bring back; event `snapshot_id` nullable and `string[]` props; error example on `/parse`; `gold-price-unavailable` dropped (null instead) |
 | 0.5 | 2026-10-24 | CR-04: `unparsed` on the `/parse` response |
 | 0.6 | 2026-10-24 | CR-05: optional `llm` flag on chips the LLM added |
+| 0.7 | 2026-10-25 | CR-07: resale and rise at the fetch-time G, new `resale_loss_pct` |
