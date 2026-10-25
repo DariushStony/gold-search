@@ -16,7 +16,8 @@ const offer = (o: Partial<OfferRow>): OfferRow => ({
   url: "https://api.torob.com/v4/product-page/redirect/x",
   torob_pay: false,
   price_unreliable: false,
-  shop_score_pct: null,
+  shop_stars: null,
+  shop_months: null,
   fetched_at: hoursBefore(1),
   ...o,
 });

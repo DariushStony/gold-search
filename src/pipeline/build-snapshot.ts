@@ -10,15 +10,18 @@ import { priceBreakdown, vatRateFor } from "../core/price.ts";
 import { eligibleOffers, mergeCard, type OfferRow } from "../core/offers.ts";
 import { config } from "../core/config.ts";
 
-export const SCHEMA_VERSION = 1;
-export const PIPELINE_VERSION = "0.1.0";
+export const SCHEMA_VERSION = 2;
+export const PIPELINE_VERSION = "0.2.0";
 const QUOTE_WINDOW_MS = 60 * 60_000; // DM-01
+// CR-09: the label check may use an older quote. Its bands (0.9 and 2.5 times the gold value) are far wider than gold's
+// moves over a few days: G at fetch and G today were 2.7% to 3.5% apart in the 2026-10-25 snapshot (CR-07).
+const LABEL_QUOTE_WINDOW_MS = 72 * 3_600_000;
 
 const SCHEMA = `
 CREATE TABLE meta (schema_version INTEGER, run_id TEXT, started_at TEXT, finished_at TEXT, requests INTEGER, stopped_reason TEXT, pipeline_version TEXT, details_budget INTEGER, details_fetched INTEGER);
 CREATE TABLE gold_quote (id INTEGER PRIMARY KEY, source TEXT, kind TEXT, value_toman INTEGER, quoted_at TEXT, fetched_at TEXT);
 CREATE TABLE product (id TEXT PRIMARY KEY, title TEXT, subtitle TEXT, image_url TEXT, category_path TEXT, torob_url TEXT, card_shop_count INTEGER, sample INTEGER, first_seen_at TEXT, last_seen_at TEXT, details_fetched_at TEXT);
-CREATE TABLE offer (id TEXT PRIMARY KEY, product_id TEXT, source TEXT, shop TEXT, city TEXT, channel TEXT, title TEXT, price_toman INTEGER, url TEXT, torob_pay INTEGER, is_adv INTEGER, price_unreliable INTEGER, shop_score_pct REAL, fetched_at TEXT NOT NULL, gold_quote_id INTEGER);
+CREATE TABLE offer (id TEXT PRIMARY KEY, product_id TEXT, source TEXT, shop TEXT, city TEXT, channel TEXT, title TEXT, price_toman INTEGER, url TEXT, torob_pay INTEGER, is_adv INTEGER, price_unreliable INTEGER, shop_stars REAL, shop_months INTEGER, fetched_at TEXT NOT NULL, gold_quote_id INTEGER);
 CREATE TABLE attribute (product_id TEXT, name TEXT, value TEXT, provenance TEXT, confidence REAL, evidence TEXT);
 CREATE TABLE label (product_id TEXT PRIMARY KEY, label TEXT, reasons TEXT, price_ratio REAL, weight_unknown INTEGER);
 CREATE TABLE breakdown (offer_id TEXT PRIMARY KEY, gold_value INTEGER, premium_pct REAL, implied_ojrat_pct REAL, declared_ojrat_pct REAL, parts TEXT, breakeven_g INTEGER, vat_overcharge INTEGER, partial_reason TEXT, vat REAL, profit REAL);
@@ -66,11 +69,11 @@ function loadQuotes(raw: string): StoredQuote[] {
 }
 
 // DM-01: the reference at fetch time, from the quotes of each source nearest to it within 60 minutes.
-function quoteAt(quotes: StoredQuote[], at: string): { g: number; id: number } | null {
+function quoteAt(quotes: StoredQuote[], at: string, windowMs = QUOTE_WINDOW_MS): { g: number; id: number } | null {
   const t = Date.parse(at);
   const nearest = (source: Quote["source"]) =>
     quotes
-      .filter((q) => q.source === source && Math.abs(Date.parse(q.fetched_at) - t) <= QUOTE_WINDOW_MS)
+      .filter((q) => q.source === source && Math.abs(Date.parse(q.fetched_at) - t) <= windowMs)
       .sort((a, b) => Math.abs(Date.parse(a.fetched_at) - t) - Math.abs(Date.parse(b.fetched_at) - t))[0] ?? null;
   const union = nearest("union"),
     tgju = nearest("tgju");
@@ -80,9 +83,20 @@ function quoteAt(quotes: StoredQuote[], at: string): { g: number; id: number } |
   return { g: ref.g_toman, id: used!.id };
 }
 
+// CR-09: Torob prints a star only for shops it has scored. Marketplaces, new shops and in-person listings carry a
+// default score of 5 without one, and shop_score_percentile is 0 on every offer collected so far.
+export function shopRating(info: { score?: unknown; score_text?: unknown } | undefined): { stars: number | null; months: number | null } {
+  const text = normalize(String(info?.score_text ?? ""));
+  const stars = text.startsWith("★") && typeof info?.score === "number" ? info.score : null;
+  const m = text.match(/(\d+) (سال|ماه) در ترب/);
+  const months = m ? Number(m[1]) * (m[2] === "سال" ? 12 : 1) : text.includes("فروشگاه جدید") ? 0 : null;
+  return { stars, months };
+}
+
 function detailsOffers(productId: string, body: any, fetchedAt: string): OfferRow[] {
   const rows: OfferRow[] = [];
-  const add = (o: any, channel: OfferRow["channel"]) =>
+  const add = (o: any, channel: OfferRow["channel"]) => {
+    const rating = shopRating(o.score_info);
     rows.push({
       id: `${productId}:${channel}:${rows.length}`,
       product_id: productId,
@@ -95,9 +109,11 @@ function detailsOffers(productId: string, body: any, fetchedAt: string): OfferRo
       url: o.page_url ?? "",
       torob_pay: !!o.show_torobpay_badge,
       price_unreliable: !!o.is_price_unreliable,
-      shop_score_pct: typeof o.shop_score_percentile === "number" ? o.shop_score_percentile : null,
+      shop_stars: rating.stars,
+      shop_months: rating.months,
       fetched_at: fetchedAt,
     });
+  };
   const priced = (o: any) => o.price > 0 && o.price <= config.offers.maxPriceToman; // DM-08: priced offers only, placeholders out
   for (const o of body.products_info?.result ?? []) if (o.availability && priced(o)) add(o, "online");
   for (const o of body.products_in_store_info?.result ?? []) if (priced(o)) add(o, "in_person");
@@ -118,7 +134,8 @@ function cardOffer(productId: string, c: Card): OfferRow {
     url: c.url,
     torob_pay: false,
     price_unreliable: false,
-    shop_score_pct: null,
+    shop_stars: null,
+    shop_months: null,
     fetched_at: c.fetched_at,
   };
 }
@@ -196,7 +213,7 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
   for (const q of quotes) insQuote.run(q.id, q.source, q.g_toman, q.quoted_at, q.fetched_at);
 
   const insProduct = db.prepare("INSERT INTO product VALUES (?, ?, ?, ?, NULL, ?, ?, 0, ?, ?, ?)");
-  const insOffer = db.prepare("INSERT INTO offer VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  const insOffer = db.prepare("INSERT INTO offer VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
   const insAttr = db.prepare("INSERT INTO attribute VALUES (?, ?, ?, ?, ?, ?)");
   const insLabel = db.prepare("INSERT INTO label VALUES (?, ?, ?, ?, ?)");
   const insBreakdown = db.prepare("INSERT INTO breakdown VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -211,7 +228,7 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
     const offers = mergeCard(cardOffer(productId, latest), details ? detailsOffers(productId, details.body, details.fetched_at) : []);
     const rep = eligibleOffers(offers, {}, lastRun.finished_at, false)[0] ?? offers[0]!;
     const attrs = extract({ title: latest.name1, specs, shop: rep.shop });
-    const repQuote = quoteAt(quotes, rep.fetched_at);
+    const repQuote = quoteAt(quotes, rep.fetched_at, LABEL_QUOTE_WINDOW_MS);
     const label = labelProduct({
       title: latest.name1,
       specs,
@@ -250,7 +267,8 @@ export function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: st
         o.torob_pay ? 1 : 0,
         0,
         o.price_unreliable ? 1 : 0,
-        o.shop_score_pct,
+        o.shop_stars,
+        o.shop_months,
         o.fetched_at,
         q?.id ?? null,
       );

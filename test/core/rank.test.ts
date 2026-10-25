@@ -33,7 +33,8 @@ function product(
     url: "u",
     torob_pay: false,
     price_unreliable: false,
-    shop_score_pct: 50,
+    shop_stars: null,
+    shop_months: null,
     fetched_at: hoursBefore(1),
     ...o,
   }));
@@ -214,4 +215,39 @@ test("CR-08 (BR-62): «ظریف» gives full weight fit to any piece up to the m
   assert.deepEqual(items.slice(0, 3).map(fit), [1, 1, 1]);
   assert.ok(fit(items[3]!) < 1 && fit(items[3]!) > 0);
   assert.equal(fit(items[4]!), 0);
+});
+
+test("CR-09 (BR-62): seller trust comes from Torob's stars and time on Torob; a shop with neither scores 0.5", () => {
+  const trust = (o: Partial<OfferRow>) => {
+    const p = product({ offers: [o] });
+    return Number(components(p, p.offers[0]!, [], { ...ctx, candidates: [p] }).seller_trust.toFixed(2));
+  };
+  assert.equal(trust({ shop_stars: 4.9, shop_months: 96 }), 0.95);
+  assert.equal(trust({ shop_stars: 4.3, shop_months: 84 }), 0.65);
+  assert.equal(trust({ shop_stars: 5, shop_months: 2 }), 0.54);
+  assert.equal(trust({ shop_stars: null, shop_months: 36 }), 0.75, "a marketplace has no stars of its own");
+  assert.equal(trust({ shop_stars: null, shop_months: 0 }), 0.25, "«فروشگاه جدید»");
+  assert.equal(trust({ shop_stars: null, shop_months: null }), 0.5);
+  const known = product({ id: "known", offers: [{ shop_stars: 4.9, shop_months: 96 }] });
+  const fresh = product({ id: "fresh", offers: [{ shop_stars: null, shop_months: 0 }] });
+  assert.deepEqual(ids(search([fresh, known], chips("انگشتر طلا"), ctx)), ["known", "fresh"]);
+});
+
+test("CR-09 (BR-62): with no budget, a price up to the median of the matches fits fully, falling to 0 at ten times the median", () => {
+  const items = [10, 20, 30, 90, 3000].map((m, i) => product({ id: `m${i}`, price: m * 1_000_000 }));
+  const fit = (p: ProductRecord) => components(p, p.offers[0]!, chips("انگشتر طلا"), { ...ctx, candidates: items }).budget_fit;
+  assert.deepEqual(items.slice(0, 3).map(fit), [1, 1, 1]);
+  assert.equal(Number(fit(items[3]!).toFixed(2)), 0.52);
+  assert.equal(fit(items[4]!), 0);
+  assert.equal(ids(search(items, chips("انگشتر طلا"), ctx)).at(-1), "m4", "the piece at a hundred times the median comes last");
+});
+
+test("CR-09 (BR-62): a style or weight the sentence did not ask for carries no weight, and the weights still sum to 1", () => {
+  const weightOf = (text: string, name: string) => search([product({})], chips(text), ctx).results[0]!.components.find((c) => c.name === name)!.weight;
+  assert.equal(weightOf("انگشتر طلا برای خودم", "type_style_fit"), 0);
+  assert.equal(weightOf("انگشتر طلا برای خودم", "weight_fit"), 0);
+  assert.ok(weightOf("انگشتر طلا طرح کارتیه", "type_style_fit") > 0.45);
+  assert.ok(weightOf("یه انگشتر ظریف برای خودم", "weight_fit") > 0);
+  const card = search([product({})], chips("انگشتر طلا برای خودم"), ctx).results[0]!;
+  assert.equal(Number(card.components.reduce((s, c) => s + c.weight, 0).toFixed(6)), 1);
 });

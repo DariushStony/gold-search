@@ -3,9 +3,9 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.7 |
+| Version | 0.8 |
 | Owner | Dariush Hadipour (Tech Lead role) |
-| Last updated | 2026-10-24 |
+| Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
 | Standard | OpenAPI 3.1 (generated from the route schemas at build time); errors as RFC 9457 problem details |
 
@@ -116,7 +116,8 @@ type Offer = {
   fetched_at: string;
   stale: boolean;                      // older than 24 h before snapshot.finished_at; always false in archive mode (BR-14, BR-16)
   torob_pay: boolean;                  // BR-112
-  shop_score_pct: number | null;       // Torob shop_score_percentile (BR-62 seller trust)
+  shop_stars: number | null;           // Torob's star score; null when Torob shows none (marketplace, new shop, in person) (BR-62, CR-09)
+  shop_months: number | null;          // time on Torob; 0 for «فروشگاه جدید», null when not shown (BR-62, CR-09)
   breakdown: Breakdown | null;
   no_breakdown_reason: "weight_unknown" | "no_gold_quote" | null;   // BR-37; DM-01 (no quote within 60 min of the fetch)
 };
@@ -136,7 +137,7 @@ type ProductCard = {
   offer_count: number;                 // eligible offers after offer-level filters
   price_range: [number, number];       // min and max over eligible offers (BR-80, BR-92)
   score: number;
-  components: { name: ComponentName; weight: number; value: number }[];   // BR-62, BR-66
+  components: { name: ComponentName; weight: number; value: number }[];   // BR-62, BR-66; weight 0 for a style or weight the sentence did not ask for (CR-09)
 };
 ```
 
@@ -329,17 +330,17 @@ One example per operation. Product and prices are real Torob data from the 2026-
     "label": "real", "reasons": ["واژه‌ی طلا و عیار در عنوان؛ قیمت با ارزش طلا سازگار است"], "weight_unknown": false, "sample": false,
     "offer": { "shop": "فرنیا گلد", "city": "تهران", "channel": "online", "price": 49179516,
       "url": "https://api.torob.com/v4/product-page/redirect/…", "source": "torob_search", "fetched_at": "2026-10-22T06:47:12Z",
-      "stale": false, "torob_pay": false, "shop_score_pct": 71, "no_breakdown_reason": null,
+      "stale": false, "torob_pay": false, "shop_stars": 5, "shop_months": 6, "no_breakdown_reason": null,
       "breakdown": { "gold_value": 45928900, "premium_pct": 7.1, "implied_ojrat_pct": -0.5, "declared_ojrat_pct": null,
         "parts": { "gold": 45928900, "ojrat": -242914, "profit": 3198019, "vat": 295511 },
         "breakeven_g": 29320061, "resale_value": 45316515, "resale_loss_pct": 7.9, "required_rise_pct": 8.5, "vat_overcharge": false, "partial_reason": null,
         "inputs": { "weight_g": 1.7, "weight_source": "spec", "weight_conflict": false, "karat": 18, "karat_assumed": false,
           "g_at_fetch": { "toman": 27017000, "source": "union", "quoted_at": "2026-10-22T06:40:00Z" },
           "g_live": { "toman": 27100000, "source": "union", "quoted_at": "2026-10-23T08:00:00Z" }, "vat": 10, "profit": 7 } } },
-    "offer_count": 1, "price_range": [49179516, 49179516], "score": 0.928,
-    "components": [ { "name": "budget_fit", "weight": 0.10, "value": 1 }, { "name": "seller_trust", "weight": 0.10, "value": 0.71 },
-      { "name": "type_style_fit", "weight": 0.05, "value": 1 }, { "name": "low_premium", "weight": 0.60, "value": 0.929 },
-      { "name": "weight_known", "weight": 0.10, "value": 1 }, { "name": "freshness", "weight": 0.05, "value": 1 } ] } ],
+    "offer_count": 1, "price_range": [49179516, 49179516], "score": 0.916,
+    "components": [ { "name": "budget_fit", "weight": 0.105, "value": 1 }, { "name": "seller_trust", "weight": 0.105, "value": 0.625 },
+      { "name": "type_style_fit", "weight": 0, "value": 1 }, { "name": "low_premium", "weight": 0.632, "value": 0.929 },
+      { "name": "weight_known", "weight": 0.105, "value": 1 }, { "name": "freshness", "weight": 0.053, "value": 1 } ] } ],
   "review": [], "weight_unknown_bucket": [], "ojrat_unknown": [], "sponsored": [], "excluded_count": 3,
   "explanation": null,
   "savings_card": { "notice": null, "rows": [ { "form": "jewelry", "round_trip_cost_pct": 7.1, "source": "این نتایج", "source_url": null, "url": null, "as_of": "2026-10-22", "own_product": false } ] },
@@ -347,9 +348,9 @@ One example per operation. Product and prices are real Torob data from the 2026-
 ```
 
 Notes on the example:
-- `shop_score_pct` 71 is illustrative.
+- `shop_stars` 5 and `shop_months` 6 are illustrative: seller trust 0.5 × 1 + 0.5 × 6 ÷ 24 = 0.625.
 - The breakdown follows BR-40 to BR-45 from the inputs shown. `parts` sum to the price; the implied ojrat is slightly negative, so the strip draws it with zero width and the sheet shows the number (IA §5ب).
-- The score is the BR-62 savings weights times the component values (0.928).
+- The score is the BR-62 savings weights times the component values (0.916). The sentence names no style, so `type_style_fit` has weight 0 and the other savings weights are divided by 0.95 (CR-09).
 - The jewelry savings row is the median premium of the results (BR-100).
 - `explanation` is null because there is only one result (PRD §12).
 
@@ -387,3 +388,4 @@ Notes on the example:
 | 0.5 | 2026-10-24 | CR-04: `unparsed` on the `/parse` response |
 | 0.6 | 2026-10-24 | CR-05: optional `llm` flag on chips the LLM added |
 | 0.7 | 2026-10-25 | CR-07: resale and rise at the fetch-time G, new `resale_loss_pct` |
+| 0.8 | 2026-10-25 | CR-09: `shop_stars` and `shop_months` replace `shop_score_pct`; weight 0 in `components` for a style or weight the sentence did not ask for |

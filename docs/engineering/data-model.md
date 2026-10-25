@@ -3,9 +3,9 @@
 | | |
 | --- | --- |
 | Status | draft (stage 03) |
-| Version | 0.5 |
+| Version | 0.6 |
 | Owner | Dariush Hadipour |
-| Last updated | 2026-10-23 |
+| Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §9–§11; [API contract](api-contract.md); observed Torob API fields in `data/raw/` (2026-10-21 to 2026-10-23) |
 | Standard | Entity tables with types, provenance and the business rule each field serves; integrity rules with IDs (DM-xx) |
 
@@ -16,7 +16,7 @@
 | File | One row per | Key fields | Source |
 |---|---|---|---|
 | `<date>/torob-search.jsonl` | search page | `run_id`, `q`, `page`, `fetched_at`, `results[]` (Torob: `random_key`, `name1`, `name2`, `price`, `price_prefix`, `shop_text`, `web_client_absolute_url`, `image_url`, `is_adv`) | `api.torob.com/v4/base-product/search` |
-| `details/<random_key>.json` | product page | `fetched_at`, `body.structural_specs`, `body.products_info.result[]` (online tab) and `body.products_in_store_info.result[]` (in-person tab), each offer with `shop_name`, `shop_name2` (city), `name1`, `price`, `availability`, `is_price_unreliable`, `page_url`, `shop_score_percentile`, `show_torobpay_badge`, `is_adv` | `api.torob.com/v4/base-product/details` |
+| `details/<random_key>.json` | product page | `fetched_at`, `body.structural_specs`, `body.products_info.result[]` (online tab) and `body.products_in_store_info.result[]` (in-person tab), each offer with `shop_name`, `shop_name2` (city), `name1`, `price`, `availability`, `is_price_unreliable`, `page_url`, `shop_score_percentile` (0 on every offer so far, not read), `score_info` (star score and «N سال در ترب», CR-09), `show_torobpay_badge`, `is_adv` | `api.torob.com/v4/base-product/details` |
 | `<date>/gold-price.jsonl` | fetch | `fetched_at`, `source`, `unit`; union rows keep the response `body`, tgju rows keep `prices{}`. Fetched before each search query, every 10 details pages and at the end of every run | union board, tgju |
 | `<date>/runs.jsonl` | step or run | `run_id`, `step`, `kind`, `status`, `requests`, `stopped` (`challenged` \| `non_json` \| `network` \| null) | collector |
 
@@ -31,7 +31,7 @@ Raw files are never edited. A pipeline bug is fixed by re-deriving the snapshot.
 
 ## 2. Snapshot layer (one SQLite file per run, published to the server)
 
-`snapshot-<run_id>.sqlite`, schema version in `meta.schema_version` (starts at 1).
+`snapshot-<run_id>.sqlite`, schema version in `meta.schema_version` (starts at 1; 2 from CR-09, when `shop_stars` and `shop_months` replaced `shop_score_pct`).
 
 ### 2.1 Tables
 
@@ -40,7 +40,7 @@ Raw files are never edited. A pipeline bug is fixed by re-deriving the snapshot.
 | `meta` | `schema_version`, `run_id`, `started_at`, `finished_at`, `requests`, `stopped_reason`, `pipeline_version`, `details_budget`, `details_fetched` | BR-12, BR-14, BR-16, BR-17 |
 | `gold_quote` | `id`, `source` (`union` \| `tgju`), `kind` (`18k` \| `24k` \| `mesghal` \| `740`), `value_toman`, `quoted_at`, `fetched_at` | BR-01–BR-06, BR-48 |
 | `product` | `id` (Torob `random_key`), `title`, `subtitle`, `image_url`, `category_path`, `torob_url`, `card_shop_count` (1 or N from `shop_text`), `sample` (bool, BR-15; true only for fixture or demo rows), `first_seen_at`, `last_seen_at`, `details_fetched_at` | BR-17, BR-80 |
-| `offer` | `id`, `product_id`, `source` (`torob_search` \| `torob_details`), `shop` (nullable), `city`, `channel` (`online` \| `in_person`), `title` (the shop's own `name1`), `price_toman`, `url`, `torob_pay`, `is_adv`, `price_unreliable`, `shop_score_pct`, `fetched_at`, `gold_quote_id` (nullable) | BR-13, BR-14, BR-48, BR-64, BR-84, BR-92, BR-112 |
+| `offer` | `id`, `product_id`, `source` (`torob_search` \| `torob_details`), `shop` (nullable), `city`, `channel` (`online` \| `in_person`), `title` (the shop's own `name1`), `price_toman`, `url`, `torob_pay`, `is_adv`, `price_unreliable`, `shop_stars` (nullable), `shop_months` (nullable) (CR-09), `fetched_at`, `gold_quote_id` (nullable) | BR-13, BR-14, BR-48, BR-64, BR-84, BR-92, BR-112 |
 | `attribute` | `product_id`, `name`, `value`, `provenance` (`spec` \| `title` \| `llm`), `confidence` (0–1), `evidence` (the matched text). Names: `weight_g`, `weight_conflict` (title and specs disagree; specs win, PRD §12), `karat`, `declared_ojrat_pct`, `declared_profit_pct`, `gallery`, `item_type`, `subtype`, `style_tags`, `audience`, `condition`, `has_non_gold_parts`, `non_gold_kind` (`stones` \| `cord` \| `beads` \| `declared`), `non_gold_cost_toman` | BR-20–BR-29, BR-2A, BR-58, BR-60 |
 | `label` | `product_id`, `label` (`real` \| `mixed` \| `not_gold` \| `review`), `reasons` (JSON array), `price_ratio`, `weight_unknown` | BR-30–BR-39, BR-84 |
 | `breakdown` | `offer_id`, `gold_value`, `premium_pct`, `implied_ojrat_pct`, `declared_ojrat_pct`, `parts` (JSON: gold, ojrat, profit, vat in toman; null when partial), `breakeven_g`, `vat_overcharge`, `partial_reason` (`non_gold_parts` \| null; an assumed karat is an input flag, not a partial breakdown), `vat`, `profit` | BR-40–BR-48, BR-2A |
@@ -111,3 +111,4 @@ Built per request from the snapshot and the live gold price ([API contract](api-
 | 0.3 | 2026-10-23 | Freeze readiness: PRD domain → storage map (§4); PRD v1.2 |
 | 0.5 | 2026-10-23 | M4 build: `parts` column; history shop "" for unnamed cards; gold fetched around every query (DM-01) |
 | 0.4 | 2026-10-23 | Independent review: `partial_reason` only for non-gold parts; `weight_conflict` attribute; `sample` flag; PRD v1.3 |
+| 0.6 | 2026-10-25 | CR-09: offer `shop_stars` and `shop_months` from Torob's `score_info`; schema version 2; the label check uses the nearest quote within 72 hours |

@@ -1,0 +1,352 @@
+{
+ "what": "CR-09 before and after: labels, seller data and the order of results for six sentences",
+ "made": "2026-10-25, from data/raw (one Torob run, finished_at below); before = code at 9df0cd0 on deploy/snapshot.sqlite, after = CR-09 code on the same raw files rebuilt",
+ "finished_at": {
+  "before": "2026-10-25T07:31:12.867Z",
+  "after": "2026-10-25T07:31:12.867Z"
+ },
+ "torob_shop_fields_in_details_offers": {
+  "shop_score_percentile": {
+   "0": 3698
+  },
+  "score_text_shapes": {
+   "★n (n سال در ترب)": 3184,
+   "★n (n ماه در ترب)": 382,
+   "خرید حضوری": 255,
+   "بازارگاه (n سال در ترب)": 68,
+   "فروشگاه جدید": 52,
+   "★n فروشگاه جدید": 12
+  }
+ },
+ "labels": {
+  "before": {
+   "counts": {
+    "not_gold": 215,
+    "real": 407,
+    "review": 72
+   },
+   "ev_mat_not_gold_shown_real": "5 of 104",
+   "ev_mat_gold_not_real": "9 of 163"
+  },
+  "after": {
+   "counts": {
+    "not_gold": 255,
+    "real": 389,
+    "review": 50
+   },
+   "ev_mat_not_gold_shown_real": "1 of 104",
+   "ev_mat_gold_not_real": "14 of 163"
+  },
+  "changed": {
+   "review → not_gold": 30,
+   "real → not_gold": 10,
+   "real → review": 8
+  }
+ },
+ "ranking": {
+  "before": [
+   {
+    "query": "یه دستبند ظریف برای روز مادر تا ۲۰ تومن",
+    "results": 25,
+    "distinct_scores": 24,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "دستبند طلا ۱۸ عیار زنانه کونیک مدل طنابی",
+      "price_toman": 17734073,
+      "shop": null,
+      "score": 0.772
+     },
+     {
+      "title": "دستبند طلا ۱۸ عیار طرح دونه برف",
+      "price_toman": 16950000,
+      "shop": "جواهرات تلما گالری",
+      "score": 0.756
+     },
+     {
+      "title": "دستبند زنانه لونرا مدل قلب طلا و مروارید طبیعی",
+      "price_toman": 12800000,
+      "shop": "لونرا گیفت",
+      "score": 0.706
+     }
+    ]
+   },
+   {
+    "query": "۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم",
+    "results": 2,
+    "distinct_scores": 2,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "النگو طلا ۱۸ عیار آیینه ای بدون اجرت",
+      "price_toman": 48192708,
+      "shop": "فرنیا گلد",
+      "score": 0.847
+     },
+     {
+      "title": "النگو طلا پروفیل بچگانه",
+      "price_toman": 34051446,
+      "shop": "آرا گالری طلا",
+      "score": 0.846
+     }
+    ]
+   },
+   {
+    "query": "زنجیر دو رنگ ایتالیایی مردانه",
+    "results": 16,
+    "distinct_scores": 6,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "زنجیر طلای پولکی اپال ۱۸ عیار ۰.۳۲ گرم ۴۰ سانتی‌متر",
+      "price_toman": 8108160,
+      "shop": null,
+      "score": 0.45
+     },
+     {
+      "title": "زنجیر طلا استار",
+      "price_toman": 7200000,
+      "shop": "جواهرات مروارید",
+      "score": 0.35
+     },
+     {
+      "title": "زنجیر طلا ۱۸ عیار ۴۰ سانتی‌متر هرمس",
+      "price_toman": 24973000,
+      "shop": "دلوا گلد",
+      "score": 0.35
+     }
+    ]
+   },
+   {
+    "query": "گردنبند طلا",
+    "results": 24,
+    "distinct_scores": 12,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "گردنبند خوشه انگور طلا روس مدل G124",
+      "price_toman": 2582747000,
+      "shop": "دیجی زرگر",
+      "score": 0.841
+     },
+     {
+      "title": "گردنبند طلا زنانه 18 عیار ماوی گالری مدل آویز مکعب توخالی مینی 5 با زنجیر مینیمال - 0.77",
+      "price_toman": 24199721,
+      "shop": "زرنت",
+      "score": 0.8
+     },
+     {
+      "title": "گردنبند طلا ستاره ای ۱.۱۱ گرم",
+      "price_toman": 32989422,
+      "shop": "آرا گالری طلا",
+      "score": 0.777
+     }
+    ]
+   },
+   {
+    "query": "انگشتر طلا",
+    "results": 34,
+    "distinct_scores": 17,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "انگشتر طلا بدون اجرت",
+      "price_toman": 38700000,
+      "shop": "بیزانس زیورآلات",
+      "score": 0.894
+     },
+     {
+      "title": "*انگشتر طلا بی نهایت وزن 0.37",
+      "price_toman": 10681750,
+      "shop": "گالری طلای تقوی",
+      "score": 0.885
+     },
+     {
+      "title": "انگشتر طلا نشان",
+      "price_toman": 133610000,
+      "shop": "دیجی زرگر",
+      "score": 0.847
+     }
+    ]
+   },
+   {
+    "query": "گوشواره طلا برای خودم",
+    "results": 47,
+    "distinct_scores": 12,
+    "tied_at_top": 5,
+    "top3": [
+     {
+      "title": "گوشواره طلا زریبان ونکلیف ۱۸ عیار وزن ۰٫۸۶ گرم",
+      "price_toman": 24609206,
+      "shop": "طلاجور",
+      "score": 0.9
+     },
+     {
+      "title": "*گوشواره طلا حلقه ای وزن 1.01",
+      "price_toman": 27866860,
+      "shop": "گالری طلای تقوی",
+      "score": 0.9
+     },
+     {
+      "title": "گوشواره طلا 18عیار پاپیون 0.530گرم",
+      "price_toman": 33210000,
+      "shop": "اورجینال دبی",
+      "score": 0.9
+     }
+    ]
+   }
+  ],
+  "after": [
+   {
+    "query": "یه دستبند ظریف برای روز مادر تا ۲۰ تومن",
+    "results": 24,
+    "distinct_scores": 24,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "دستبند طلا مروارید طرح M وزن ۰.۲۴ گرم",
+      "price_toman": 7155837,
+      "shop": "آرا گالری طلا",
+      "score": 0.726
+     },
+     {
+      "title": "دستبند طلا مدل اسم آیسا - برند لیردا کد 121277",
+      "price_toman": 17410000,
+      "shop": "لیردا گلد",
+      "score": 0.725
+     },
+     {
+      "title": "دستبند طلا ۱۸ عیار زنانه کونیک مدل طنابی",
+      "price_toman": 17734073,
+      "shop": null,
+      "score": 0.715
+     }
+    ]
+   },
+   {
+    "query": "۵۰ میلیون دارم، النگوی کم‌اجرت که موقع فروش کمتر ضرر کنم",
+    "results": 2,
+    "distinct_scores": 2,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "النگو طلا پروفیل بچگانه",
+      "price_toman": 34051446,
+      "shop": "آرا گالری طلا",
+      "score": 0.913
+     },
+     {
+      "title": "النگو طلا ۱۸ عیار آیینه ای بدون اجرت",
+      "price_toman": 48192708,
+      "shop": "فرنیا گلد",
+      "score": 0.905
+     }
+    ]
+   },
+   {
+    "query": "زنجیر دو رنگ ایتالیایی مردانه",
+    "results": 16,
+    "distinct_scores": 12,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "زنجیر طلا ۱۸ عیار ۴۰ سانتی‌متر هرمس",
+      "price_toman": 24973000,
+      "shop": "دلوا گلد",
+      "score": 0.474
+     },
+     {
+      "title": "زنجیر طلا استار",
+      "price_toman": 7200000,
+      "shop": "جواهرات مروارید",
+      "score": 0.465
+     },
+     {
+      "title": "زنجیر طلای پولکی اپال ۱۸ عیار ۰.۳۲ گرم ۴۰ سانتی‌متر",
+      "price_toman": 8108160,
+      "shop": null,
+      "score": 0.421
+     }
+    ]
+   },
+   {
+    "query": "گردنبند طلا",
+    "results": 24,
+    "distinct_scores": 18,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "گردنبند طلا ستاره ای ۱.۱۱ گرم",
+      "price_toman": 32989422,
+      "shop": "آرا گالری طلا",
+      "score": 0.875
+     },
+     {
+      "title": "گردنبند طلا ونکلیف ۱۸ عیار وزن ۱.۱۶ گرم",
+      "price_toman": 36245000,
+      "shop": "میم گلد گالری",
+      "score": 0.871
+     },
+     {
+      "title": "گردنبند دوبل طلا زنانه سایز ۴۰ سانتیمتر",
+      "price_toman": 65544000,
+      "shop": "عتیق",
+      "score": 0.854
+     }
+    ]
+   },
+   {
+    "query": "انگشتر طلا",
+    "results": 34,
+    "distinct_scores": 29,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "انگشتر طلا مدل ZH173 وزن ۱.۹۸ گرم",
+      "price_toman": 57427000,
+      "shop": "زرفام گلدن",
+      "score": 0.849
+     },
+     {
+      "title": "انگشتر مینیمال طلا مدل Z1768",
+      "price_toman": 59752000,
+      "shop": "زرفام گلدن",
+      "score": 0.841
+     },
+     {
+      "title": "انگشتر طلا بدون اجرت",
+      "price_toman": 38700000,
+      "shop": "بیزانس زیورآلات",
+      "score": 0.837
+     }
+    ]
+   },
+   {
+    "query": "گوشواره طلا برای خودم",
+    "results": 46,
+    "distinct_scores": 33,
+    "tied_at_top": 1,
+    "top3": [
+     {
+      "title": "گوشواره حلقه ای طلا مدل پیچی",
+      "price_toman": 28170000,
+      "shop": "گالری طلای امامی",
+      "score": 0.894
+     },
+     {
+      "title": "گوشواره حلقه‌ای گوی متحرک 960 سوتی طلا 18 عیار اسنپ گلد",
+      "price_toman": 31660000,
+      "shop": "گالری اسنپ گلد",
+      "score": 0.817
+     },
+     {
+      "title": "گوشواره طلا زریبان ونکلیف ۱۸ عیار وزن ۰٫۸۶ گرم",
+      "price_toman": 24609206,
+      "shop": "طلاجور",
+      "score": 0.8
+     }
+    ]
+   }
+  ]
+ }
+}

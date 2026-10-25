@@ -64,6 +64,27 @@ function premiumOf(p: ProductRecord, o: ProductRecord["offers"][number]): number
   return (o.price / goldValue(p.attrs.weight_g, o.g_at_fetch, p.attrs.karat ?? 18) - 1) * 100;
 }
 
+// BR-62 (CR-09): Torob's stars and time on Torob, half each; a part Torob does not show counts as unknown.
+function sellerTrust(p: ProductRecord, o: ProductRecord["offers"][number]): number {
+  if (p.attrs.gallery) return 1;
+  if (o.shop_stars === null && o.shop_months === null) return R.unknownShopScore;
+  const stars = o.shop_stars === null ? R.unknownShopScore : clamp(o.shop_stars - R.sellerStarsFloor);
+  const tenure = o.shop_months === null ? R.unknownShopScore : clamp(o.shop_months / R.sellerFullMonths);
+  return (stars + tenure) / 2;
+}
+
+const medianPrices = new WeakMap<ProductRecord[], number | undefined>();
+function medianPrice(ctx: Ctx & { candidates: ProductRecord[] }): number | undefined {
+  if (!medianPrices.has(ctx.candidates)) {
+    const prices = ctx.candidates
+      .map((c) => eligibleOffers(c.offers, {}, ctx.finishedAt, ctx.archive)[0]?.price)
+      .filter((x): x is number => x !== undefined)
+      .sort((a, b) => a - b);
+    medianPrices.set(ctx.candidates, prices[Math.floor(prices.length / 2)]);
+  }
+  return medianPrices.get(ctx.candidates);
+}
+
 // BR-59: the declared ojrat if the shop gave one, else the implied ojrat of BR-43; null when it cannot be checked.
 function ojratOf(p: ProductRecord, o: ProductRecord["offers"][number]): number | null {
   if (p.attrs.non_gold || p.attrs.weight_g === null || o.g_at_fetch === null) return null;
@@ -83,6 +104,7 @@ export function components(
   const wTarget = first(chips, "weight_target") as number | undefined;
   const pref = first(chips, "weight_pref") as "light" | "heavy" | undefined;
   const max = first(chips, "budget_max") as number | undefined;
+  const noBudget = target === undefined && max === undefined && first(chips, "budget_min") === undefined;
   const gift = first(chips, "intent") === "gift";
   let weightFit = 1;
   if (wTarget !== undefined) weightFit = w === null ? R.unknownWeightFit : clamp(1 - Math.abs(w - wTarget) / (R.weightBand * wTarget));
@@ -98,14 +120,24 @@ export function components(
     else weightFit = w >= mid ? 1 : mid === lo ? 1 : (w - lo) / (mid - lo);
   }
   const styles = values(chips, "style") as string[];
+  // CR-09: with no budget, the dearest piece should not lead just because its ojrat is a small share of its price.
+  const typicalPrice = noBudget ? medianPrice(ctx) : undefined;
+  const typical = typicalPrice === undefined || o.price <= typicalPrice ? 1 : clamp(1 - Math.log(o.price / typicalPrice) / Math.log(R.typicalPriceSpread));
   const premium = premiumOf(p, o);
   const age = (Date.parse(ctx.finishedAt) - Date.parse(o.fetched_at)) / 3_600_000;
   return {
     // A gift budget is what the buyer means to spend, so a gift near it fits better than one far below it.
-    budget_fit: target !== undefined ? clamp(1 - Math.abs(o.price - target) / (R.budgetBand * target)) : gift && max !== undefined ? clamp(o.price / max) : 1,
+    budget_fit:
+      target !== undefined
+        ? clamp(1 - Math.abs(o.price - target) / (R.budgetBand * target))
+        : gift && max !== undefined
+          ? clamp(o.price / max)
+          : noBudget
+            ? typical
+            : 1,
     weight_fit: weightFit,
     type_style_fit: styles.length === 0 ? 1 : styles.filter((s) => p.attrs.style_tags.includes(s) || p.title.includes(s)).length / styles.length,
-    seller_trust: p.attrs.gallery ? 1 : o.shop_score_pct !== null ? o.shop_score_pct / 100 : R.unknownShopScore,
+    seller_trust: sellerTrust(p, o),
     newness: p.attrs.condition === "used" ? 0 : 1,
     low_premium: premium === null ? 0 : clamp(1 - premium / 100),
     weight_known: w === null ? 0 : 1,
@@ -172,16 +204,25 @@ function route(
   return { route: "result", offer, eligible };
 }
 
+// BR-62 (CR-09): a style or weight the sentence did not ask for scores 1 for every piece, so its weight is shared out
+// among the parts that tell the pieces apart. The order does not change; the score and its parts read true.
+function weightsFor(intent: SearchResult["intent"], chips: Chip[]): Record<ComponentName, number> {
+  const w = { ...R.weights[intent] };
+  if (values(chips, "style").length === 0) w.type_style_fit = 0;
+  if (first(chips, "weight_target") === undefined && first(chips, "weight_pref") === undefined) w.weight_fit = 0;
+  const sum = Object.values(w).reduce((a, b) => a + b, 0);
+  return Object.fromEntries(Object.entries(w).map(([k, v]) => [k, v / sum])) as Record<ComponentName, number>;
+}
+
 function card(
   p: ProductRecord,
   offer: ProductRecord["offers"][number],
   eligible: ProductRecord["offers"],
   chips: Chip[],
   ctx: Ctx & { candidates: ProductRecord[] },
-  intent: SearchResult["intent"],
+  weights: Record<ComponentName, number>,
 ): Card {
   const comps = components(p, offer, chips, ctx);
-  const weights = R.weights[intent];
   const list = (Object.keys(weights) as ComponentName[]).map((name) => ({ name, weight: weights[name], value: comps[name] }));
   const prices = eligible.map((o) => o.price);
   return {
@@ -239,13 +280,14 @@ export function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): Sear
   const routed = products.map((p) => ({ p, ...route(p, chips, ctx, intent) }));
   const candidates = routed.filter((r) => r.route === "result").map((r) => r.p);
   const full = { ...ctx, candidates };
+  const weights = weightsFor(intent, chips);
   for (const r of routed) {
     if (r.route === "excluded") {
       out.excluded_count++;
       continue;
     }
     if (!r.offer || !r.eligible) continue;
-    const c = card(r.p, r.offer, r.eligible, chips, full, intent);
+    const c = card(r.p, r.offer, r.eligible, chips, full, weights);
     if (r.route === "result") out.results.push(c);
     else if (r.route === "review") out.review.push(c);
     else if (r.route === "weight_bucket") out.weight_unknown_bucket.push(c);

@@ -335,6 +335,11 @@ export const config = {
     weightBand: 0.1, // BR-54, both ends included
     unknownWeightFit: 0.5, // BR-62
     unknownShopScore: 0.5, // BR-62
+    // CR-09 seller trust, design choices: 4 stars scores 0 and 5 scores 1 (Torob's stars in the 2026-10-25 snapshot run
+    // 4.3 to 5); two years on Torob scores 1.
+    sellerStarsFloor: 4,
+    sellerFullMonths: 24,
+    typicalPriceSpread: 10, // CR-09: with no budget, the price fit falls from 1 at the median of the matches to 0 at 10×
   },
   explain: {
     extraReasons: false, // CR-02 (proposed): reason sentences beyond TX-66 need content-guide text first
@@ -364,6 +369,9 @@ export const config = {
       "کپی",
     ], // tune split, 2026-10-23
     notGoldPatterns: ["رنگ(?:\\s+\\S+){1,2}\\s+ثابت"], // «رنگ کاملا ثابت»، «رنگ 100% ثابت»; tune split, 2026-10-23
+    // BR-33 (CR-09): imitation unless a weight and a gold price let the price ratio decide. In EV-MAT, 22 of the 23
+    // «طلا روس» titles are not gold, and the one gold piece (G124, دیجی زرگر) states its weight (ev-mat-labels-2026-10-22.csv).
+    notGoldUnlessRatioWords: ["طلا روس", "طلای روس", "طلاروس"],
     // BR-32 (CR-03): real gold with stones, cord, leather or beads stays real and gets the non-gold-parts flag
     // from extraction (BR-2A); the owner's definition (D1, D2) leaves no words that make a product «mixed».
     mixedWords: [] as string[],

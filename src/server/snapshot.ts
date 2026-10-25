@@ -34,7 +34,8 @@ export function loadSnapshot(path: string): Snapshot {
         url: o.url as string,
         torob_pay: o.torob_pay === 1,
         price_unreliable: o.price_unreliable === 1,
-        shop_score_pct: (o.shop_score_pct as number | null) ?? null,
+        shop_stars: (o.shop_stars as number | null) ?? null,
+        shop_months: (o.shop_months as number | null) ?? null,
         fetched_at: o.fetched_at as string,
         g_at_fetch: o.gold_quote_id === null ? null : (quotes.get(o.gold_quote_id as number) ?? null),
       });

@@ -17,6 +17,7 @@ export type LabelInput = {
 const FA = "\\u0600-\\u06FF";
 const wordRe = (w: string) => new RegExp(`(?<![${FA}a-z])${w.replace(/ /g, "\\s")}(?:ی)?(?![${FA}a-z])`);
 const prep = (s: string) => normalize(s).toLowerCase();
+const wordIn = (text: string, words: string[]) => words.map((w) => text.match(wordRe(w))?.[0]).find((m) => m !== undefined) ?? null;
 
 function notGoldWord(text: string, cfg: Config): string | null {
   for (const w of cfg.label.notGoldWords) {
@@ -76,6 +77,9 @@ export function labelProduct(i: LabelInput, cfg: Config = defaults): LabelResult
     if (ratio < cfg.label.lowRatio) return result("review", [TX.belowGoldValue], ratio); // BR-35
     if (ratio > cfg.label.highRatio && !a.non_gold) return result("review", [TX.weightOrUnitError], ratio); // BR-36
   }
+  const russian = wordIn(title, cfg.label.notGoldUnlessRatioWords); // BR-33 (CR-09)
+  if (russian && ratio === null) return result("not_gold", [TX.inTitle(russian)]);
+  if (a.weight_g && i.price && !i.g_at_fetch) return result("review", [TX.noGoldPrice]); // CR-09: unchecked is not real
   const floor = cfg.label.minWeightFloorG;
   if (weightUnknown && floor !== null && i.price && i.g_at_fetch && i.price < goldValue(floor, i.g_at_fetch, karat)) {
     return result("review", [TX.belowMinWeightValue]);

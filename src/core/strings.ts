@@ -9,4 +9,5 @@ export const TX = {
   karatAssumed: "عیار فرض‌شده", // TX-20
   belowMinWeightValue: "قیمت از ارزش طلای کمترین وزن ممکن هم کمتر است", // TX-93, BR-3A
   inSpecs: (word: string) => `در مشخصات آمده: ${word}`, // TX-94, BR-31
+  noGoldPrice: "قیمت طلای آن زمان برای سنجیدن قیمت در دست نبود", // TX-104, CR-09
 } as const;

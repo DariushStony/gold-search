@@ -96,10 +96,10 @@ test("CR-03: gold with pearls or a stone is real gold, never mixed", () => {
 });
 
 test("AC-ML-09 (BR-3A, BR-37): no weight and a price under the gold value of 0.05 g is review; 3,000,000 stays real", () => {
-  const r = label("النگو طلا روس سایز ۳", { price: 270_000 });
+  const r = label("النگو طلا سایز ۳", { price: 270_000 });
   assert.equal(r.label, "review");
   assert.deepEqual(r.reasons, ["قیمت از ارزش طلای کمترین وزن ممکن هم کمتر است"]);
-  const ok = label("النگو طلا روس سایز ۳", { price: 3_000_000 });
+  const ok = label("النگو طلا سایز ۳", { price: 3_000_000 });
   assert.equal(ok.label, "real");
   assert.ok(ok.reasons.includes("وزن نامعلوم"));
 });
@@ -114,8 +114,22 @@ test("BR-31: other spec keys are not scanned", () => {
   assert.equal(label("دستبند طلا ۱۸ عیار", { specs: { توضیحات: "بدون آبکاری" } }).label, "real");
 });
 
-test("PRD §12: without G at fetch time there is no ratio, so no review from price", () => {
+test("CR-09 (PRD §12): a known weight with no gold price to check it against goes to review, never straight to real", () => {
   const r = label("پلاک طلا ۱۸ عیار وزن ۱ گرم", { price: 5_000_000, g: null });
-  assert.equal(r.label, "real");
+  assert.equal(r.label, "review");
+  assert.deepEqual(r.reasons, ["قیمت طلای آن زمان برای سنجیدن قیمت در دست نبود"]);
   assert.equal(r.price_ratio, null);
+  assert.equal(label("پلاک طلا ۱۸ عیار", { price: 5_000_000, g: null }).label, "real", "without a weight there is nothing to check (BR-37)");
+});
+
+test("CR-09 (BR-33): «طلا روس» with no price ratio to decide it is not gold; a weight and a price that fit gold keep it real", () => {
+  const noWeight = label("النگو طلا روس پک ۶ عددی", { price: 1_370_000 });
+  assert.equal(noWeight.label, "not_gold");
+  assert.deepEqual(noWeight.reasons, ["در عنوان آمده: طلا روس"]);
+  assert.equal(label("پک ۶ تایی النگوی طلاروس ۴ میل", { price: 944_000 }).label, "not_gold");
+  assert.equal(label("انگشتر طلای روسی زنانه", { price: 400_000 }).label, "not_gold");
+  assert.equal(label("النگو طلا روس وزن ۱ گرم", { price: 32_400_000, g: null }).label, "not_gold");
+  assert.equal(label("گردنبند خوشه انگور طلا روس وزن 74.41 گرم", { price: 2_582_747_000 }).label, "real");
+  assert.equal(label("دستبند طلا ۱۸ عیار مدل روسی", { price: 30_000_000 }).label, "real");
+  assert.equal(label("سرویس طلا عروس ۱۸ عیار", { price: 90_000_000 }).label, "real");
 });

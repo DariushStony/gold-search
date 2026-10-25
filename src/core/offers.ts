@@ -13,7 +13,8 @@ export type OfferRow = {
   url: string;
   torob_pay: boolean;
   price_unreliable: boolean;
-  shop_score_pct: number | null;
+  shop_stars: number | null; // Torob's star score, only for shops it has scored (CR-09)
+  shop_months: number | null; // time on Torob; 0 for «فروشگاه جدید»
   fetched_at: string;
 };
 

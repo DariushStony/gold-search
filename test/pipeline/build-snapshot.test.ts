@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { buildSnapshot } from "../../src/pipeline/build-snapshot.ts";
+import { buildSnapshot, shopRating } from "../../src/pipeline/build-snapshot.ts";
 
 const RUN = "2026-10-23T06:56:00.000Z";
 
@@ -77,7 +77,8 @@ function rawFixture(): string {
               page_url: "https://api.torob.com/v4/product-page/redirect/a",
               show_torobpay_badge: false,
               is_price_unreliable: false,
-              shop_score_percentile: 71,
+              shop_score_percentile: 0,
+              score_info: { score: 4.9, score_text: "★۴.۹ (۸ سال در ترب)" },
             },
             {
               shop_name: "زرین",
@@ -88,7 +89,8 @@ function rawFixture(): string {
               page_url: "https://api.torob.com/v4/product-page/redirect/b",
               show_torobpay_badge: true,
               is_price_unreliable: false,
-              shop_score_percentile: 40,
+              shop_score_percentile: 0,
+              score_info: { score: 5, score_text: "فروشگاه جدید" },
             },
             { shop_name: "بسته", shop_name2: "تهران", name1: "النگو", price: 0, availability: false, page_url: "x" },
           ],
@@ -102,6 +104,7 @@ function rawFixture(): string {
               price: 53_000_000,
               availability: null,
               page_url: "https://api.torob.com/v4/product-page/redirect/c",
+              score_info: { score: 5, score_text: "خرید حضوری" },
             },
           ],
         },
@@ -118,7 +121,7 @@ test("buildSnapshot: products, merged offers, labels, breakdowns and meta from r
   const db = new DatabaseSync(out, { readOnly: true });
 
   const meta = db.prepare("SELECT schema_version, run_id, finished_at, requests FROM meta").get() as any;
-  assert.deepEqual({ ...meta }, { schema_version: 1, run_id: RUN, finished_at: "2026-10-23T07:02:00.000Z", requests: 21 });
+  assert.deepEqual({ ...meta }, { schema_version: 2, run_id: RUN, finished_at: "2026-10-23T07:02:00.000Z", requests: 21 });
 
   assert.equal((db.prepare("SELECT count(*) AS n FROM product").get() as any).n, 2);
 
@@ -135,6 +138,17 @@ test("buildSnapshot: products, merged offers, labels, breakdowns and meta from r
       ["طلای حضوری", "in_person", 53_000_000],
     ],
   );
+
+  // CR-09: Torob's stars and time on Torob; its shop_score_percentile is 0 for every offer, so it is not read.
+  const ratings = db
+    .prepare("SELECT shop, shop_stars, shop_months FROM offer WHERE product_id = 'ring' ORDER BY price_toman")
+    .all()
+    .map((r: any) => [r.shop, r.shop_stars, r.shop_months]);
+  assert.deepEqual(ratings, [
+    ["فرنیا گلد", 4.9, 96],
+    ["زرین", null, 0],
+    ["طلای حضوری", null, null],
+  ]);
 
   const labels = Object.fromEntries(
     db
@@ -170,7 +184,41 @@ test("buildSnapshot: an offer with no gold quote within 60 minutes gets no break
   const db = new DatabaseSync(out, { readOnly: true });
   assert.equal((db.prepare("SELECT count(*) AS n FROM breakdown").get() as any).n, 0);
   assert.equal((db.prepare("SELECT count(*) AS n FROM offer WHERE gold_quote_id IS NULL").get() as any).n, 4);
+  // CR-09: the label check still has a gold price, from the quote 6 hours earlier: 49,000,000 ÷ (1.7 × 27,017,000).
+  const ring = db.prepare("SELECT label, price_ratio FROM label WHERE product_id = 'ring'").get() as any;
+  assert.equal(ring.label, "real");
+  assert.equal(Number(ring.price_ratio.toFixed(3)), 1.067);
   db.close();
+});
+
+test("buildSnapshot: with no gold quote within 72 hours, a product with a known weight goes to review (CR-09)", () => {
+  const raw = rawFixture();
+  writeFileSync(
+    join(raw, "2026-10-23", "gold-price.jsonl"),
+    JSON.stringify({
+      run_id: RUN,
+      source: "https://call1.tgju.org/ajax.json",
+      unit: "rial",
+      fetched_at: "2026-10-19T07:00:00.000Z",
+      prices: { geram18: { p: "270,170,000", ts: "2026-10-19 10:20:00" } },
+    }) + "\n",
+  );
+  const out = join(mkdtempSync(join(tmpdir(), "snap-")), "snapshot.sqlite");
+  buildSnapshot({ rawDir: raw, outPath: out });
+  const db = new DatabaseSync(out, { readOnly: true });
+  const ring = db.prepare("SELECT label, reasons FROM label WHERE product_id = 'ring'").get() as any;
+  assert.equal(ring.label, "review");
+  assert.deepEqual(JSON.parse(ring.reasons), ["قیمت طلای آن زمان برای سنجیدن قیمت در دست نبود"]);
+  db.close();
+});
+
+test("shopRating: stars only when Torob shows a star, and months on Torob from the score text (CR-09)", () => {
+  assert.deepEqual(shopRating({ score: 4.3, score_text: "★۴.۳ (۷ سال در ترب)" }), { stars: 4.3, months: 84 });
+  assert.deepEqual(shopRating({ score: 5, score_text: "★۵ (۹ ماه در ترب)" }), { stars: 5, months: 9 });
+  assert.deepEqual(shopRating({ score: 5, score_text: "بازارگاه (۳ سال در ترب)" }), { stars: null, months: 36 });
+  assert.deepEqual(shopRating({ score: 5, score_text: "فروشگاه جدید" }), { stars: null, months: 0 });
+  assert.deepEqual(shopRating({ score: 5, score_text: "خرید حضوری" }), { stars: null, months: null });
+  assert.deepEqual(shopRating(undefined), { stars: null, months: null });
 });
 
 test("buildSnapshot: placeholder prices like 999,999,999,999,999 are not offers, and the snapshot still loads", async () => {
