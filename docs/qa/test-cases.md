@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | ready for freeze (stage 04) |
-| Version | 0.6 |
+| Version | 0.7 |
 | Owner | Dariush Hadipour |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §11, §12, §20; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [API contract](../engineering/api-contract.md) v0.4 |
@@ -52,6 +52,7 @@ Fixtures: a frozen snapshot `fixture-2026-10-22` (from `data/raw/2026-10-22`), a
 | TC-QU-01 | P1 | AC-QU-05, AC-QU-06, AC-QU-08, AC-QU-09, AC-QU-10, AC-QU-11 | *unit*; LLM stub that counts calls | Parse each AC sentence | Chips equal the AC; the LLM is called 0 times for sentences the rules fully parse; every parsed chip shows «از جمله‌ی شما»; a chip the user adds shows «انتخاب شما»; for «دستبند ۲ گرمی», bracelets without weight appear under «وزنشان اعلام نشده» |
 | TC-RK-02 | P1 | AC-RK-05 | *unit*; two products with equal scores and prices 10.0M and 9.5M | Rank | 9.5M first; with equal prices too, the lower product id first |
 | TC-RK-03 | P1 | AC-RK-08, AC-RK-09 | *unit*; offers with stars and months; five rings at 10M to 3,000M | Score seller trust; search «انگشتر طلا» with no budget; search «انگشتر طلا برای خودم» | 0.95 for ★4.9 and 8 years, 0.25 for a new shop, 0.5 with no data; budget fit 1 up to the median, 0.52 at 3×, 0 at 10× and over, the 3,000M ring last; style and weight weights 0, weights sum to 1 |
+| TC-RK-04 | P1 | AC-RK-10 | *unit*; rings at 28M, 30M, 40M with 1 g and one 20M ring with no weight | Search «انگشتر طلا» with each sort chip; search «انگشتر طلا برای پس انداز» with and without `price_sort: desc` | Price up: 20, 28, 30, 40; down: 40, 30, 28, 20; premium: 28, 30, 40, then the weightless one; the explanation only without the sort |
 | TC-XP-02 | P1 | AC-XP-03 | built app; LLM stub that returns «حتماً بخرید، طلا گران می‌شود» | Run the main flows; scan every explanation and the savings card | The stub text is rejected and the template shown; no «بخر»، «نخر» or price forecast anywhere |
 | TC-CO-01 | P2 | AC-CO-02 | fixture offer with Torob Pay | Open its card and sheet | «قسطی با ترب‌پی» shown on that offer only |
 | TC-TR-02 | P2 | AC-TR-03 | built app; harness output with one metric, and an empty one | Open SC-05 on each build | Value, n, 95% interval, date and pipeline version per metric; with the empty output «هنوز ارزیابی نشده؛ برنامه: M4» |
@@ -61,6 +62,7 @@ Fixtures: a frozen snapshot `fixture-2026-10-22` (from `data/raw/2026-10-22`), a
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-10-22 | Main scenarios for Gate 2 |
+| 0.7 | 2026-10-25 | CR-12: TC-RK-04 |
 | 0.6 | 2026-10-25 | CR-10: TC-PR-06 |
 | 0.5 | 2026-10-25 | CR-09: TC-LB-04 uses a plain gold title; TC-LB-05 and TC-RK-03 |
 | 0.4 | 2026-10-24 | CR-01: TC-LB-04 for AC-ML-09 and AC-ML-10 |

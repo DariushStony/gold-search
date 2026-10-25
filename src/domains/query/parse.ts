@@ -1,40 +1,9 @@
 // K-05 rules-first parser: free Persian text → chips (BR-50–BR-5A; API §4.2).
 // The LLM fallback (BR-55, ADR-0005) plugs in later; this path never calls it.
 import { config } from '../../core/config.ts';
+import { ROLE, type Chip, type ChipKind } from '../../shared/chips.ts';
 import { normalize } from '../../shared/text.ts';
 
-type ChipKind =
-  | 'intent'
-  | 'item_type'
-  | 'form'
-  | 'budget_min'
-  | 'budget_max'
-  | 'budget_target'
-  | 'weight_min'
-  | 'weight_max'
-  | 'weight_target'
-  | 'weight_pref'
-  | 'karat'
-  | 'audience'
-  | 'recipient'
-  | 'condition'
-  | 'ojrat_max'
-  | 'ojrat_sort'
-  | 'no_stones'
-  | 'style'
-  | 'shop'
-  | 'torob_pay'
-  | 'in_person'
-  | 'city'
-  | 'occasion';
-type Chip = {
-  kind: ChipKind;
-  role: 'filter' | 'filter_and_sort' | 'sort' | 'info';
-  level: 'product' | 'offer';
-  value: string | number | boolean;
-  origin: 'text' | 'user';
-  llm?: true; // read by the LLM, not the rules (BR-55); the page marks it
-};
 type Intent = 'gift' | 'beauty' | 'savings';
 type ParsedQuery = {
   chips: Chip[];
@@ -48,33 +17,6 @@ type ParsedQuery = {
 type Answers = { budget_unit?: 'thousand' | 'million' };
 
 const cfg = config.parse;
-
-// API contract §3: role and level are fixed per kind.
-const ROLE: Record<ChipKind, [Chip['role'], Chip['level']]> = {
-  intent: ['filter_and_sort', 'product'],
-  item_type: ['filter', 'product'],
-  form: ['filter', 'product'],
-  karat: ['filter', 'product'],
-  audience: ['filter', 'product'],
-  condition: ['filter', 'product'],
-  no_stones: ['filter', 'product'],
-  budget_min: ['filter', 'product'],
-  budget_max: ['filter', 'product'],
-  budget_target: ['filter_and_sort', 'product'],
-  weight_min: ['filter', 'product'],
-  weight_max: ['filter', 'product'],
-  weight_target: ['filter_and_sort', 'product'],
-  weight_pref: ['sort', 'product'],
-  ojrat_max: ['filter', 'product'],
-  ojrat_sort: ['sort', 'product'],
-  style: ['sort', 'product'],
-  shop: ['filter', 'offer'],
-  city: ['filter', 'offer'],
-  in_person: ['filter', 'offer'],
-  torob_pay: ['filter', 'offer'],
-  recipient: ['info', 'product'],
-  occasion: ['info', 'product'],
-};
 
 const FA = '\\u0600-\\u06FFa-z';
 // A whole word, allowing colloquial suffixes such as «ی»، «م»، «مه»، «ها»، «ای»، «ان»، «یی»، «ش»، «شو».
@@ -459,12 +401,4 @@ function parseQuery(text: string, answers: Answers = {}): ParsedQuery {
   };
 }
 
-export {
-  ROLE,
-  NUMBER_WORDS,
-  parseQuery,
-  type ChipKind,
-  type Chip,
-  type ParsedQuery,
-  type Answers,
-};
+export { NUMBER_WORDS, parseQuery, type ParsedQuery, type Answers };

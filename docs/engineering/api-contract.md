@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.9 |
+| Version | 0.10 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -42,7 +42,8 @@ type ChipKind =
   | "intent" | "item_type" | "form" | "budget_min" | "budget_max" | "budget_target"
   | "weight_min" | "weight_max" | "weight_target" | "weight_pref" | "karat" | "audience"
   | "recipient" | "condition" | "ojrat_max" | "ojrat_sort" | "no_stones" | "style" | "shop"
-  | "torob_pay" | "in_person" | "city" | "occasion";            // schema v3 (BR-50, D-26)
+  | "torob_pay" | "in_person" | "city" | "occasion"            // schema v3 (BR-50, D-26)
+  | "price_sort" | "premium_sort";                                // CR-12: set by the page's sort control, never by the parser or the LLM
 
 type Chip = {
   kind: ChipKind;
@@ -68,6 +69,7 @@ type Chip = {
 | `weight_pref` | sort | product | BR-54 |
 | `ojrat_max` | filter | product, on the representative offer's breakdown | BR-59 |
 | `ojrat_sort` | sort | product | BR-59 |
+| `price_sort` (`asc` or `desc`), `premium_sort` (`asc`) | sort | product | CR-12: one sort at a time; a piece with no premium (no weight or no G) goes last; no «چرا اولی؟» while an explicit sort is on |
 | `style` | sort | product | BR-58, BR-62 |
 | `shop`, `city`, `in_person`, `torob_pay` | filter | offer | BR-60, BR-84 |
 | `recipient`, `occasion` | info | product | BR-5A |
@@ -389,5 +391,6 @@ Notes on the example:
 | 0.5 | 2026-10-24 | CR-04: `unparsed` on the `/parse` response |
 | 0.6 | 2026-10-24 | CR-05: optional `llm` flag on chips the LLM added |
 | 0.7 | 2026-10-25 | CR-07: resale and rise at the fetch-time G, new `resale_loss_pct` |
+| 0.10 | 2026-10-25 | CR-12: `price_sort` and `premium_sort` chips |
 | 0.9 | 2026-10-25 | CR-10: `no_split_reason`; `parts` is never negative |
 | 0.8 | 2026-10-25 | CR-09: `shop_stars` and `shop_months` replace `shop_score_pct`; weight 0 in `components` for a style or weight the sentence did not ask for |

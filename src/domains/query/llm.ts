@@ -1,17 +1,14 @@
 // BR-55 (ADR-0005): the LLM reads only what the rules left, and its answer is checked here before use.
 // It may fill defined chips only, rules keep their values, and every number must appear in the user's text.
 import { config } from '../../core/config.ts';
+import { ROLE, SORT_KINDS, type Chip, type ChipKind } from '../../shared/chips.ts';
 import { normalize } from '../../shared/text.ts';
-import {
-  NUMBER_WORDS,
-  ROLE,
-  type Chip,
-  type ChipKind,
-  type ParsedQuery,
-} from './parse.ts';
+import { NUMBER_WORDS, type ParsedQuery } from './parse.ts';
 
 const cfg = config.parse;
-const KINDS = Object.keys(ROLE) as ChipKind[];
+// CR-12: price and premium sorts come from the page's sort control, never from a sentence.
+const PAGE_ONLY = new Set<string>(SORT_KINDS.filter((k) => k !== 'ojrat_sort'));
+const KINDS = (Object.keys(ROLE) as ChipKind[]).filter((k) => !PAGE_ONLY.has(k));
 const MULTI = new Set<ChipKind>([
   'item_type',
   'form',

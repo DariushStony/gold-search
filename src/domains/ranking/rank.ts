@@ -1,6 +1,7 @@
 // K-05 search: filters (BR-60), representative offer (BR-84), sections (BR-61, BR-63, BR-59, BR-54),
 // intent scoring (BR-62–BR-66), relax hint (BR-67) and the #1-vs-#2 explanation (BR-70–BR-73).
 import { config } from '../../core/config.ts';
+import type { Chip, ChipKind } from '../../shared/chips.ts';
 import { formatPct } from '../../shared/format.ts';
 import type { Label } from '../catalog/label.ts';
 import {
@@ -10,7 +11,6 @@ import {
   type OfferRow,
 } from '../catalog/offers.ts';
 import { goldValue, impliedOjratPct, vatRateFor } from '../pricing/price.ts';
-import type { Chip, ChipKind } from '../query/parse.ts';
 
 type ProductRecord = {
   id: string;
@@ -361,16 +361,32 @@ function explain(a: Card, b: Card): SearchResult['explanation'] {
   }; // TX-65
 }
 
+// BR-59 and CR-12: an explicit sort puts its key before the score; a missing value (no weight, no gold price) goes last.
+function sortKey(
+  chips: Chip[],
+  products: Map<string, ProductRecord>,
+): ((c: Card) => number) | null {
+  const price = first(chips, 'price_sort');
+  if (price === 'asc') return (c) => c.offer.price;
+  if (price === 'desc') return (c) => -c.offer.price;
+  if (first(chips, 'premium_sort') === 'asc') {
+    return (c) => c.offer.premium_pct ?? Infinity;
+  }
+  if (first(chips, 'ojrat_sort') === 'asc') {
+    return (c) => ojratOf(products.get(c.id)!, c.offer) ?? Infinity;
+  }
+  return null;
+}
+
 function rank(
   cards: Card[],
   chips: Chip[],
   products: Map<string, ProductRecord>,
 ): Card[] {
-  const byOjrat = first(chips, 'ojrat_sort') === 'asc';
-  const ojrat = (c: Card) => ojratOf(products.get(c.id)!, c.offer) ?? Infinity;
+  const key = sortKey(chips, products);
   return cards.sort(
     (x, y) =>
-      (byOjrat ? ojrat(x) - ojrat(y) : 0) ||
+      (key ? key(x) - key(y) : 0) ||
       y.score - x.score ||
       x.offer.price - y.offer.price ||
       x.id.localeCompare(y.id),
@@ -418,7 +434,8 @@ function search(products: ProductRecord[], chips: Chip[], ctx: Ctx): SearchResul
   ]) {
     rank(list, chips, byId);
   }
-  if (out.results.length >= 2) {
+  // CR-12: with an explicit sort the first place comes from the sort, so a score explanation would mislead.
+  if (out.results.length >= 2 && !sortKey(chips, byId)) {
     out.explanation = explain(out.results[0]!, out.results[1]!);
   }
 

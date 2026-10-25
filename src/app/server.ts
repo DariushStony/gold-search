@@ -7,13 +7,14 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { dirname, join } from 'node:path';
 import { config } from '../core/config.ts';
 import { readEnv } from '../core/env.ts';
+import type { Chip } from '../shared/chips.ts';
 import { eligibleOffers, isStale } from '../domains/catalog/offers.ts';
 import { loadSnapshot, type Snapshot } from '../domains/catalog/snapshot.ts';
 import { createGoldFeed } from '../domains/pricing/gold-feed.ts';
 import { parseTgju, parseUnion, type Reference } from '../domains/pricing/gold-price.ts';
 import { priceBreakdown, vatRateFor } from '../domains/pricing/price.ts';
 import { avalai, parser, type Llm } from '../domains/query/ai-reader.ts';
-import { type Answers, type Chip } from '../domains/query/parse.ts';
+import type { Answers } from '../domains/query/parse.ts';
 import {
   excludedFor,
   search,

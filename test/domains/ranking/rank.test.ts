@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import type { Chip } from '../../../src/shared/chips.ts';
 import type { OfferRow } from '../../../src/domains/catalog/offers.ts';
-import { parseQuery, type Chip } from '../../../src/domains/query/parse.ts';
+import { parseQuery } from '../../../src/domains/query/parse.ts';
 import {
   components,
   excludedFor,
@@ -354,4 +355,57 @@ test('CR-09 (BR-62): a style or weight the sentence did not ask for carries no w
   assert.ok(weightOf('یه انگشتر ظریف برای خودم', 'weight_fit') > 0);
   const card = search([product({})], chips('انگشتر طلا برای خودم'), ctx).results[0]!;
   assert.equal(Number(card.components.reduce((s, c) => s + c.weight, 0).toFixed(6)), 1);
+});
+
+const sortChip = (
+  kind: 'price_sort' | 'premium_sort' | 'ojrat_sort',
+  value: string,
+): Chip => ({
+  kind,
+  value,
+  role: 'sort',
+  level: 'product',
+  origin: 'user',
+});
+
+test('CR-12: the sort control orders by price either way, or by the smallest premium over gold; ties keep the score order', () => {
+  const items = [
+    product({ id: 'mid', price: 30_000_000, weight: 1 }),
+    product({ id: 'cheap', price: 28_000_000, weight: 1 }),
+    product({ id: 'dear', price: 40_000_000, weight: 1 }),
+    product({ id: 'noweight', price: 20_000_000, weight: null }),
+  ];
+  const base = chips('انگشتر طلا');
+  assert.deepEqual(ids(search(items, [...base, sortChip('price_sort', 'asc')], ctx)), [
+    'noweight',
+    'cheap',
+    'mid',
+    'dear',
+  ]);
+  assert.deepEqual(ids(search(items, [...base, sortChip('price_sort', 'desc')], ctx)), [
+    'dear',
+    'mid',
+    'cheap',
+    'noweight',
+  ]);
+  // 28M for 1 g at G 27M is 3.7% over gold, the closest; a weightless piece has no premium and goes last
+  assert.deepEqual(ids(search(items, [...base, sortChip('premium_sort', 'asc')], ctx)), [
+    'cheap',
+    'mid',
+    'dear',
+    'noweight',
+  ]);
+});
+
+test('CR-12: with an explicit sort the «چرا اولی؟» line is not built, because the first place comes from the sort, not the score', () => {
+  const items = [
+    product({ id: 'a', price: 30_000_000 }),
+    product({ id: 'b', price: 36_000_000 }),
+  ];
+  const base = chips('انگشتر طلا برای پس انداز');
+  assert.ok(search(items, base, ctx).explanation);
+  assert.equal(
+    search(items, [...base, sortChip('price_sort', 'desc')], ctx).explanation,
+    null,
+  );
 });
