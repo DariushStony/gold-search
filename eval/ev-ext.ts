@@ -2,7 +2,7 @@
 // the independent annotator (tune) and the owner's audit of it (test, D-20).
 // Run: node eval/ev-ext.ts [--split=test --release] [--show]
 import { existsSync } from "node:fs";
-import { extract, specsFromDetails } from "../src/core/extract.ts";
+import { extract, specsFromDetails } from "../src/domains/catalog/extract.ts";
 import { ROOT, readCsv, details, wilson, splitFromArgs, pct } from "./lib.ts";
 
 const split = splitFromArgs();

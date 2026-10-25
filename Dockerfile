@@ -14,4 +14,4 @@ COPY web ./web
 COPY deploy/snapshot.sqlite ./deploy/snapshot.sqlite
 USER node
 EXPOSE 8000
-CMD ["node", "src/server/app.ts"]
+CMD ["node", "src/app/server.ts"]

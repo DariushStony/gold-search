@@ -12,8 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
-    "demo": "node --env-file-if-exists=.env src/server/app.ts",
-    "snapshot": "node src/pipeline/build-snapshot.ts",
+    "demo": "node --env-file-if-exists=.env src/app/server.ts",
+    "snapshot": "node src/domains/collection/build-snapshot.ts",
     "snapshot:release": "cp data/snapshots/latest.sqlite deploy/snapshot.sqlite && git add deploy/snapshot.sqlite && git -c user.name=\"Dariush Hadipour\" -c user.email=dariushhadi87@gmail.com commit -m \"Update the demo snapshot\""
   },
   "devDependencies": {

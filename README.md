@@ -21,7 +21,7 @@
 ```bash
 pnpm install
 pnpm check
-node src/collector/collect.ts
+node src/domains/collection/collect.ts
 pnpm snapshot
 pnpm demo
 node eval/ev-mat.ts

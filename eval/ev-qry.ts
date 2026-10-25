@@ -1,8 +1,8 @@
 // EV-QRY: query understanding (BR-50–BR-5A). A query counts only if every chip
 // matches its label. Run: node eval/ev-qry.ts [--split=test --release] [--show] [--llm[=model]] (with --env-file=.env)
-import { parseQuery } from "../src/core/parse.ts";
+import { parseQuery } from "../src/domains/query/parse.ts";
 import { ROOT, readCsv, wilson, splitFromArgs, pct, throttled } from "./lib.ts";
-import { avalai, parser } from "../src/server/llm.ts";
+import { avalai, parser } from "../src/domains/query/ai-reader.ts";
 import { config } from "../src/core/config.ts";
 
 const COLS = [

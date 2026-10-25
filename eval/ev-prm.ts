@@ -1,7 +1,7 @@
 // EV-PRM: implied ojrat (BR-43) against Digikala's declared ojrat, on products
 // without non-gold parts (BR-2A, D-19). Run: node eval/ev-prm.ts [--split=test --release]
-import { extract } from "../src/core/extract.ts";
-import { impliedOjratPct } from "../src/core/price.ts";
+import { extract } from "../src/domains/catalog/extract.ts";
+import { impliedOjratPct } from "../src/domains/pricing/price.ts";
 import { config } from "../src/core/config.ts";
 import { ROOT, readCsv, splitFromArgs } from "./lib.ts";
 

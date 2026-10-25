@@ -1,7 +1,7 @@
 // EV-MAT: material labels (BR-30–BR-39) against the human/AI labels in
 // docs/evidence/ev-mat-labels-2026-10-22.csv. Run: node eval/ev-mat.ts [--split=test --release] [--show]
-import { extract, specsFromDetails } from "../src/core/extract.ts";
-import { labelProduct } from "../src/core/label.ts";
+import { extract, specsFromDetails } from "../src/domains/catalog/extract.ts";
+import { labelProduct } from "../src/domains/catalog/label.ts";
 import { config } from "../src/core/config.ts";
 import { ROOT, readCsv, details, wilson, splitFromArgs, pct } from "./lib.ts";
 

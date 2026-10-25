@@ -1,8 +1,8 @@
 // Hard sentences whose key fact the rules miss (builder-labelled proxy, D-14): rules alone vs rules + LLM (ADR-0005).
 // Run: node --env-file=.env eval/ev-hard.ts [--model=gpt-4.1-nano]
 import { ROOT, readCsv, throttled } from "./lib.ts";
-import { parseQuery, type ParsedQuery } from "../src/core/parse.ts";
-import { avalai, parser } from "../src/server/llm.ts";
+import { parseQuery, type ParsedQuery } from "../src/domains/query/parse.ts";
+import { avalai, parser } from "../src/domains/query/ai-reader.ts";
 import { config } from "../src/core/config.ts";
 
 const key = process.env.AVALAI_API_KEY;
