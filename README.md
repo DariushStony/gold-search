@@ -1,5 +1,9 @@
 # زرسنج: جست‌وجوی طلا روی داده‌ی ترب
 
+- **دموی زنده:** [zarsanj.darkube.ir](https://zarsanj.darkube.ir)
+- **اطلس محصول و مهندسی:** [zarsanj.darkube.ir/atlas](https://zarsanj.darkube.ir/atlas)
+- **ویدیوی معرفی (۴:۵۵):** [VIDEO_URL](VIDEO_URL)
+
 | | |
 | --- | --- |
 | وضعیت | دمو روی [Hamravesh Darkube](docs/engineering/adr/0012-hamravesh-darkube.md) |
@@ -9,7 +13,7 @@
 
 یک دموی «ترب برای X» برای چالش استخدامی AI Product Engineer ترب. کاربر یک جمله‌ی آزاد فارسی می‌نویسد، مثلاً «یه دستبند ظریف برای روز مادر تا ۲۰ تومن». زرسنج جمله را به فیلتر و ترتیب تبدیل می‌کند، طلای واقعی را از بدلی جدا می‌کند، قیمت هر کالا را به ارزش طلا، اجرت، سود و مالیات می‌شکند و نتیجه‌ها را بر اساس نیت کاربر مرتب می‌کند.
 
-- **اطلس محصول و مهندسی:** `/atlas` روی دمو، از [docs/atlas](docs/atlas): محصول، طراحی، معماری، AI، تصمیم‌ها، کیفیت و محدودیت‌ها
+- **متن اطلس در مخزن:** [docs/atlas](docs/atlas): محصول، طراحی، معماری، AI، تصمیم‌ها، کیفیت و محدودیت‌ها
 - **خلاصه‌ی یک‌صفحه‌ای:** [docs/summary.md](docs/summary.md)
 - **نقشه‌ی سندها:** [docs/README.md](docs/README.md)
 - **تغییرها بعد از Contract Freeze:** [change-requests.md](docs/product/change-requests.md)
