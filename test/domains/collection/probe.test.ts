@@ -19,7 +19,7 @@ test('CR-16: one search request; a JSON page counts as reachable with its result
     assert.equal(init?.headers?.Origin, 'https://torob.com');
     return reply(200, 'application/json', {
       results: [{}, {}, {}],
-      total_count: 1200,
+      count: 1200,
     })(url);
   };
   const p = await probeTorob(http);

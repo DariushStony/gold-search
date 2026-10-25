@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -144,7 +144,7 @@ test('buildSnapshot: products, merged offers, labels, breakdowns and meta from r
   assert.deepEqual(
     { ...meta },
     {
-      schema_version: 2,
+      schema_version: 3,
       run_id: RUN,
       finished_at: '2026-10-23T07:02:00.000Z',
       requests: 21,
@@ -322,5 +322,145 @@ test('buildSnapshot: placeholder prices like 999,999,999,999,999 are not offers,
   assert.deepEqual(snap.products.map((p) => p.id).sort(), ['fake', 'ring']);
   assert.ok(
     snap.products.flatMap((p) => p.offers).every((o) => o.price < 100_000_000_000),
+  );
+});
+
+// A second run a day later: the bangle is cheaper, a new ring appears, and the bangle's details page is fetched again.
+const RUN2 = '2026-10-24T06:45:00.000Z';
+function secondRun(): string {
+  const raw = mkdtempSync(join(tmpdir(), 'raw2-'));
+  mkdirSync(join(raw, '2026-10-24'));
+  mkdirSync(join(raw, 'details'));
+  const line = (o: object) => JSON.stringify(o) + '\n';
+  writeFileSync(
+    join(raw, '2026-10-24', 'torob-search.jsonl'),
+    line({
+      run_id: RUN2,
+      q: 'النگو طلا',
+      page: 0,
+      fetched_at: '2026-10-24T06:46:00.000Z',
+      results: [
+        {
+          random_key: 'ring',
+          name1: 'النگو طلا ۱۸ عیار آیینه ای',
+          name2: '',
+          price: 48_500_000,
+          shop_text: 'در فرنیا گلد',
+          web_client_absolute_url: '/p/ring/x/',
+          image_url: 'https://img/ring.jpg',
+          is_adv: false,
+        },
+        {
+          random_key: 'band',
+          name1: 'انگشتر طلا ۱۸ عیار ۲ گرم',
+          name2: '',
+          price: 60_000_000,
+          shop_text: 'در گالری طلا',
+          web_client_absolute_url: '/p/band/x/',
+          image_url: null,
+          is_adv: false,
+        },
+      ],
+    }),
+  );
+  writeFileSync(
+    join(raw, '2026-10-24', 'gold-price.jsonl'),
+    line({
+      run_id: RUN2,
+      source: 'https://call1.tgju.org/ajax.json',
+      unit: 'rial',
+      fetched_at: '2026-10-24T06:45:30.000Z',
+      prices: { geram18: { p: '268,000,000', ts: '2026-10-24 10:10:00' } },
+    }),
+  );
+  writeFileSync(
+    join(raw, '2026-10-24', 'runs.jsonl'),
+    line({
+      run_id: RUN2,
+      step: 'summary',
+      started_at: RUN2,
+      finished_at: '2026-10-24T07:20:00.000Z',
+      requests: 9,
+      results: 2,
+      details_fetched: 1,
+      stopped: null,
+    }),
+  );
+  const first = JSON.parse(
+    readFileSync(join(rawFixture(), 'details', 'ring.json'), 'utf8'),
+  );
+  first.fetched_at = '2026-10-24T07:00:00.000Z';
+  first.body.products_info.result[0].price = 48_400_000;
+  writeFileSync(join(raw, 'details', 'ring.json'), JSON.stringify(first));
+  return raw;
+}
+
+const dump = (path: string) => {
+  const db = new DatabaseSync(path, { readOnly: true });
+  const out: Record<string, unknown> = {};
+  for (const t of [
+    'meta',
+    'gold_quote',
+    'product',
+    'offer',
+    'attribute',
+    'label',
+    'breakdown',
+    'history',
+    'source_card',
+    'source_details',
+  ]) {
+    const cols = (db.prepare(`pragma table_info(${t})`).all() as any[])
+      .map((c) => c.name)
+      .join(',');
+    out[t] = db.prepare(`SELECT ${cols} FROM ${t} ORDER BY ${cols}`).all();
+  }
+  db.close();
+  return out;
+};
+
+test('ADR-0013: a snapshot merged with a new run equals one built from all the raw files at once', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'merge-'));
+  const first = rawFixture();
+  const second = secondRun();
+  buildSnapshot({ rawDir: first, outPath: join(dir, 'base.sqlite') });
+  buildSnapshot({
+    rawDir: second,
+    outPath: join(dir, 'merged.sqlite'),
+    base: join(dir, 'base.sqlite'),
+  });
+  const all = mkdtempSync(join(tmpdir(), 'all-'));
+  cpSync(first, all, { recursive: true });
+  cpSync(second, all, { recursive: true });
+  buildSnapshot({ rawDir: all, outPath: join(dir, 'all.sqlite') });
+  assert.deepEqual(dump(join(dir, 'merged.sqlite')), dump(join(dir, 'all.sqlite')));
+
+  const db = new DatabaseSync(join(dir, 'merged.sqlite'), { readOnly: true });
+  assert.equal((db.prepare('SELECT run_id FROM meta').get() as any).run_id, RUN2);
+  assert.deepEqual(
+    (db.prepare('SELECT id FROM product ORDER BY id').all() as any[]).map((r) => r.id),
+    ['band', 'fake', 'ring'],
+  ); // «fake» was not seen again and is kept
+  const ring = db
+    .prepare("SELECT fetched_at FROM source_details WHERE product_id = 'ring'")
+    .get() as any;
+  assert.equal(ring.fetched_at, '2026-10-24T07:00:00.000Z'); // the newer details page wins
+  db.close();
+});
+
+test('ADR-0013: a merge refuses a base snapshot that does not carry its inputs', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'old-'));
+  buildSnapshot({ rawDir: rawFixture(), outPath: join(dir, 'base.sqlite') });
+  const db = new DatabaseSync(join(dir, 'base.sqlite'));
+  db.exec('UPDATE meta SET schema_version = 2');
+  db.close();
+  assert.throws(
+    () =>
+      buildSnapshot({
+        rawDir: secondRun(),
+        outPath: join(dir, 'x.sqlite'),
+        base: join(dir, 'base.sqlite'),
+      }),
+    /schema v2/,
   );
 });

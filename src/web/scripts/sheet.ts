@@ -29,14 +29,22 @@ function whyRank(d: ProductResponse) {
 }
 
 async function openSheet(id: string, opener: HTMLElement | null = null) {
+  const ask = (snapshotId?: string) =>
+    post<ProductResponse>(`/products/${encodeURIComponent(id)}`, {
+      chips: st.chips,
+      snapshot_id: snapshotId,
+    });
   let d: ProductResponse;
   try {
-    d = await post<ProductResponse>(`/products/${encodeURIComponent(id)}`, {
-      chips: st.chips,
-      snapshot_id: st.last?.snapshot.id,
-    });
-  } catch {
-    return;
+    d = await ask(st.last?.snapshot.id);
+  } catch (code) {
+    // ADR-0013: the server swapped in a newer snapshot since this list was drawn; show the product as it is now
+    if (code !== 410) return;
+    try {
+      d = await ask();
+    } catch {
+      return;
+    }
   }
   track('breakdown_opened', { product_id: id, rank: rankOf(id), label: d.label });
   const b = d.offer.breakdown;

@@ -11,7 +11,7 @@
 
 > Three layers. **Raw** is what the collector fetched, untouched. **Snapshot** is what the pipeline derives from all raw files up to one run; it is immutable and versioned. **Live** is what the server keeps between snapshots (gold price, events). Money is integer toman, weight is grams, percentages are numbers (34.2 = 34.2%), times are ISO 8601 UTC.
 
-## 1. Raw layer (owner's machine, git-ignored `data/raw/`)
+## 1. Raw layer (git-ignored `data/raw/` on the owner's machine, or a temporary folder on the server for one run, ADR-0013)
 
 | File | One row per | Key fields | Source |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Raw files are never edited. A pipeline bug is fixed by re-deriving the snapshot.
 
 ## 2. Snapshot layer (one SQLite file per run, published to the server)
 
-`snapshot-<run_id>.sqlite`, schema version in `meta.schema_version` (starts at 1; 2 from CR-09, when `shop_stars` and `shop_months` replaced `shop_score_pct`).
+`snapshot-<run_id>.sqlite`, schema version in `meta.schema_version` (starts at 1; 2 from CR-09, when `shop_stars` and `shop_months` replaced `shop_score_pct`; 3 from CR-17, when the snapshot started carrying its inputs).
 
 ### 2.1 Tables
 
@@ -45,6 +45,8 @@ Raw files are never edited. A pipeline bug is fixed by re-deriving the snapshot.
 | `label` | `product_id`, `label` (`real` \| `mixed` \| `not_gold` \| `review`), `reasons` (JSON array), `price_ratio`, `weight_unknown` | BR-30–BR-39, BR-84 |
 | `breakdown` | `offer_id`, `gold_value`, `premium_pct`, `implied_ojrat_pct`, `declared_ojrat_pct`, `parts` (JSON: gold, ojrat, profit, vat in toman; null when partial), `breakeven_g`, `vat_overcharge`, `partial_reason` (`non_gold_parts` \| null; an assumed karat is an input flag, not a partial breakdown), `vat`, `profit` | BR-40–BR-48, BR-2A |
 | `history` | `product_id`, `shop` ("" for a card that names no shop), `observed_on` (Tehran date), `price_toman`, `premium_pct`, `g_toman` | BR-90, BR-91 |
+| `source_card` | `product_id`, `run_id`, `fetched_at`, `name1`, `name2`, `price`, `shop_text`, `url`, `image_url`, `is_adv`: every search card seen, so a later build can start from this snapshot (ADR-0013) | BR-13, DM-05 |
+| `source_details` | `product_id`, `fetched_at`, `body`: the newest details page, trimmed to the specs and the shops' offers | DM-08, ADR-0013 |
 
 Indexes: `offer(product_id)`, `attribute(product_id, name)`, `history(product_id)`, `history(shop, observed_on)`.
 
@@ -112,3 +114,4 @@ Built per request from the snapshot and the live gold price ([API contract](api-
 | 0.5 | 2026-10-23 | M4 build: `parts` column; history shop "" for unnamed cards; gold fetched around every query (DM-01) |
 | 0.4 | 2026-10-23 | Independent review: `partial_reason` only for non-gold parts; `weight_conflict` attribute; `sample` flag; PRD v1.3 |
 | 0.6 | 2026-10-25 | CR-09: offer `shop_stars` and `shop_months` from Torob's `score_info`; schema version 2; the label check uses the nearest quote within 72 hours |
+| 0.7 | 2026-10-25 | CR-17: schema version 3 with `source_card` and `source_details`; a build may merge a base snapshot with new raw files (ADR-0013) |

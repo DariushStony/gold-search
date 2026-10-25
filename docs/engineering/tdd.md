@@ -56,9 +56,9 @@ flowchart LR
 
 | ID | Container | Runs on | Technology | Responsibility | Decision record |
 |---|---|---|---|---|---|
-| K-01 | Collector | owner's machine, a scheduler twice a day | Node (TypeScript, no deps) | Gold price; all search pages; then up to 40 details pages in the BR-17 order (DM-10); gold price again. Stops on 490, non-JSON or network error (BR-12) | ADR-0002, ADR-0009 |
-| K-02 | Pipeline | owner's machine, after K-01 | Node (TypeScript) + `node:sqlite` | All raw so far → snapshot: offers and merge (DM-08), extraction, labels, breakdown at the G of each fetch, history | ADR-0002, ADR-0003 |
-| K-03 | Publisher | owner's machine, after K-02 | Node (TypeScript) | Upload `<run_id>.sqlite`, then `<run_id>.sha256` last, to the host disk over FTPS | ADR-0002, ADR-0004 |
+| K-01 | Collector | the server, 10:15 and 18:15 Tehran (ADR-0013); first the owner's machine | Node (TypeScript, no deps) | Gold price; all search pages; then up to 40 details pages in the BR-17 order (DM-10); gold price again. Stops on 490, non-JSON or network error (BR-12) | ADR-0002, ADR-0009 |
+| K-02 | Pipeline | the server, after K-01, merging into the served snapshot (ADR-0013) | Node (TypeScript) + `node:sqlite` | All raw so far → snapshot: offers and merge (DM-08), extraction, labels, breakdown at the G of each fetch, history | ADR-0002, ADR-0003 |
+| K-03 | Publisher | replaced by an in-memory swap (ADR-0013) | Node (TypeScript) | Upload `<run_id>.sqlite`, then `<run_id>.sha256` last, to the host disk over FTPS | ADR-0002, ADR-0004 |
 | K-04 | Web app | Liara, Next.js platform | Next.js (App Router), React, TypeScript | UI (SC-01–SC-05), `/api/v1/*`, snapshot watcher | ADR-0001, ADR-0004 |
 | K-05 | Search core | inside K-04 | TypeScript module | Rules parser (BR-50–BR-5A), representative offer (BR-84), filters and ranking (BR-60–BR-67), explanation (BR-70–BR-74) over the in-memory snapshot | ADR-0005, ADR-0006 |
 | K-06 | Gold price service | inside K-04 | TypeScript, in-process timer | Fetch union **and** tgju every 2 min; pick G by BR-01–BR-03; flag BR-04; `market_open` by A-01 | ADR-0007 |
@@ -184,6 +184,9 @@ No staging environment: one operator, one app, and every snapshot can be tested 
 | [ADR-0008](adr/0008-eval-harness-in-ci.md) | Evaluation harness in CI with metric gates | proposed |
 | [ADR-0009](adr/0009-crawl-politeness.md) | Collector politeness: allowed paths, pacing, stop on 490 | proposed |
 | [ADR-0010](adr/0010-plain-node-demo.md) | Plain Node HTTP server for the first demo (D-34) | accepted |
+| [ADR-0011](adr/0011-vercel-demo.md) | Demo on Vercel, deployed from the owner's machine with the snapshot inside | superseded by ADR-0012 |
+| [ADR-0012](adr/0012-hamravesh-darkube.md) | Demo on Hamravesh Darkube, built from a private Git repo | accepted |
+| [ADR-0013](adr/0013-collect-on-server-merge-snapshot.md) | Collect on the server, and merge each run into the current snapshot | accepted |
 
 ## Revision history
 

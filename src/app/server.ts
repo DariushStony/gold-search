@@ -4,6 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { config } from '../core/config.ts';
 import { readEnv } from '../core/env.ts';
@@ -23,6 +24,7 @@ import {
   type Card,
   type ProductRecord,
 } from '../domains/ranking/rank.ts';
+import { scheduleCollection, type CollectorStatus, type Served } from './collector.ts';
 
 const ROOT = new URL('../../', import.meta.url).pathname;
 const TYPES: Record<string, string> = {
@@ -208,6 +210,7 @@ type Deps = {
   log?: (line: string) => void;
   webDir?: string; // the built page and its assets (pnpm build:web)
   torobProbe?: () => TorobProbe | null; // CR-16: the one-request check made at server start
+  collector?: () => CollectorStatus | null; // ADR-0013: the twice-daily collection on this server
 };
 
 function createApp(snapshotPath: string, deps: Deps = {}) {
@@ -223,9 +226,16 @@ type RequestBody = {
 } & Record<string, unknown>;
 
 function createHandler(snapshotPath: string, deps: Deps = {}) {
-  const snap = loadSnapshot(snapshotPath);
+  // ADR-0013: the served snapshot changes when a server run swaps a new one in
+  let served: Served = { path: snapshotPath, snapshot: loadSnapshot(snapshotPath) };
+  let snap = served.snapshot;
+  let byId = new Map(snap.products.map((p) => [p.id, p]));
+  const serve = (next: Served) => {
+    served = next;
+    snap = next.snapshot;
+    byId = new Map(snap.products.map((p) => [p.id, p]));
+  };
   const livePrice = async () => (await (deps.goldPrice ?? goldPrice)()) ?? snap.gold;
-  const byId = new Map(snap.products.map((p) => [p.id, p]));
   const webDir = deps.webDir ?? join(ROOT, 'dist/web');
   const hits = new Map<string, number[]>();
   const eventsFile =
@@ -313,7 +323,7 @@ function createHandler(snapshotPath: string, deps: Deps = {}) {
   const validChips = (chips: unknown): chips is Chip[] =>
     Array.isArray(chips) && chips.every((c) => c && typeof c.kind === 'string');
 
-  return async (req: IncomingMessage, res: ServerResponse) => {
+  const handle = async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url ?? '/', 'http://local');
     const read = req.method === 'GET' || req.method === 'HEAD'; // Node drops the body of a HEAD response itself
     try {
@@ -368,6 +378,7 @@ function createHandler(snapshotPath: string, deps: Deps = {}) {
           snapshot_age_h: (Date.now() - Date.parse(snap.meta.finished_at)) / 3_600_000,
           gold_price_age_min: g ? (Date.now() - Date.parse(g.quoted_at)) / 60_000 : null,
           torob_probe: deps.torobProbe?.() ?? null,
+          collector: deps.collector?.() ?? null,
         });
       }
       if (req.method !== 'POST') return problem(res, 404, 'not-found', url.pathname);
@@ -505,6 +516,7 @@ function createHandler(snapshotPath: string, deps: Deps = {}) {
       return problem(res, 500, 'internal', 'unexpected error');
     }
   };
+  return Object.assign(handle, { served: () => served, serve });
 }
 
 // A container host (Hamravesh, ADR-0012) sets these through the environment; local runs may pass the path and port as arguments.
@@ -515,15 +527,28 @@ if (import.meta.main) {
   const port = Number(process.argv[3] ?? env.port);
   const key = env.avalaiKey;
   const model = env.avalaiModel ?? config.llm.model;
-  // CR-16: one request per start tells whether this host can reach Torob, before collection moves here
+  // CR-16: one request per start tells whether this host can reach Torob
   let probe: TorobProbe | null = null;
-  createApp(path, {
+  let collector: (() => CollectorStatus) | null = null;
+  const handler = createHandler(path, {
     llm: key ? avalai(key, model) : null,
     eventsFile: env.eventsFile,
     trustProxy: env.trustProxy,
     webDir: env.webDir,
     torobProbe: () => probe,
-  }).listen(port, () => {
+    collector: () => collector?.() ?? null,
+  });
+  if (env.collect) {
+    // a restart serves the snapshot baked into the image; if that is old, refresh soon instead of at the next slot
+    const age = Date.now() - Date.parse(handler.served().snapshot.meta.finished_at);
+    collector = scheduleCollection({
+      workDir: env.collectDir ?? join(tmpdir(), 'zarsanj'),
+      served: handler.served,
+      serve: handler.serve,
+      first: age > 12 * 3_600_000 ? new Date(Date.now() + 2 * 60_000) : undefined,
+    });
+  }
+  createServer(handler).listen(port, () => {
     console.log(
       `demo: http://localhost:${port} (AI sentence reading: ${key ? model : 'off, no AVALAI_API_KEY'})`,
     );

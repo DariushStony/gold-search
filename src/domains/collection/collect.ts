@@ -290,9 +290,9 @@ async function runCollector(deps: Deps, opts: Partial<Options> = {}): Promise<Su
   return finish();
 }
 
-function realDeps(root: string, runId: string): Deps {
-  const day = join(root, 'data/raw', runId.slice(0, 10));
-  const detailsDir = join(root, 'data/raw/details');
+function realDeps(rawDir: string, runId: string): Deps {
+  const day = join(rawDir, runId.slice(0, 10));
+  const detailsDir = join(rawDir, 'details');
   return {
     http: fetchHttp,
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -318,14 +318,15 @@ function realDeps(root: string, runId: string): Deps {
   };
 }
 
-if (import.meta.main) {
+// The server bundle shares one import.meta, so this file must also be the script that was started.
+if (import.meta.main && process.argv[1]?.endsWith('collect.ts')) {
   const runId = new Date().toISOString();
   // --smoke: one query, one page, one details page, to check the live API politely.
   const smoke = process.argv.includes('--smoke')
     ? { queries: [QUERIES[4]!], pagesPerQuery: 1, detailsBudget: 1 }
     : {};
   const summary = await runCollector(
-    realDeps(new URL('../../../', import.meta.url).pathname, runId),
+    realDeps(join(new URL('../../../', import.meta.url).pathname, 'data/raw'), runId),
     smoke,
   );
   console.log(JSON.stringify({ runId, ...summary }));
@@ -334,6 +335,7 @@ if (import.meta.main) {
 export {
   robotsAllows,
   detailsQueue,
+  realDeps,
   runCollector,
   type Deps,
   type Options,

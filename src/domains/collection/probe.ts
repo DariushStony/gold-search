@@ -73,12 +73,12 @@ async function probeTorob(http: Http, now = () => new Date()): Promise<TorobProb
         note: await said(),
       });
     }
-    const body = (await res.json()) as { results?: unknown[]; total_count?: unknown };
+    const body = (await res.json()) as { results?: unknown[]; count?: unknown };
     return done({
       outcome: 'ok',
       http_status: res.status,
       results: Array.isArray(body.results) ? body.results.length : 0,
-      total_count: typeof body.total_count === 'number' ? body.total_count : null,
+      total_count: typeof body.count === 'number' ? body.count : null, // Torob calls it «count»
       note: null,
     });
   } catch (err) {

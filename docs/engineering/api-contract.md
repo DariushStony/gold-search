@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.13 |
+| Version | 0.14 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -161,6 +161,12 @@ type StatusResponse = {
     outcome: "ok" | "challenged" | "non_json" | "error" | "network";
     http_status: number | null; results: number | null; total_count: number | null;
     note: string | null;               // content type and the first words of a refusal, or the network error
+  } | null;
+  collector: {                         // CR-17, ADR-0013: the twice-daily collection on the server; null when it is off
+    running: boolean; next_run_at: string | null;
+    last_run: { run_id: string; started_at: string; finished_at: string; requests: number; results: number;
+                details_fetched: number; stopped: string | null; swapped: boolean; products: number | null;
+                reason: string | null } | null;   // reason: why the run built or swapped nothing
   } | null;
 };
 ```
@@ -403,5 +409,6 @@ Notes on the example:
 | 0.11 | 2026-10-25 | CR-14: `intent_options` on the `/parse` response; the LLM adds no intent while it is set |
 | 0.12 | 2026-10-25 | CR-15: `relax.none_in_snapshot` |
 | 0.13 | 2026-10-25 | CR-16: `torob_probe` on `/status` |
+| 0.14 | 2026-10-25 | CR-17: `collector` on `/status`; a snapshot swap can now happen while the server runs, so `410 snapshot-expired` is expected after one |
 | 0.9 | 2026-10-25 | CR-10: `no_split_reason`; `parts` is never negative |
 | 0.8 | 2026-10-25 | CR-09: `shop_stars` and `shop_months` replace `shop_score_pct`; weight 0 in `components` for a style or weight the sentence did not ask for |

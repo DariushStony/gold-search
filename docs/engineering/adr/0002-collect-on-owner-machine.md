@@ -1,6 +1,6 @@
 # ADR-0002: Collect and derive on the owner's machine, publish snapshots
 
-- Status: accepted (2026-10-25): implemented, collection runs on the owner's machine
+- Status: superseded for collection by ADR-0013 (2026-10-25); the owner's machine can still build and release a snapshot
 - Date: 2026-10-23
 - Deciders: Dariush Hadipour
 - Related: D-11, D-12, D-17; BR-10–BR-16; TDD TC-01, TC-03

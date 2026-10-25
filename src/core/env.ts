@@ -7,6 +7,8 @@ type Env = {
   avalaiModel: string | undefined;
   eventsFile: string | null | undefined; // "-" means stdout, for a container without a disk (ADR-0012)
   trustProxy: boolean;
+  collect: boolean; // ADR-0013: the server collects twice a day, in production unless COLLECT=off
+  collectDir: string | undefined; // where a server run keeps its raw files and new snapshots; default the temp folder
 };
 
 function readEnv(env: NodeJS.ProcessEnv = process.env): Env {
@@ -18,6 +20,8 @@ function readEnv(env: NodeJS.ProcessEnv = process.env): Env {
     avalaiModel: env.AVALAI_MODEL || undefined,
     eventsFile: env.EVENTS_FILE === '-' ? null : env.EVENTS_FILE || undefined,
     trustProxy: env.TRUST_PROXY === '1',
+    collect: env.NODE_ENV === 'production' && env.COLLECT !== 'off',
+    collectDir: env.COLLECT_DIR || undefined,
   };
 }
 

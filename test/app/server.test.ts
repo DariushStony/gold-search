@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { createApp, createHandler } from '../../src/app/server.ts';
+import { loadSnapshot } from '../../src/domains/catalog/snapshot.ts';
 import { buildSnapshot } from '../../src/domains/collection/build-snapshot.ts';
 
 const RUN = '2026-10-23T06:56:00.000Z';
@@ -274,6 +275,7 @@ test("ADR-0012: behind the proxy each client has its own budget, events go to th
     const status = await (await fetch(base + '/status')).json();
     assert.equal(status.gold_price.g_toman, 27_017_000); // the fixture's tgju quote, since the live fetch failed
     assert.equal(status.torob_probe, null); // CR-16: no check ran in this process
+    assert.equal(status.collector, null); // ADR-0013: no schedule in tests
     for (let i = 0; i < 30; i++) {
       assert.equal((await post('/parse', { text: 'النگو' }, '1.1.1.1')).status, 200);
     }
@@ -414,6 +416,43 @@ test('the Atlas: /atlas and /atlas/<page> serve built pages; an unknown page get
       assert.equal(r.status, 404, path);
       assert.match(await r.text(), /atlas 404/);
     }
+  } finally {
+    server.close();
+  }
+});
+
+test('ADR-0013: a swapped-in snapshot is served at once, and a request that names the old one gets 410', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'swap-'));
+  const first = join(dir, 'first.sqlite');
+  buildSnapshot({ rawDir: rawFixture(), outPath: first });
+  const handler = createHandler(first, { goldPrice: async () => null, eventsFile: null });
+  const server = createServer(handler).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
+  try {
+    const old = (await (await fetch(base + '/status')).json()).snapshot.id;
+    const raw = rawFixture();
+    const runs = join(raw, '2026-10-23', 'runs.jsonl');
+    const later = {
+      run_id: '2026-10-24T06:45:00.000Z',
+      step: 'summary',
+      started_at: '2026-10-24T06:45:00.000Z',
+      finished_at: '2026-10-24T07:30:00.000Z',
+      requests: 5,
+      results: 2,
+      stopped: null,
+    };
+    writeFileSync(runs, JSON.stringify(later) + '\n');
+    const second = join(dir, 'second.sqlite');
+    buildSnapshot({ rawDir: raw, outPath: second, base: first });
+    handler.serve({ path: second, snapshot: loadSnapshot(second) });
+    const now = (await (await fetch(base + '/status')).json()).snapshot.id;
+    assert.notEqual(now, old);
+    const stale = await fetch(base + '/search', {
+      method: 'POST',
+      body: JSON.stringify({ chips: [], snapshot_id: old }),
+    });
+    assert.equal(stale.status, 410);
+    assert.equal(handler.served().path, second);
   } finally {
     server.close();
   }

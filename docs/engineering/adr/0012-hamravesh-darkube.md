@@ -3,7 +3,7 @@
 - Status: accepted (2026-10-25), live at zarsanj.darkube.ir since 2026-10-25
 - Date: 2026-10-25
 - Deciders: Dariush Hadipour
-- Related: supersedes ADR-0011 (Vercel); ADR-0004 (Liara); ADR-0005; BR-14, BR-16, BR-111; NFR-06
+- Related: supersedes ADR-0011 (Vercel); its data part is superseded by ADR-0013 (collection on the server); ADR-0004 (Liara); ADR-0005; BR-14, BR-16, BR-111; NFR-06
 
 ## Context and problem
 
@@ -20,7 +20,7 @@ The owner chose Hamravesh's Darkube for the online demo instead of Vercel (ADR-0
 
 Option 1, from a private GitHub repo, branch `main`, auto-deploy on.
 - **Image (multistage, 2026-10-25):** `deps` installs the dev tools from the lockfile; `build` runs typecheck, lint and tests, then bundles the server (`dist/server.js`) and the page (`dist/web`) with esbuild; `runtime` (`node:24-alpine`, user `node`) holds only `dist` and the snapshot, about 2.2 MB on top of Node. A failing test stops the deploy. The build now needs the npm registry; if Darkube's builder cannot reach it, the fallback is the previous single stage, which ran the sources with no install. `.dockerignore` is an allowlist, so `.env`, raw data and videos never reach the build.
-- **Data:** the snapshot is committed as `deploy/snapshot.sqlite` (about 2 MB). `pnpm snapshot:release` copies the latest snapshot there and commits it. A push then redeploys. Only the owner's machine can reach Torob, so it stays the collector.
+- **Data:** the snapshot is committed as `deploy/snapshot.sqlite` (about 2 MB). `pnpm snapshot:release` copies the latest snapshot there and commits it. A push then redeploys. Only the owner's machine can reach Torob, so it stays the collector. (Superseded by ADR-0013: the server collects twice a day, and the committed snapshot is the seed it merges into.)
 - **No disk:** a Darkube disk ends zero-downtime updates and has no documented upload path ([disks](https://docs.hamravesh.com/products/darkube/manage/disk/)). Analytics events go to the app log instead (`EVENTS_FILE=-`). They contain no personal data (BR-111).
 - **Settings:** `PORT=8000`, `WEB_DIR=/app/dist/web`, `TRUST_PROXY=1` (the client is the first `X-Forwarded-For` entry behind the ingress), and `AVALAI_API_KEY` as a Darkube environment variable that the owner adds.
 - **Gold price:** if the live sources fail, the newest quote in the snapshot stands in, with its own time.

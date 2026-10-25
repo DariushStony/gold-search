@@ -1,5 +1,6 @@
-// K-02: all raw files so far → one immutable SQLite snapshot (data model §2).
-// Run: node src/domains/collection/build-snapshot.ts [rawDir] [outPath]
+// K-02: all raw files so far → one immutable SQLite snapshot (data model §2). The snapshot also keeps the inputs
+// it was built from, so a later build can start from it plus new raw files (ADR-0013).
+// Run: node src/domains/collection/build-snapshot.ts [rawDir] [outPath] [baseSnapshot]
 import {
   existsSync,
   mkdirSync,
@@ -23,8 +24,8 @@ import {
 } from '../pricing/gold-price.ts';
 import { priceBreakdown, vatRateFor } from '../pricing/price.ts';
 
-const SCHEMA_VERSION = 2;
-const PIPELINE_VERSION = '0.2.0';
+const SCHEMA_VERSION = 3;
+const PIPELINE_VERSION = '0.3.0';
 const QUOTE_WINDOW_MS = 60 * 60_000; // DM-01
 // CR-09: the label check may use an older quote. Its bands (0.9 and 2.5 times the gold value) are far wider than gold's
 // moves over a few days: G at fetch and G today were 2.7% to 3.5% apart in the 2026-10-25 snapshot (CR-07).
@@ -39,6 +40,8 @@ CREATE TABLE attribute (product_id TEXT, name TEXT, value TEXT, provenance TEXT,
 CREATE TABLE label (product_id TEXT PRIMARY KEY, label TEXT, reasons TEXT, price_ratio REAL, weight_unknown INTEGER);
 CREATE TABLE breakdown (offer_id TEXT PRIMARY KEY, gold_value INTEGER, premium_pct REAL, implied_ojrat_pct REAL, declared_ojrat_pct REAL, parts TEXT, breakeven_g INTEGER, vat_overcharge INTEGER, partial_reason TEXT, vat REAL, profit REAL);
 CREATE TABLE history (product_id TEXT, shop TEXT, observed_on TEXT, price_toman INTEGER, premium_pct REAL, g_toman INTEGER, PRIMARY KEY (product_id, shop, observed_on));
+CREATE TABLE source_card (product_id TEXT, run_id TEXT, fetched_at TEXT, name1 TEXT, name2 TEXT, price INTEGER, shop_text TEXT, url TEXT, image_url TEXT, is_adv INTEGER);
+CREATE TABLE source_details (product_id TEXT PRIMARY KEY, fetched_at TEXT, body TEXT);
 CREATE INDEX offer_product ON offer(product_id);
 CREATE INDEX attribute_product ON attribute(product_id, name);
 CREATE INDEX history_shop ON history(shop, observed_on);
@@ -56,6 +59,22 @@ type Card = {
   is_adv: boolean;
 };
 type StoredQuote = Quote & { id: number };
+type Run = {
+  run_id: string;
+  started_at: string;
+  finished_at: string;
+  requests: number;
+  stopped: string | null;
+  details_fetched: number;
+};
+type Details = { fetched_at: string; body: any };
+// Everything a snapshot is built from (ADR-0013): from raw files, from an earlier snapshot, or both merged.
+type Inputs = {
+  quotes: Quote[];
+  run: Run | null;
+  cards: Map<string, Card[]>;
+  details: Map<string, Details>;
+};
 
 const readJsonl = (path: string) =>
   existsSync(path)
@@ -70,14 +89,14 @@ const dayDirs = (raw: string) =>
     .sort();
 const MULTI_SHOP = /در\s*[۰-۹0-9]+\s*فروشگاه/;
 
-function loadQuotes(raw: string): StoredQuote[] {
-  const quotes: StoredQuote[] = [];
+function loadQuotes(raw: string): Quote[] {
+  const quotes: Quote[] = [];
   for (const day of dayDirs(raw)) {
     for (const r of readJsonl(join(raw, day, 'gold-price.jsonl'))) {
       const q = String(r.source).includes('tgju')
         ? parseTgju(r.prices, r.fetched_at)
         : parseUnion(r.body, r.fetched_at);
-      if (q) quotes.push({ ...q, id: quotes.length + 1 });
+      if (q) quotes.push(q);
     }
   }
   return quotes;
@@ -226,16 +245,38 @@ function attributeRows(
 const tehranDay = (iso: string) =>
   new Date(Date.parse(iso) + 210 * 60_000).toISOString().slice(0, 10);
 
-function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: string }): void {
-  const quotes = loadQuotes(rawDir);
+// Only what the pipeline reads from a details page: the specs and the shops' offers (ADR-0013). A build from raw files
+// and a build from an earlier snapshot see the same trimmed page, so they agree.
+const OFFER_FIELDS = [
+  'availability',
+  'price',
+  'shop_name',
+  'shop_name2',
+  'name1',
+  'page_url',
+  'show_torobpay_badge',
+  'is_price_unreliable',
+] as const;
+function trimDetails(body: any) {
+  const offers = (list: any[] | undefined) =>
+    (list ?? []).map((o) => ({
+      ...Object.fromEntries(OFFER_FIELDS.map((k) => [k, o[k]])),
+      score_info: { score: o.score_info?.score, score_text: o.score_info?.score_text },
+    }));
+  return {
+    structural_specs: body?.structural_specs,
+    key_specs: body?.key_specs,
+    products_info: { result: offers(body?.products_info?.result) },
+    products_in_store_info: { result: offers(body?.products_in_store_info?.result) },
+  };
+}
+
+function rawInputs(rawDir: string): Inputs {
   const runs = dayDirs(rawDir)
     .flatMap((d) => readJsonl(join(rawDir, d, 'runs.jsonl')))
-    .filter((r) => r.step === 'summary');
-  const lastRun = runs
-    .sort((a, b) => String(a.finished_at).localeCompare(String(b.finished_at)))
-    .at(-1);
-  if (!lastRun) throw new Error(`no completed run in ${rawDir}`);
-
+    .filter((r) => r.step === 'summary')
+    .sort((a, b) => String(a.finished_at).localeCompare(String(b.finished_at)));
+  const last = runs.at(-1);
   const cards = new Map<string, Card[]>();
   for (const day of dayDirs(rawDir)) {
     for (const page of readJsonl(join(rawDir, day, 'torob-search.jsonl'))) {
@@ -257,6 +298,138 @@ function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: string })
       }
     }
   }
+  const details = new Map<string, Details>();
+  const dir = join(rawDir, 'details');
+  for (const f of existsSync(dir) ? readdirSync(dir) : []) {
+    if (!f.endsWith('.json')) continue;
+    const d = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    details.set(f.slice(0, -5), { fetched_at: d.fetched_at, body: trimDetails(d.body) });
+  }
+  return {
+    quotes: loadQuotes(rawDir),
+    run: last
+      ? {
+          run_id: last.run_id,
+          started_at: last.started_at,
+          finished_at: last.finished_at,
+          requests: last.requests ?? 0,
+          stopped: last.stopped ?? null,
+          details_fetched: last.details_fetched ?? 0,
+        }
+      : null,
+    cards,
+    details,
+  };
+}
+
+function snapshotInputs(path: string): Inputs {
+  const db = new DatabaseSync(path, { readOnly: true });
+  try {
+    const meta = db.prepare('SELECT * FROM meta').get() as Record<string, any>;
+    if (meta.schema_version < SCHEMA_VERSION) {
+      throw new Error(
+        `snapshot ${path} is schema v${meta.schema_version}; a merge needs v${SCHEMA_VERSION}`,
+      );
+    }
+    const cards = new Map<string, Card[]>();
+    for (const r of db.prepare('SELECT * FROM source_card').all() as any[]) {
+      const list = cards.get(r.product_id) ?? [];
+      list.push({
+        run_id: r.run_id,
+        fetched_at: r.fetched_at,
+        name1: r.name1,
+        name2: r.name2,
+        price: r.price,
+        shop_text: r.shop_text,
+        url: r.url,
+        image_url: r.image_url,
+        is_adv: !!r.is_adv,
+      });
+      cards.set(r.product_id, list);
+    }
+    const details = new Map<string, Details>();
+    for (const r of db.prepare('SELECT * FROM source_details').all() as any[]) {
+      details.set(r.product_id, { fetched_at: r.fetched_at, body: JSON.parse(r.body) });
+    }
+    const quotes = (
+      db
+        .prepare('SELECT source, value_toman, quoted_at, fetched_at FROM gold_quote')
+        .all() as any[]
+    ).map((q) => ({
+      source: q.source,
+      g_toman: q.value_toman,
+      quoted_at: q.quoted_at,
+      fetched_at: q.fetched_at,
+    }));
+    return {
+      quotes,
+      run: {
+        run_id: meta.run_id,
+        started_at: meta.started_at,
+        finished_at: meta.finished_at,
+        requests: meta.requests,
+        stopped: meta.stopped_reason,
+        details_fetched: meta.details_fetched,
+      },
+      cards,
+      details,
+    };
+  } finally {
+    db.close();
+  }
+}
+
+// Cards are joined (each observation once), the newer details page wins, quotes are joined, and the run that
+// finished last names the snapshot.
+function mergeInputs(a: Inputs, b: Inputs): Inputs {
+  const cardKey = (c: Card) => `${c.run_id}|${c.fetched_at}|${c.price}|${c.name1}`;
+  const cards = new Map<string, Card[]>();
+  for (const src of [a.cards, b.cards]) {
+    for (const [id, list] of src) {
+      const have = cards.get(id) ?? [];
+      const keys = new Set(have.map(cardKey));
+      cards.set(id, [...have, ...list.filter((c) => !keys.has(cardKey(c)))]);
+    }
+  }
+  const details = new Map(a.details);
+  for (const [id, d] of b.details) {
+    const old = details.get(id);
+    if (!old || d.fetched_at > old.fetched_at) details.set(id, d);
+  }
+  const quoteKey = (q: Quote) => `${q.source}|${q.fetched_at}|${q.g_toman}`;
+  const quotes = [
+    ...new Map([...a.quotes, ...b.quotes].map((q) => [quoteKey(q), q])).values(),
+  ];
+  const run = !a.run || (b.run && b.run.finished_at > a.run.finished_at) ? b.run : a.run;
+  return { quotes, run, cards, details };
+}
+
+function buildSnapshot({
+  rawDir,
+  outPath,
+  base,
+}: {
+  rawDir: string;
+  outPath: string;
+  base?: string;
+}): void {
+  const raw = rawInputs(rawDir);
+  writeSnapshot(base ? mergeInputs(snapshotInputs(base), raw) : raw, outPath);
+}
+
+function writeSnapshot(inputs: Inputs, outPath: string): void {
+  const lastRun = inputs.run;
+  if (!lastRun) throw new Error('no completed run in the inputs');
+  // ids follow time, so the same quotes get the same ids however they were gathered
+  const quotes: StoredQuote[] = [...inputs.quotes]
+    .sort(
+      (x, y) =>
+        x.fetched_at.localeCompare(y.fetched_at) ||
+        x.source.localeCompare(y.source) ||
+        x.g_toman - y.g_toman,
+    )
+    .map((q, i) => ({ ...q, id: i + 1 }));
+  const cards = inputs.cards;
 
   const tmp = `${outPath}.tmp`;
   mkdirSync(dirname(outPath), { recursive: true });
@@ -294,14 +467,23 @@ function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: string })
   const insHistory = db.prepare(
     'INSERT OR REPLACE INTO history VALUES (?, ?, ?, ?, ?, ?)',
   );
+  const insCard = db.prepare(
+    'INSERT INTO source_card VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  );
+  const insDetails = db.prepare('INSERT INTO source_details VALUES (?, ?, ?)');
+  for (const [id, d] of inputs.details) {
+    insDetails.run(id, d.fetched_at, JSON.stringify(d.body));
+  }
 
   for (const [productId, seen] of cards) {
-    seen.sort((a, b) => a.fetched_at.localeCompare(b.fetched_at));
+    seen.sort(
+      (a, b) =>
+        a.fetched_at.localeCompare(b.fetched_at) ||
+        a.run_id.localeCompare(b.run_id) ||
+        a.price - b.price,
+    );
     const latest = seen.at(-1)!;
-    const detailsPath = join(rawDir, 'details', `${productId}.json`);
-    const details = existsSync(detailsPath)
-      ? JSON.parse(readFileSync(detailsPath, 'utf8'))
-      : null;
+    const details = inputs.details.get(productId) ?? null;
     const specs = details ? specsFromDetails(details.body) : {};
     const offers = mergeCard(
       cardOffer(productId, latest),
@@ -321,6 +503,20 @@ function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: string })
         .map((o) => o.title),
     });
 
+    for (const c of seen) {
+      insCard.run(
+        productId,
+        c.run_id,
+        c.fetched_at,
+        c.name1,
+        c.name2,
+        c.price,
+        c.shop_text,
+        c.url,
+        c.image_url,
+        c.is_adv ? 1 : 0,
+      );
+    }
     insProduct.run(
       productId,
       latest.name1,
@@ -418,11 +614,12 @@ function buildSnapshot({ rawDir, outPath }: { rawDir: string; outPath: string })
   renameSync(tmp, outPath); // the swap is atomic, so a reader never sees a half-written snapshot
 }
 
-if (import.meta.main) {
+// The server bundle shares one import.meta, so this file must also be the script that was started.
+if (import.meta.main && process.argv[1]?.endsWith('build-snapshot.ts')) {
   const root = new URL('../../../', import.meta.url).pathname;
   const raw = process.argv[2] ?? join(root, 'data/raw');
   const out = process.argv[3] ?? join(root, 'data/snapshots/latest.sqlite');
-  buildSnapshot({ rawDir: raw, outPath: out });
+  buildSnapshot({ rawDir: raw, outPath: out, base: process.argv[4] });
   console.log(`snapshot written: ${out}`);
 }
 
