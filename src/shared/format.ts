@@ -17,6 +17,8 @@ export function formatToman(toman: number, opts: { full?: boolean } = {}): strin
   return `${whole.format(toman / 1000)} هزار تومان`;
 }
 
+export const formatNumber = (n: number): string => whole.format(n);
+
 export const formatPct = (pct: number): string => `٪${fixed(1).format(pct)}`;
 
 export const formatWeight = (grams: number): string => `${upTo3.format(grams)} گرم`;

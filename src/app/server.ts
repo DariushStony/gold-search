@@ -22,6 +22,31 @@ import {
 } from '../domains/ranking/rank.ts';
 
 const ROOT = new URL('../../', import.meta.url).pathname;
+const TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.map': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+};
+// Product images come from Torob's CDN and the font from Google Fonts; nothing else loads from outside.
+const HEADERS = {
+  'X-Robots-Tag': 'noindex',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'X-Frame-Options': 'DENY',
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "img-src 'self' https: data:",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    'font-src https://fonts.gstatic.com',
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'none'",
+    "form-action 'none'",
+  ].join('; '),
+};
 const ARCHIVE_AFTER_H = 48; // BR-16
 const GOLD_TTL_MS = 120_000;
 
@@ -178,6 +203,7 @@ type Deps = {
   llm?: Llm | null;
   trustProxy?: boolean; // behind the host's ingress every request comes from its proxy; the client is the first X-Forwarded-For entry
   log?: (line: string) => void;
+  webDir?: string; // the built page and its assets (pnpm build:web)
 };
 
 export function createApp(snapshotPath: string, deps: Deps = {}) {
@@ -196,7 +222,7 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
   const snap = loadSnapshot(snapshotPath);
   const livePrice = async () => (await (deps.goldPrice ?? goldPrice)()) ?? snap.gold;
   const byId = new Map(snap.products.map((p) => [p.id, p]));
-  const page = () => readFileSync(join(ROOT, 'src/web/index.html'), 'utf8');
+  const webDir = deps.webDir ?? join(ROOT, 'dist/web');
   const hits = new Map<string, number[]>();
   const eventsFile =
     deps.eventsFile === undefined
@@ -212,11 +238,24 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
     type = 'application/json; charset=utf-8',
   ) => {
     res.writeHead(status, {
+      ...HEADERS,
       'Content-Type': type,
-      'X-Robots-Tag': 'noindex',
       'Cache-Control': 'no-store',
     });
     res.end(typeof body === 'string' ? body : JSON.stringify(body));
+  };
+  // The page and its hashed assets; an asset URL carries ?v=<hash>, so it can be cached for a year.
+  const sendFile = (res: ServerResponse, name: string, cache: string) => {
+    const type = TYPES[name.slice(name.lastIndexOf('.'))];
+    let body: Buffer;
+    try {
+      body = readFileSync(join(webDir, name));
+    } catch {
+      return problem(res, 404, 'not-found', name);
+    }
+    if (!type) return problem(res, 404, 'not-found', name);
+    res.writeHead(200, { ...HEADERS, 'Content-Type': type, 'Cache-Control': cache });
+    res.end(body);
   };
   const problem = (res: ServerResponse, status: number, type: string, detail: string) =>
     send(
@@ -275,7 +314,16 @@ export function createHandler(snapshotPath: string, deps: Deps = {}) {
     const read = req.method === 'GET' || req.method === 'HEAD'; // Node drops the body of a HEAD response itself
     try {
       if (read && (url.pathname === '/' || url.pathname === '/index.html')) {
-        return send(res, 200, page(), 'text/html; charset=utf-8');
+        return sendFile(res, 'index.html', 'no-cache');
+      }
+      const asset =
+        read && url.pathname.match(/^\/assets\/([\w-]+\.(?:js|css|map|svg|png))$/);
+      if (asset) {
+        return sendFile(
+          res,
+          `assets/${asset[1]}`,
+          url.searchParams.has('v') ? 'public, max-age=31536000, immutable' : 'no-cache',
+        );
       }
       if (
         url.pathname.startsWith('/api/') &&
@@ -443,6 +491,7 @@ if (import.meta.main) {
     llm: key ? avalai(key, model) : null,
     eventsFile: env.eventsFile,
     trustProxy: env.trustProxy,
+    webDir: env.webDir,
   }).listen(port, () =>
     console.log(
       `demo: http://localhost:${port} (AI sentence reading: ${key ? model : 'off, no AVALAI_API_KEY'})`,

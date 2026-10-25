@@ -288,6 +288,14 @@ test("ADR-0012: behind the proxy each client has its own budget, events go to th
   }
 });
 
+function builtPage(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'web-'));
+  mkdirSync(join(dir, 'assets'));
+  writeFileSync(join(dir, 'index.html'), '<!doctype html><title>زرسنج</title>');
+  writeFileSync(join(dir, 'assets', 'app.js'), 'console.log(1)');
+  return dir;
+}
+
 test('HEAD answers like GET without a body, so uptime checks see 200', async () => {
   const out = join(mkdtempSync(join(tmpdir(), 'snap-')), 'snapshot.sqlite');
   buildSnapshot({ rawDir: rawFixture(), outPath: out });
@@ -295,6 +303,7 @@ test('HEAD answers like GET without a body, so uptime checks see 200', async () 
     goldPrice: async () => G,
     eventsFile: null,
     log: () => {},
+    webDir: builtPage(),
   }).listen(0);
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   try {
@@ -303,6 +312,32 @@ test('HEAD answers like GET without a body, so uptime checks see 200', async () 
     assert.match(page.headers.get('content-type') ?? '', /text\/html/);
     assert.equal(await page.text(), '');
     assert.equal((await fetch(base + '/api/v1/status', { method: 'HEAD' })).status, 200);
+  } finally {
+    server.close();
+  }
+});
+
+test('the page and its assets: a hashed asset is cached for a year, the page never, and no path leaves the web folder', async () => {
+  const out = join(mkdtempSync(join(tmpdir(), 'snap-')), 'snapshot.sqlite');
+  buildSnapshot({ rawDir: rawFixture(), outPath: out });
+  const server = createApp(out, {
+    goldPrice: async () => G,
+    eventsFile: null,
+    log: () => {},
+    webDir: builtPage(),
+  }).listen(0);
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  try {
+    const page = await fetch(base + '/');
+    assert.equal(page.headers.get('cache-control'), 'no-cache');
+    assert.match(page.headers.get('content-security-policy') ?? '', /default-src 'self'/);
+    assert.equal(page.headers.get('x-content-type-options'), 'nosniff');
+    const js = await fetch(base + '/assets/app.js?v=abc');
+    assert.equal(js.status, 200);
+    assert.match(js.headers.get('content-type') ?? '', /text\/javascript/);
+    assert.equal(js.headers.get('cache-control'), 'public, max-age=31536000, immutable');
+    assert.equal((await fetch(base + '/assets/missing.js')).status, 404);
+    assert.equal((await fetch(base + '/assets/..%2Fpackage.json')).status, 404);
   } finally {
     server.close();
   }

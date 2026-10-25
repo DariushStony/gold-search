@@ -1,0 +1,49 @@
+/* Torob's light product look (slate scale, brand radish) with gold for everything about gold. */
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --ink: #1e293b;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --field: #f1f5f9;
+  --brand: #d74937;
+  --brand-ink: #b23a2a;
+  --gold: #c8962e;
+  --gold-hi: #e7c36a;
+  --gold-ink: #8a5f0f;
+  --gold-soft: #fff6e3;
+  --gold-line: #eed7a5;
+  --ojrat: #94a3b8;
+  --profit: #cbd5e1;
+  --tax: #e2e8f0;
+  --real: #2e7d32;
+  --mixed: #b45309;
+  --notgold: #64748b;
+  --review: #c2410c;
+  --radius-s: 8px;
+  --radius-l: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15202b;
+    --surface: #212b36;
+    --ink: #f1f5f9;
+    --muted: #94a3b8;
+    --line: #334155;
+    --field: #0f172b;
+    --brand: #e8604e;
+    --brand-ink: #f08a7b;
+    --gold: #e2b55a;
+    --gold-hi: #f2d48e;
+    --gold-ink: #f2c96e;
+    --gold-soft: #2e2716;
+    --gold-line: #5c4a22;
+    --ojrat: #64748b;
+    --profit: #475569;
+    --tax: #334155;
+    --real: #66bb6a;
+    --mixed: #f59e0b;
+    --notgold: #94a3b8;
+    --review: #fb923c;
+  }
+}
