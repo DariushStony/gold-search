@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | frozen (D-29); changes only through a Change Request |
-| Version | 0.8 |
+| Version | 0.9 |
 | Owner | Dariush Hadipour (Tech Lead role) |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §10, §11, §12, §15; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [data model](data-model.md) v0.4; [tracking plan](tracking-plan.md) v0.4 |
@@ -90,7 +90,8 @@ type Breakdown = {                     // one per offer (BR-48)
   premium_pct: number;                 // BR-41, same G
   implied_ojrat_pct: number | null;    // BR-43; null when partial_reason is set
   declared_ojrat_pct: number | null;   // BR-24
-  parts: { gold: number; ojrat: number; profit: number; vat: number } | null;   // toman; sum = offer price; null when partial_reason is set
+  parts: { gold: number; ojrat: number; profit: number; vat: number } | null;   // toman; sum = offer price; never negative; null when partial_reason or no_split_reason is set
+  no_split_reason: "below_gold_value" | "thin_margin" | null;   // CR-10: splitting would need a negative ojrat (price under the gold value, or margin under the assumed profit)
   breakeven_g: number;                 // BR-45; does not depend on G
   resale_value: number;                // BR-42 at the same G as the price (CR-07)
   resale_loss_pct: number;             // CR-07: 1 − resale ÷ price, buying and selling at once; holds whatever gold has done since
@@ -332,7 +333,7 @@ One example per operation. Product and prices are real Torob data from the 2026-
       "url": "https://api.torob.com/v4/product-page/redirect/…", "source": "torob_search", "fetched_at": "2026-10-22T06:47:12Z",
       "stale": false, "torob_pay": false, "shop_stars": 5, "shop_months": 6, "no_breakdown_reason": null,
       "breakdown": { "gold_value": 45928900, "premium_pct": 7.1, "implied_ojrat_pct": -0.5, "declared_ojrat_pct": null,
-        "parts": { "gold": 45928900, "ojrat": -242914, "profit": 3198019, "vat": 295511 },
+        "parts": null, "no_split_reason": "thin_margin",
         "breakeven_g": 29320061, "resale_value": 45316515, "resale_loss_pct": 7.9, "required_rise_pct": 8.5, "vat_overcharge": false, "partial_reason": null,
         "inputs": { "weight_g": 1.7, "weight_source": "spec", "weight_conflict": false, "karat": 18, "karat_assumed": false,
           "g_at_fetch": { "toman": 27017000, "source": "union", "quoted_at": "2026-10-22T06:40:00Z" },
@@ -349,7 +350,7 @@ One example per operation. Product and prices are real Torob data from the 2026-
 
 Notes on the example:
 - `shop_stars` 5 and `shop_months` 6 are illustrative: seller trust 0.5 × 1 + 0.5 × 6 ÷ 24 = 0.625.
-- The breakdown follows BR-40 to BR-45 from the inputs shown. `parts` sum to the price; the implied ojrat is slightly negative, so the strip draws it with zero width and the sheet shows the number (IA §5ب).
+- The breakdown follows BR-40 to BR-45 from the inputs shown. The price is 7.1% over the gold value, less than the assumed 7% profit plus VAT, so the implied ojrat is slightly negative: `parts` is null with `no_split_reason: "thin_margin"`, and the page shows one amount for ojrat, profit and VAT (CR-10).
 - The score is the BR-62 savings weights times the component values (0.916). The sentence names no style, so `type_style_fit` has weight 0 and the other savings weights are divided by 0.95 (CR-09).
 - The jewelry savings row is the median premium of the results (BR-100).
 - `explanation` is null because there is only one result (PRD §12).
@@ -388,4 +389,5 @@ Notes on the example:
 | 0.5 | 2026-10-24 | CR-04: `unparsed` on the `/parse` response |
 | 0.6 | 2026-10-24 | CR-05: optional `llm` flag on chips the LLM added |
 | 0.7 | 2026-10-25 | CR-07: resale and rise at the fetch-time G, new `resale_loss_pct` |
+| 0.9 | 2026-10-25 | CR-10: `no_split_reason`; `parts` is never negative |
 | 0.8 | 2026-10-25 | CR-09: `shop_stars` and `shop_months` replace `shop_score_pct`; weight 0 in `components` for a style or weight the sentence did not ask for |

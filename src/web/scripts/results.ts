@@ -1,6 +1,7 @@
 import { post } from './api.ts';
 import { $, esc } from './dom.ts';
 import { count, gram, pct, toman, when } from './fmt.ts';
+import { gapLine, premiumText, resaleLine, REVIEW_NO_RESALE } from './math-text.ts';
 import { st, track } from './state.ts';
 import { ERR, FORM, KIND, LABEL } from './text.ts';
 import type { Breakdown, ErrorCode, ResultCard, SearchResponse } from './types.ts';
@@ -11,12 +12,26 @@ export function showError(code: ErrorCode) {
   $('count').textContent = '';
 }
 
-function strip(b: Breakdown) {
-  const p = b.parts!;
-  const total = Math.max(1, p.gold + Math.max(0, p.ojrat) + p.profit + p.vat);
+const KEY = (color: string, text: string) =>
+  `<span><i style="background:var(${color})"></i>${text}</span>`;
+
+function strip(b: Breakdown, price: number) {
+  const p = b.parts ?? {
+    gold: b.gold_value,
+    ojrat: price - b.gold_value,
+    profit: 0,
+    vat: 0,
+  };
+  const total = Math.max(1, p.gold + p.ojrat + p.profit + p.vat);
   const w = (x: number) => ((100 * Math.max(0, x)) / total).toFixed(2) + '%';
+  const key = b.parts
+    ? KEY('--gold', 'ارزش طلا') +
+      KEY('--ojrat', 'اجرت') +
+      KEY('--profit', 'سود') +
+      KEY('--tax', 'مالیات')
+    : KEY('--gold', 'ارزش طلا') + KEY('--ojrat', 'اجرت، سود و مالیات با هم');
   return `<div class="strip" aria-hidden="true"><span class="g" style="width:${w(p.gold)}"></span><span class="o" style="width:${w(p.ojrat)}"></span><span class="p" style="width:${w(p.profit)}"></span><span class="t" style="width:${w(p.vat)}"></span></div>
-  <div class="strip-key"><span><i style="background:var(--gold)"></i>ارزش طلا</span><span><i style="background:var(--ojrat)"></i>اجرت</span><span><i style="background:var(--profit)"></i>سود</span><span><i style="background:var(--tax)"></i>مالیات</span></div>`;
+  <div class="strip-key">${key}</div>`;
 }
 
 export const noBreakdown = (reason: ResultCard['offer']['no_breakdown_reason']) =>
@@ -44,16 +59,17 @@ function card(c: ResultCard, i: number) {
   ].join('، ');
   const math = !b
     ? `<div class="resale">${noBreakdown(o.no_breakdown_reason)}</div>`
-    : (b.parts
-        ? strip(b)
-        : `<div class="resale">قطعه‌ی غیرطلا دارد و مقایسه با ارزش طلا کامل نیست</div>`) +
-      // CR-07: a percentage, so it holds whatever gold has done since the price was fetched.
-      `<div class="resale num">اگر بخرید و همین الان بفروشید، حدود ${pct(b.resale_loss_pct)} کمتر برمی‌گردد (برآورد)</div>`;
+    : (b.partial_reason
+        ? `<div class="resale">قطعه‌ی غیرطلا دارد و مقایسه با ارزش طلا کامل نیست</div>`
+        : b.no_split_reason === 'below_gold_value'
+          ? `<div class="resale num gap">${gapLine(b, o.price)}</div>`
+          : strip(b, o.price)) +
+      `<div class="resale num">${c.label === 'review' ? REVIEW_NO_RESALE : resaleLine(b)}</div>`;
   return `<article class="card" tabindex="0" data-id="${esc(c.id)}" data-i="${i}">
     ${c.image_url ? `<img src="${esc(c.image_url)}" alt="" loading="lazy">` : '<div></div>'}
     <div><p class="title">${esc(c.title)}<span class="badge ${cls}">${text}</span>${flags}</p>
       <div class="meta num">${esc(meta)}</div>
-      <div class="price-row"><span><span class="price num">${toman(o.price)}</span> <span class="fine num">قیمت ${when(o.fetched_at)}</span></span>${b && !b.partial_reason ? `<span class="premium num"><b>${pct(b.premium_pct)}</b> بالاتر از ارزش طلا</span>` : ''}</div>
+      <div class="price-row"><span><span class="price num">${toman(o.price)}</span> <span class="fine num">قیمت ${when(o.fetched_at)}</span></span>${b && !b.partial_reason ? `<span class="premium num">${premiumText(b)}</span>` : ''}</div>
       ${math}</div></article>`;
 }
 

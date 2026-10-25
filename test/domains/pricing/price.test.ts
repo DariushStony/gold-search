@@ -68,18 +68,39 @@ test('CR-07 (BR-42, BR-45, BR-48): the premium, the resale, the loss and the ris
   assert.equal(Number(b.required_rise_pct.toFixed(1)), 8.5); // 29,320,061 ÷ 27,017,000 − 1
 });
 
-test('parts sum to the price: gold, implied ojrat, 7% profit, 10% VAT on ojrat + profit', () => {
-  const b = priceBreakdown(base);
-  assert.deepEqual(b.parts, {
-    gold: 45_928_900,
-    ojrat: -242_914,
-    profit: 3_198_019,
-    vat: 295_511,
+test('parts sum to the price: gold, implied ojrat, 7% profit, 10% VAT on ojrat + profit, none negative', () => {
+  const b = priceBreakdown({
+    ...base,
+    weight_g: 1,
+    g_at_fetch: 27_000_000,
+    price: 36_450_000,
   });
-  assert.equal(
-    b.parts!.gold + b.parts!.ojrat + b.parts!.profit + b.parts!.vat,
-    base.price,
-  );
+  const p = b.parts!;
+  assert.equal(p.gold + p.ojrat + p.profit + p.vat, 36_450_000);
+  assert.ok(p.ojrat > 0 && p.profit > 0 && p.vat > 0);
+  assert.equal(b.no_split_reason, null);
+});
+
+test('CR-10: a price below the gold value is not split, so no part is negative; the gap is the premium', () => {
+  // 3.02 g of melted gold at 73,100,000 when G was 25,714,500: gold value 77,657,790.
+  const b = priceBreakdown({
+    ...base,
+    weight_g: 3.02,
+    g_at_fetch: 25_714_500,
+    price: 73_100_000,
+  });
+  assert.equal(b.parts, null);
+  assert.equal(b.no_split_reason, 'below_gold_value');
+  close(b.premium_pct, -5.9, 0.05);
+  close(b.resale_loss_pct, -4.8, 0.05);
+  close(b.required_rise_pct, -4.6, 0.05);
+});
+
+test('CR-10: a margin under the assumed 7% profit would need a negative ojrat, so it stays one amount', () => {
+  const b = priceBreakdown(base); // 1.7 g at 49,179,516 when G was 27,017,000: 7.1% over gold
+  assert.equal(b.parts, null);
+  assert.equal(b.no_split_reason, 'thin_margin');
+  close(b.implied_ojrat_pct!, -0.5, 0.05); // still reported, for the ojrat filter (BR-59)
 });
 
 test('AC-PM-07 (BR-47): declared ojrat 15% with VAT charged on the whole price ⇒ overcharge flagged', () => {

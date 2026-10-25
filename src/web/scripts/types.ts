@@ -18,8 +18,10 @@ export type ParseResponse = {
 };
 
 export type Breakdown = {
+  gold_value: number;
   premium_pct: number;
   parts: { gold: number; ojrat: number; profit: number; vat: number } | null;
+  no_split_reason: 'below_gold_value' | 'thin_margin' | null;
   partial_reason: 'non_gold_parts' | null;
   resale_value: number;
   resale_loss_pct: number;

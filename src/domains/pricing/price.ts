@@ -43,6 +43,9 @@ export type PriceBreakdown = {
   implied_ojrat_pct: number | null;
   declared_ojrat_pct: number | null;
   parts: { gold: number; ojrat: number; profit: number; vat: number } | null;
+  // CR-10: why parts is null though the gold value is known. Splitting would need a negative ojrat: the price
+  // is under the gold value, or its margin over gold is under the assumed profit.
+  no_split_reason: 'below_gold_value' | 'thin_margin' | null;
   breakeven_g: number;
   resale_value: number;
   resale_loss_pct: number; // buying and selling at once, so it holds whatever gold has done since
@@ -59,7 +62,10 @@ export function priceBreakdown(i: BreakdownInput): PriceBreakdown {
   const implied = partial ? null : impliedOjratPct(goldPrice / gold, i.vat, i.profit);
 
   let parts: PriceBreakdown['parts'] = null;
-  if (implied !== null) {
+  let noSplit: PriceBreakdown['no_split_reason'] = null;
+  if (implied !== null && implied < 0) {
+    noSplit = goldPrice < gold ? 'below_gold_value' : 'thin_margin';
+  } else if (implied !== null) {
     const o = implied / 100;
     const ojrat = Math.round(gold * o);
     const profit = Math.round(gold * (1 + o) * i.profit);
@@ -83,6 +89,7 @@ export function priceBreakdown(i: BreakdownInput): PriceBreakdown {
     implied_ojrat_pct: implied,
     declared_ojrat_pct: i.declared_ojrat_pct,
     parts,
+    no_split_reason: noSplit,
     breakeven_g: Math.round(gStar),
     // CR-07: every number uses the G from when the price was fetched; mixing an old price with today's G misled.
     resale_value: Math.round(resale),

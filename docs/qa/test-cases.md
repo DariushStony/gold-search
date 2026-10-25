@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | ready for freeze (stage 04) |
-| Version | 0.5 |
+| Version | 0.6 |
 | Owner | Dariush Hadipour |
 | Last updated | 2026-10-25 |
 | Inputs | [PRD](../product/prd.md) v1.4 §11, §12, §20; [IA and flows](../design/ia-user-flows.md) v0.5; [content guide](../design/content-guide.md) v1.2; [API contract](../engineering/api-contract.md) v0.4 |
@@ -48,6 +48,7 @@ Fixtures: a frozen snapshot `fixture-2026-10-22` (from `data/raw/2026-10-22`), a
 | TC-LB-04 | P1 | AC-ML-09, AC-ML-10 | *unit*; G 27,000,000 | Label «النگو طلا» with no weight at 270,000 and at 3,000,000; label «دستبند طلا» with spec «جنس: مس با آبکاری طلا» | «مشکوک» with «قیمت از ارزش طلای کمترین وزن ممکن هم کمتر است»; «واقعی» with «وزن نامعلوم»; «غیرطلا» with «در مشخصات آمده: آبکاری» |
 | TC-LB-05 | P1 | AC-ML-11, AC-ML-12 | *unit*; G 27,000,000 | Label «النگو طلا روس پک ۶ عددی» with no weight; «گردنبند خوشه انگور طلا روس» with weight 74.41 g at 2,582,747,000; «پلاک طلا ۱۸ عیار وزن ۱ گرم» with no gold price | «غیرطلا» with «در عنوان آمده: طلا روس»; «واقعی»; «مشکوک» with «قیمت طلای آن زمان برای سنجیدن قیمت در دست نبود» |
 | TC-PR-05 | P1 | AC-PM-04, AC-PM-06, AC-PM-09 | config with VAT 10% for 1405; a card with a known weight | Open the card; open «ورودی‌های این عدد» on each number; format the AC-PM-09 values | VAT read from config; every number opens weight and its source, both G values with times, and the rates; formats equal «۳۵٫۹ میلیون تومان»، «٪۳۴٫۳»، «۳۰ مهر، ۱۰:۱۵» |
+| TC-PR-06 | P1 | AC-PM-10 | *unit*; 3.02 g at 73,100,000 with G 25,714,500; 1.7 g at 49,179,516 with G 27,017,000 | Break down both prices and render their card and sheet text | No parts and «٪۵٫۹ زیر ارزش طلا», «٪۴٫۸ بیشتر از پولتان برمی‌گردد», «حتی اگر طلا ٪۴٫۶ ارزان شود ضرر نمی‌کنید»; one amount «اجرت، سود و مالیات با هم»; no minus sign anywhere |
 | TC-QU-01 | P1 | AC-QU-05, AC-QU-06, AC-QU-08, AC-QU-09, AC-QU-10, AC-QU-11 | *unit*; LLM stub that counts calls | Parse each AC sentence | Chips equal the AC; the LLM is called 0 times for sentences the rules fully parse; every parsed chip shows «از جمله‌ی شما»; a chip the user adds shows «انتخاب شما»; for «دستبند ۲ گرمی», bracelets without weight appear under «وزنشان اعلام نشده» |
 | TC-RK-02 | P1 | AC-RK-05 | *unit*; two products with equal scores and prices 10.0M and 9.5M | Rank | 9.5M first; with equal prices too, the lower product id first |
 | TC-RK-03 | P1 | AC-RK-08, AC-RK-09 | *unit*; offers with stars and months; five rings at 10M to 3,000M | Score seller trust; search «انگشتر طلا» with no budget; search «انگشتر طلا برای خودم» | 0.95 for ★4.9 and 8 years, 0.25 for a new shop, 0.5 with no data; budget fit 1 up to the median, 0.52 at 3×, 0 at 10× and over, the 3,000M ring last; style and weight weights 0, weights sum to 1 |
@@ -60,6 +61,7 @@ Fixtures: a frozen snapshot `fixture-2026-10-22` (from `data/raw/2026-10-22`), a
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-10-22 | Main scenarios for Gate 2 |
+| 0.6 | 2026-10-25 | CR-10: TC-PR-06 |
 | 0.5 | 2026-10-25 | CR-09: TC-LB-04 uses a plain gold title; TC-LB-05 and TC-RK-03 |
 | 0.4 | 2026-10-24 | CR-01: TC-LB-04 for AC-ML-09 and AC-ML-10 |
 | 0.3 | 2026-10-23 | Independent review: TC-FL-01 «ظریف» sorts only and now covers AC-CO-01 (click-out URL and event); TC-DC-02 ages against `finished_at`; market hours by quote changes; TC-LB-01 and TC-FL-10 quote the content guide; no `default` chip origin; TC-TR-02 for AC-TR-03 |

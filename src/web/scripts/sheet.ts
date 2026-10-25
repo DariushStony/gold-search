@@ -1,6 +1,7 @@
 import { post } from './api.ts';
 import { $, esc } from './dom.ts';
 import { count, gram, pct, toman, when } from './fmt.ts';
+import { resaleValueText, REVIEW_NO_RESALE, riseText, sheetRows } from './math-text.ts';
 import { noBreakdown } from './results.ts';
 import { rankOf, st, track } from './state.ts';
 import { LABEL } from './text.ts';
@@ -23,23 +24,21 @@ export async function openSheet(id: string) {
   }
   track('breakdown_opened', { product_id: id, rank: rankOf(id), label: d.label });
   const b = d.offer.breakdown;
-  const rows: [string, number][] = b?.parts
-    ? [
-        ['ارزش طلا', b.parts.gold],
-        ['اجرت (برآوردی)', b.parts.ojrat],
-        ['سود', b.parts.profit],
-        ['مالیات', b.parts.vat],
-        ['قیمت', d.offer.price],
-      ]
-    : [];
+  const split = b && !b.partial_reason ? sheetRows(b, d.offer.price) : null;
   const math =
-    b && rows.length
+    b && split
       ? `<p class="fine num">همه‌ی مبلغ‌های این جدول با قیمت فروشگاه و قیمت طلای ${when(d.offer.fetched_at)} حساب شده‌اند.</p>
-      <table class="bd num">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${toman(v)}</td></tr>`).join('')}
-      <tr><td>اگر بخرید و همین الان بفروشید (برآورد)</td><td>${toman(b.resale_value)}، یعنی ${pct(b.resale_loss_pct)} کمتر</td></tr>
-      <tr><td>قیمت سربه‌سر طلا</td><td>${toman(b.breakeven_g, true)}، یعنی ${pct(b.required_rise_pct)} رشد</td></tr></table>
+      <table class="bd num">${split.rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+      ${
+        d.label === 'review'
+          ? ''
+          : `<tr><td>اگر بخرید و همین الان بفروشید (برآورد)</td><td>${resaleValueText(b)}</td></tr>
+      <tr><td>قیمت سربه‌سر طلا</td><td>${riseText(b)}</td></tr>`
+      }</table>
+      ${d.label === 'review' ? `<p class="note">${REVIEW_NO_RESALE}</p>` : ''}
+      ${split.note ? `<p class="note">${split.note}</p>` : ''}
       <div class="inputs num">ورودی‌های این عدد: وزن ${gram(b.inputs.weight_g)}، عیار ${count(b.inputs.karat)}${b.inputs.karat_assumed ? ' (عیار فرض‌شده)' : ''}، قیمت طلا در ${when(d.offer.fetched_at)}: ${toman(b.inputs.g_at_fetch, true)}${b.inputs.g_live ? ` (قیمت طلای امروز ${toman(b.inputs.g_live, true)}، فقط برای مقایسه)` : ''}، سود ${pct(b.inputs.profit * 100)} و مالیات ${pct(b.inputs.vat * 100)} روی اجرت و سود</div>`
-      : `<p>${noBreakdown(d.offer.no_breakdown_reason)}</p>`;
+      : `<p>${b?.partial_reason ? 'قطعه‌ی غیرطلا دارد و مقایسه با ارزش طلا کامل نیست' : noBreakdown(d.offer.no_breakdown_reason)}</p>`;
   const shops = d.offers
     .slice(0, 5)
     .map(
