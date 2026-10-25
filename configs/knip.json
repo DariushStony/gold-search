@@ -1,7 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
-    "src/domains/collection/collect.ts",
     "src/web/scripts/main.ts",
     "src/web/scripts/theme-init.ts",
     "src/web/scripts/atlas.ts",

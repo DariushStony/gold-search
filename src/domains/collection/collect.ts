@@ -1,6 +1,5 @@
-// K-01: twice-daily collector. Search pages, then up to 40 details
+// K-01: the collector the server runs twice a day (ADR-0013). Search pages, then up to 40 details
 // pages in the BR-17 order, gold prices from both sources around them.
-// Run: node src/domains/collection/collect.ts
 import { appendFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -318,26 +317,4 @@ function realDeps(rawDir: string, runId: string): Deps {
   };
 }
 
-// The server bundle shares one import.meta, so this file must also be the script that was started.
-if (import.meta.main && process.argv[1]?.endsWith('collect.ts')) {
-  const runId = new Date().toISOString();
-  // --smoke: one query, one page, one details page, to check the live API politely.
-  const smoke = process.argv.includes('--smoke')
-    ? { queries: [QUERIES[4]!], pagesPerQuery: 1, detailsBudget: 1 }
-    : {};
-  const summary = await runCollector(
-    realDeps(join(new URL('../../../', import.meta.url).pathname, 'data/raw'), runId),
-    smoke,
-  );
-  console.log(JSON.stringify({ runId, ...summary }));
-}
-
-export {
-  robotsAllows,
-  detailsQueue,
-  realDeps,
-  runCollector,
-  type Deps,
-  type Options,
-  type Summary,
-};
+export { robotsAllows, detailsQueue, realDeps, runCollector, type Deps, type Summary };

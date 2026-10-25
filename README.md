@@ -5,8 +5,8 @@
 
 | | |
 | --- | --- |
-| وضعیت | دمو روی [Hamravesh Darkube](docs/engineering/adr/0012-hamravesh-darkube.md) |
-| نسخه | ۰.۲ |
+| وضعیت | زنده روی [Hamravesh Darkube](docs/engineering/adr/0012-hamravesh-darkube.md)، داده دو بار در روز تازه می‌شود ([ADR-0013](docs/engineering/adr/0013-collect-on-server-merge-snapshot.md)) |
+| نسخه | ۰.۳ |
 | مالک | داریوش هادی‌پور |
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۳ (2026-10-25) |
 
@@ -21,14 +21,14 @@
 
 ```text
 src/
-  app/          سرور HTTP، مسیرها، Rate limit و headerهای امنیتی
+  app/          سرور HTTP، مسیرها، Rate limit، headerهای امنیتی، و جمع‌آوری دو بار در روز
   core/         config و env (همه‌ی متغیرها در یک جا)
   domains/
     query/      جمله ← چیپ: اول قانون‌ها، بعد AI برای بخش خوانده‌نشده
     catalog/    استخراج وزن و عیار، برچسب طلای واقعی، پیشنهادها، بارگذاری Snapshot
     pricing/    قیمت طلا (اتحادیه و tgju)، شکستن قیمت، مبلغ برگشتی
     ranking/    فیلتر، امتیاز وزن‌دار بر اساس نیت، توضیح «چرا اولی؟»
-    collection/ جمع‌آوری مؤدب از ترب و ساختن Snapshot
+    collection/ جمع‌آوری مؤدب از ترب، ساختن Snapshot و ادغام هر اجرا در Snapshot فعلی
   shared/       قالب عدد و زمان، متن‌ها، یکسان‌سازی متن فارسی
   web/          صفحه: HTML، CSS با token برای تم روشن و تیره، ماژول‌های TypeScript
 docs/atlas/     صفحه‌های اطلس و نمودارهای Archify
@@ -55,6 +55,7 @@ scripts/        build و dev صفحه
 - Git hooks با husky: `pre-commit` فایل‌های stage شده را format و lint می‌کند، `commit-msg` پیام را با commitlint (Conventional Commits) می‌سنجد، `pre-push` typecheck و تست را اجرا می‌کند.
 - CI روی GitHub Actions: `pnpm check`، `pnpm build` و ساختن image.
 - Dockerfile سه‌مرحله‌ای: اگر تستی بشکند، Deploy انجام نمی‌شود. image نهایی فقط bundle سرور، صفحه و Snapshot را دارد و با کاربر `node` اجرا می‌شود.
+- داده: سرور ساعت ۱۰:۱۵ و ۱۸:۱۵ تهران از ترب جمع می‌کند، هر اجرا را با Snapshot فعلی ادغام می‌کند و فقط Snapshot سالم را جایگزین می‌کند. وضعیت آخرین اجرا در `GET /api/v1/status` زیر `collector` است ([ADR-0013](docs/engineering/adr/0013-collect-on-server-merge-snapshot.md)).
 - هر عدد در سندها منبع دارد و هر تغییر بعد از Contract Freeze یک ردیف CR دارد.
 
 ## اجرا
@@ -74,7 +75,6 @@ pnpm dev
 | `pnpm check` | همه‌ی بررسی‌ها |
 | `pnpm build` | bundle سرور و صفحه در `dist` |
 | `pnpm eval` | مجموعه‌های ارزیابی روی بخش تنظیم |
-| `node src/domains/collection/collect.ts` | جمع‌آوری از ترب |
-| `pnpm snapshot` | ساختن Snapshot از داده‌ی خام |
+| `pnpm snapshot` | ساختن Snapshot از داده‌ی خام بایگانی‌شده در `data/raw` |
 
 بخش آزمون مجموعه‌های ارزیابی فقط در انتشار امتیاز می‌گیرد (`--split=test --release`، [برنامه‌ی ارزیابی](docs/qa/eval-plan.md) §۲).

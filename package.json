@@ -22,8 +22,7 @@
     "knip": "knip --config configs/knip.json",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm knip && pnpm test",
     "eval": "node eval/ev-mat.ts && node eval/ev-prm.ts && node eval/ev-ext.ts && node eval/ev-qry.ts",
-    "snapshot": "node src/domains/collection/build-snapshot.ts",
-    "snapshot:release": "cp data/snapshots/latest.sqlite deploy/snapshot.sqlite && git add deploy/snapshot.sqlite && git -c user.name=\"Dariush Hadipour\" -c user.email=dariushhadi87@gmail.com commit -m \"data: update the demo snapshot\""
+    "snapshot": "node src/domains/collection/build-snapshot.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.4",
