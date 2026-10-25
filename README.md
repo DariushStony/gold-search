@@ -2,7 +2,6 @@
 
 - **دموی زنده:** [zarsanj.darkube.ir](https://zarsanj.darkube.ir)
 - **اطلس محصول و مهندسی:** [zarsanj.darkube.ir/atlas](https://zarsanj.darkube.ir/atlas)
-- **ویدیوی معرفی (۴:۵۵):** [VIDEO_URL](VIDEO_URL)
 
 | | |
 | --- | --- |
